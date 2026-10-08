@@ -9,7 +9,7 @@ const SERVICE_LINKS = [
   { id: 'rides', label: 'Campus rides' },
   { id: 'rental', label: 'Scooter rental' },
   { id: 'laundry', label: 'Hostel laundry' },
-  { id: 'food', label: 'Midnight food' },
+  { id: 'food', label: 'Late-night food' },
   { id: 'party', label: 'Party planning' },
 ];
 
@@ -58,7 +58,7 @@ export default function Footer() {
 
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[13px] text-muted">
           <p>© {CURRENT_YEAR} UniGo Technologies. Made for Pondicherry University students.</p>
-          <p>Ride smarter with UniGo.</p>
+          <p>Campus plan © OpenStreetMap contributors</p>
         </div>
       </div>
     </footer>

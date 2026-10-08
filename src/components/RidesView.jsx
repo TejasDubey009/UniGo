@@ -2,16 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/useApp';
 import { useCountUp } from '../hooks/useMotion';
 import { CAMPUS_LOCATIONS_LIST, OFF_CAMPUS_DESTINATIONS, OUTSIDE_LOCATIONS_LIST } from '../data/campusData';
+import PlaceSearch from './PlaceSearch';
 import { celebrate } from '../lib/celebrate';
 import { shortRef, formatWhen } from '../lib/format';
-import { baseRideFare, rideFare, CAMPUS_FARE, FIRST_RIDE_DISCOUNT } from '../lib/pricing';
+import { baseRideFare, rideFare, CAMPUS_FARE, FIRST_RIDE_DISCOUNT, OFF_CAMPUS_PER_KM } from '../lib/pricing';
 import { supabase } from '../lib/supabase';
-import { placeByName, distanceMeters, formatDistance, minutesAway } from '../lib/geo';
+import { placeByName, distanceMeters, formatDistance, minutesAway, CAMPUS_PLACES, OFF_CAMPUS_PLACES } from '../lib/geo';
 import CampusMap3D from './LazyCampusMap3D';
 import { PageHeader, Reveal, Segmented } from './ui';
-import { Bike, User, Users, ShieldCheck, Clock, ArrowRight, BadgeCheck, IndianRupee, Phone, Check } from 'lucide-react';
+import { Bike, User, Users, KeyRound, LocateFixed, ArrowRight, BadgeCheck, IndianRupee, Phone, Check } from 'lucide-react';
 
-// Ride statuses as stored in Supabase (set by staff as the ride moves along), in order
+// Ride statuses as stored in Supabase (the captain moves the ride along), in order
 const RIDE_STEPS = ['requested', 'assigned', 'arriving', 'in_transit', 'completed'];
 const STEP_LABELS = {
   requested: 'Requested',
@@ -22,10 +23,21 @@ const STEP_LABELS = {
   cancelled: 'Cancelled',
 };
 const ACTIVE_STATUSES = new Set(['requested', 'assigned', 'arriving', 'in_transit']);
+// Why a ride was cancelled (rides.cancel_reason), for the ride history
+const CANCEL_REASONS = {
+  rider: 'You cancelled',
+  unigo: 'Cancelled by UniGo',
+  expired: 'No captain took it',
+  code: 'Cancelled: wrong pickup code 5 times',
+};
+// The captain's position is hidden once their phone has gone quiet this long
+const LOCATION_STALE_MS = 45000;
 const CANCELLABLE = new Set(['requested', 'assigned', 'arriving']);
 // Once a captain has the ride: they share their location, and the rider has a pickup code
 const WITH_CAPTAIN = new Set(['assigned', 'arriving', 'in_transit']);
 const DEFAULT_DROP = 'Silver Jubilee Campus (SJC)';
+// Captains stop seeing a request after this long (open_ride_requests in supabase/schema.sql)
+const REQUEST_MAX_AGE_MIN = 30;
 const DESTINATION_KM = Object.fromEntries(OFF_CAMPUS_DESTINATIONS.map((d) => [d.name, d.km]));
 const FIRST_RIDE_PERCENT = Math.round(FIRST_RIDE_DISCOUNT * 100);
 const TWO_RIDER_FARE = baseRideFare({ passengers: 2 });
@@ -36,16 +48,16 @@ const RIDER_OPTIONS = [
 ];
 
 const RIDE_FACTS = [
-  { icon: Clock, title: 'About 3 min pickup', text: 'Captains on duty all over campus' },
   { icon: IndianRupee, title: `Flat ₹${CAMPUS_FARE} inside campus`, text: `₹${TWO_RIDER_FARE} for two · first ride ${FIRST_RIDE_PERCENT}% off` },
-  { icon: ShieldCheck, title: 'SOS on every ride', text: 'Campus security, 24/7' },
+  { icon: KeyRound, title: 'Pickup code', text: 'The ride starts only when your captain enters the code on your phone' },
+  { icon: LocateFixed, title: 'See your captain coming', text: 'Their distance from you updates while they drive' },
 ];
 
-function rideHeadline(ride) {
+function rideHeadline(ride, expired) {
   const captain = ride.captain_name || 'Your captain';
   switch (ride.status) {
     case 'requested':
-      return 'Waiting for a captain to accept';
+      return expired ? 'No captain took this ride' : 'Waiting for a captain to accept';
     case 'assigned':
       return `${captain} is on the way to pick you up`;
     case 'arriving':
@@ -80,28 +92,44 @@ const PICKUP_MARK = 'w-3 h-3 rounded-full border-2 border-forest bg-canvas';
 const DROP_MARK = 'w-3 h-3 rounded-full bg-lime ring-2 ring-forest';
 
 export default function RidesView() {
-  const { user, rides, bookingsLoaded, requestRide, cancelRide, requireAuth, saveProfileDetails, rideDropTarget, setRideDropTarget } =
-    useApp();
+  const {
+    user,
+    rides,
+    bookingsLoaded,
+    hasCompletedRide,
+    requestRide,
+    cancelRide,
+    requireAuth,
+    saveProfileDetails,
+    rideTarget,
+    clearRideTarget,
+  } = useApp();
 
-  // Drop point may be prefilled from "Ride Here" on the campus map
-  const initialDrop = rideDropTarget || DEFAULT_DROP;
+  // A pickup or drop may arrive from a campus map ("Ride here", "Pickup here", "Drop here")
+  const initialDrop = rideTarget?.field === 'drop' ? rideTarget.name : DEFAULT_DROP;
   const [dropType, setDropType] = useState(OUTSIDE_LOCATIONS_LIST.includes(initialDrop) ? 'outside' : 'inside'); // 'inside' | 'outside'
-  const [pickupLocation, setPickupLocation] = useState(CAMPUS_LOCATIONS_LIST[0]);
+  const [pickupLocation, setPickupLocation] = useState(rideTarget?.field === 'pickup' ? rideTarget.name : CAMPUS_LOCATIONS_LIST[0]);
   const [dropLocation, setDropLocation] = useState(initialDrop);
 
-  // Any building picked on the campus map can be a drop, even if it isn't in the quick list
-  const baseDropOptions = dropType === 'inside' ? CAMPUS_LOCATIONS_LIST : OUTSIDE_LOCATIONS_LIST;
-  const dropOptions = baseDropOptions.includes(dropLocation) ? baseDropOptions : [dropLocation, ...baseDropOptions];
-
-  // Picks made on the campus map while this page is open ("Set as drop") update the drop too
-  const [seenDropTarget, setSeenDropTarget] = useState(rideDropTarget);
-  if (rideDropTarget !== seenDropTarget) {
-    setSeenDropTarget(rideDropTarget);
-    if (rideDropTarget) {
-      setDropType(OUTSIDE_LOCATIONS_LIST.includes(rideDropTarget) ? 'outside' : 'inside');
-      setDropLocation(rideDropTarget);
+  // Picks made on the map while this page is open
+  const [seenRideTarget, setSeenRideTarget] = useState(rideTarget);
+  if (rideTarget !== seenRideTarget) {
+    setSeenRideTarget(rideTarget);
+    if (rideTarget?.field === 'pickup') setPickupLocation(rideTarget.name);
+    if (rideTarget?.field === 'drop') {
+      setDropType(OUTSIDE_LOCATIONS_LIST.includes(rideTarget.name) ? 'outside' : 'inside');
+      setDropLocation(rideTarget.name);
     }
   }
+
+  // Search lists: pickups are on campus; drops list the current side of campus first
+  const campusGroup = { label: 'On campus', places: CAMPUS_PLACES };
+  const offCampusGroup = { label: 'Off campus', places: OFF_CAMPUS_PLACES };
+  const dropGroups = dropType === 'outside' ? [offCampusGroup, campusGroup] : [campusGroup, offCampusGroup];
+  const chooseDrop = (place) => {
+    setDropType(place.offCampus ? 'outside' : 'inside');
+    setDropLocation(place.name);
+  };
   const [passengers, setPassengers] = useState(1);
   const [phone, setPhone] = useState(user?.phone || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -120,7 +148,7 @@ export default function RidesView() {
   const isOutside = dropType === 'outside';
   const km = isOutside ? (DESTINATION_KM[dropLocation] ?? null) : null;
   // Known only once a signed-in student's past rides have loaded; a cancelled ride doesn't use it up
-  const isFirstRide = Boolean(user) && bookingsLoaded && !rides.some((r) => r.status !== 'cancelled');
+  const isFirstRide = Boolean(user) && bookingsLoaded && !hasCompletedRide && !rides.some((r) => r.status !== 'cancelled');
   const baseFare = baseRideFare({ km, passengers });
   const finalFare = rideFare({ km, passengers, firstRide: isFirstRide });
   const discount = baseFare - finalFare;
@@ -135,9 +163,24 @@ export default function RidesView() {
   const pastRides = rides.filter((r) => r !== activeRide).slice(0, 5);
   const rideStepIndex = activeRide ? RIDE_STEPS.indexOf(activeRide.status) : -1;
 
+  // A request no captain accepts within 30 minutes drops off their feed; say so instead of waiting forever.
+  // (requested_at restarts when a captain hands the ride back.) An expired request doesn't stop a new
+  // booking: the database closes it when the student books again.
+  const isWaiting = activeRide?.status === 'requested';
+  const withCaptain = activeRide ? WITH_CAPTAIN.has(activeRide.status) : false;
+  const [now, setNow] = useState(() => new Date().getTime());
+  useEffect(() => {
+    if (!isWaiting && !withCaptain) return;
+    const timer = setInterval(() => setNow(new Date().getTime()), 15000);
+    return () => clearInterval(timer);
+  }, [isWaiting, withCaptain]);
+  const requestExpired =
+    isWaiting && now - new Date(activeRide.requested_at || activeRide.created_at).getTime() > REQUEST_MAX_AGE_MIN * 60000;
+  const blockingRide = activeRide && !requestExpired ? activeRide : null;
+
   const handleBookRide = async (e) => {
     e.preventDefault();
-    if (isSamePlace || activeRide || isSubmitting) return;
+    if (isSamePlace || blockingRide || isSubmitting) return;
     if (!requireAuth('Sign in with your university account to book a ride.')) return;
 
     setIsSubmitting(true);
@@ -154,7 +197,7 @@ export default function RidesView() {
       setError(bookingError);
       return;
     }
-    setRideDropTarget(null);
+    clearRideTarget();
     saveProfileDetails({ phone: phone.trim() });
     celebrate(70);
   };
@@ -180,23 +223,38 @@ export default function RidesView() {
   }, [activeId, needsCode]);
   const code = needsCode && pickupCode.rideId === activeId ? pickupCode.code : null;
 
-  // The captain's live location, straight from their phone over a private realtime channel
-  const withCaptain = activeRide ? WITH_CAPTAIN.has(activeRide.status) : false;
+  // The captain's live location, straight from their phone over a private realtime channel. Kept per
+  // captain (a ride handed back gets a new one), and dropped once their phone goes quiet.
+  const captainId = withCaptain ? activeRide.captain_id : null;
   const [captainSpot, setCaptainSpot] = useState(null);
   useEffect(() => {
-    if (!activeId || !withCaptain) return;
+    if (!activeId || !captainId) return;
     const channel = supabase
       .channel(`ride:${activeId}`, { config: { private: true } })
-      .on('broadcast', { event: 'location' }, ({ payload }) => setCaptainSpot({ rideId: activeId, ...payload }))
+      .on('broadcast', { event: 'location' }, ({ payload }) =>
+        setCaptainSpot({ rideId: activeId, captainId, lat: payload.lat, lng: payload.lng, receivedAt: Date.now() })
+      )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeId, withCaptain]);
+  }, [activeId, captainId]);
   // Distance to wherever the captain is heading: the pickup, then the drop
   const heading = activeRide ? placeByName(activeRide.status === 'in_transit' ? activeRide.drop_off : activeRide.pickup) : null;
-  const spot = withCaptain && captainSpot?.rideId === activeId ? captainSpot : null;
+  const spot =
+    captainSpot &&
+    activeId &&
+    captainSpot.rideId === activeId &&
+    captainSpot.captainId === captainId &&
+    now - captainSpot.receivedAt < LOCATION_STALE_MS
+      ? captainSpot
+      : null;
   const captainDistance = spot && heading ? distanceMeters(spot, heading) : null;
+
+  // Route on the map: the ride under way, or the pickup and drop being chosen (campus places only)
+  const routeStops = activeRide ? [activeRide.pickup, activeRide.drop_off] : [pickupLocation, isOutside ? null : dropLocation];
+  const [routeFrom, routeTo] = routeStops.map((name) => (name ? placeByName(name)?.id : null));
+  const mapRoute = routeFrom && routeTo && routeFrom !== routeTo ? { from: routeFrom, to: routeTo } : null;
 
   const handleCancel = async () => {
     setIsCancelling(true);
@@ -210,8 +268,8 @@ export default function RidesView() {
     <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
       <PageHeader
         eyebrow="Campus rides"
-        title="Campus rides in 3 minutes"
-        description={`Book a verified student captain for a flat ₹${CAMPUS_FARE} anywhere inside the 800-acre campus (₹${TWO_RIDER_FARE} for two), or a drop to Auroville, White Town and Rock Beach. Your first ride is ${FIRST_RIDE_PERCENT}% off.`}
+        title="Rides across campus"
+        description={`A student captain takes you anywhere on campus for ₹${CAMPUS_FARE} (₹${TWO_RIDER_FARE} for two), or off campus to Kalapet, Auroville, White Town and Rock Beach at ₹${OFF_CAMPUS_PER_KM} a km. Your first ride is ${FIRST_RIDE_PERCENT}% off.`}
       />
 
       <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
@@ -237,18 +295,13 @@ export default function RidesView() {
                     <RouteLine />
                   </span>
                 </span>
-                <select
+                <PlaceSearch
                   id="ride-pickup"
                   value={pickupLocation}
-                  onChange={(e) => setPickupLocation(e.target.value)}
-                  className="field"
-                >
-                  {CAMPUS_LOCATIONS_LIST.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {loc}
-                    </option>
-                  ))}
-                </select>
+                  onChange={(place) => setPickupLocation(place.name)}
+                  groups={[campusGroup]}
+                  placeholder="Search for a gate, hostel or department"
+                />
 
                 <span aria-hidden="true" className="relative">
                   <span className="absolute left-1/2 -translate-x-1/2 inset-y-0">
@@ -280,18 +333,14 @@ export default function RidesView() {
                   </span>
                   <span className={DROP_MARK} />
                 </span>
-                <select
+                <PlaceSearch
                   id="ride-drop"
                   value={dropLocation}
-                  onChange={(e) => setDropLocation(e.target.value)}
-                  className="field"
-                >
-                  {dropOptions.map((loc) => (
-                    <option key={loc} value={loc}>
-                      {DESTINATION_KM[loc] ? `${loc} (${DESTINATION_KM[loc]} km)` : loc}
-                    </option>
-                  ))}
-                </select>
+                  onChange={chooseDrop}
+                  groups={dropGroups}
+                  invalid={isSamePlace}
+                  placeholder={isOutside ? 'Search Auroville, White Town…' : 'Search for a gate, hostel or department'}
+                />
 
                 {isSamePlace && (
                   <p className="field-error col-start-2">Pickup and drop are the same place. Choose a different drop.</p>
@@ -388,12 +437,12 @@ export default function RidesView() {
 
               <button
                 type="submit"
-                disabled={isSamePlace || Boolean(activeRide) || isSubmitting}
+                disabled={isSamePlace || Boolean(blockingRide) || isSubmitting}
                 aria-busy={isSubmitting}
                 className="btn btn-primary btn-lg w-full mt-6"
               >
-                {activeRide ? 'You have a ride on the way' : isSubmitting ? 'Sending your request…' : 'Request a captain'}
-                {!activeRide && !isSubmitting && <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />}
+                {blockingRide ? 'You have a ride on the way' : isSubmitting ? 'Sending your request…' : 'Request a captain'}
+                {!blockingRide && !isSubmitting && <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />}
               </button>
             </form>
           </section>
@@ -413,7 +462,7 @@ export default function RidesView() {
 
               <div aria-live="polite">
                 <h3 key={activeRide.status} className="heading text-[24px] sm:text-[28px] mt-3 animate-pop-in">
-                  {rideHeadline(activeRide)}
+                  {rideHeadline(activeRide, requestExpired)}
                 </h3>
               </div>
 
@@ -468,7 +517,11 @@ export default function RidesView() {
                         )}
                       </>
                     ) : (
-                      <p className="text-[15px] text-muted">No captain yet. You'll see their name here.</p>
+                      <p className="text-[15px] text-muted">
+                        {requestExpired
+                          ? 'Captains stop seeing a request after 30 minutes. Cancel it and book again.'
+                          : "No captain yet. You'll see their name here."}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -563,11 +616,15 @@ export default function RidesView() {
                         {ride.pickup} → {ride.drop_off}
                       </p>
                       <p className="text-muted">
-                        {formatWhen(ride.created_at)} · {STEP_LABELS[ride.status]}
+                        {formatWhen(ride.created_at)} ·{' '}
+                        {ride.status === 'cancelled' ? CANCEL_REASONS[ride.cancel_reason] || 'Cancelled' : STEP_LABELS[ride.status]}
                         {ride.passengers === 2 && ' · two riders'}
                       </p>
                     </div>
-                    <span className="font-semibold text-ink num shrink-0">₹{ride.fare}</span>
+                    {/* Nothing was charged for a cancelled ride */}
+                    <span className={`num shrink-0 ${ride.status === 'cancelled' ? 'text-subtle line-through' : 'font-semibold text-ink'}`}>
+                      ₹{ride.fare}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -575,11 +632,14 @@ export default function RidesView() {
           )}
         </div>
 
-        {/* Map column */}
-        <div className="lg:col-span-7 lg:sticky lg:top-24 min-w-0">
-          <div className="media-frame h-[420px] sm:h-[540px] lg:h-[640px]">
-            <CampusMap3D />
+        {/* Map column: the drive from pickup to drop, for the ride being booked or the one under way */}
+        <div className="lg:col-span-7 min-w-0">
+          <div className="media-frame h-[630px] sm:h-[810px] lg:h-[960px]">
+            <CampusMap3D route={mapRoute} zoom={2} />
           </div>
+          {!mapRoute && isOutside && !activeRide && (
+            <p className="mt-3 text-[13px] text-muted">The map shows routes inside campus. {dropLocation} is off campus.</p>
+          )}
         </div>
       </div>
 

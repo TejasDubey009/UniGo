@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { useDialog } from '../hooks/useDialog';
 import { useApp } from '../context/useApp';
 import { useCountUp } from '../hooks/useMotion';
 import { celebrate } from '../lib/celebrate';
@@ -25,12 +26,17 @@ function SummaryRow({ label, children }) {
   );
 }
 
+// "10:30 am" today, "11 Oct, 10:30 am" for a later day
+const formatReturn = (iso) => (new Date(iso).toDateString() === new Date().toDateString() ? formatTime(iso) : formatWhen(iso));
+
 export default function RentalView() {
-  const { user, fleet, leases, signLease, requireAuth, saveProfileDetails } = useApp();
+  const { user, fleet, leases, signLease, requireAuth, saveProfileDetails, refreshFleet } = useApp();
 
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const leaseDialogRef = useDialog(isAgreementModalOpen && Boolean(selectedVehicle), () => setIsAgreementModalOpen(false));
+  const receiptDialogRef = useDialog(Boolean(confirmedBooking), () => setConfirmedBooking(null));
 
   // Agreement form states
   const [dlNumber, setDlNumber] = useState('');
@@ -106,13 +112,45 @@ export default function RentalView() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasSigned(false);
+    setTypedSignature('');
+  };
+
+  // For anyone who can't draw (keyboard, screen reader): typing your full name signs the pad
+  const [typedSignature, setTypedSignature] = useState('');
+  const signByTyping = (text) => {
+    setTypedSignature(text);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const name = text.trim();
+    if (name.length < 3) {
+      setHasSigned(false);
+      return;
+    }
+    ctx.fillStyle = '#0e0f0c';
+    ctx.font = 'italic 600 44px Georgia, "Times New Roman", serif';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(name, 28, canvas.height * 0.72, canvas.width - 56);
+    setHasSigned(true);
+    setFormError('');
+  };
+
+  // Each vehicle's own hub, as listed in the fleet
+  const hubFor = (vehicle) => {
+    const where = vehicle?.pickupLocation || '';
+    if (/library/i.test(where)) return 'Library Hub & Parking Dock';
+    if (/gate 2/i.test(where)) return 'Gate 2 Kalapet Entrance';
+    return 'Gate 1 UniGo Hub (ECR Entrance)';
   };
 
   const handleOpenRental = (bike) => {
     if (!requireAuth('Sign in with your university account to rent a vehicle.')) return;
     setSelectedVehicle(bike);
+    setPickupHub(hubFor(bike));
     setIsAgreementModalOpen(true);
     setHasSigned(false);
+    setTypedSignature('');
     setHasAgreedTerms(false);
     setFormError('');
   };
@@ -153,27 +191,29 @@ export default function RentalView() {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
+    // The database sets the vehicle name and the price from its own fleet rates
     const { data, error } = await signLease({
       vehicle_id: selectedVehicle.id,
-      vehicle_name: selectedVehicle.model,
-      rider_name: user.name || user.email.split('@')[0],
+      rider_name: user?.name || user?.email.split('@')[0] || '',
       roll_no: rollNo.trim().toUpperCase() || null,
       phone: phone.trim(),
       dl_number: dlNumber.trim().toUpperCase(),
       duration: rentalDuration,
       pickup_hub: pickupHub,
-      total_amount: calculateAmount(),
-      signature: canvasRef.current.toDataURL(),
+      signature: canvasRef.current.toDataURL('image/png'),
       pre_reserved: isPreReservation,
     });
     setIsSubmitting(false);
     if (error) {
       setFormError(error);
+      // Someone else just took it: re-read the fleet so the form switches to pre-reserving
+      if (/just taken/i.test(error)) refreshFleet();
       return;
     }
 
     setIsAgreementModalOpen(false);
     setConfirmedBooking(data);
+    setDlNumber('');
     saveProfileDetails({ phone: phone.trim(), roll_no: rollNo.trim().toUpperCase() });
     celebrate(100);
   };
@@ -183,7 +223,7 @@ export default function RentalView() {
       <PageHeader
         eyebrow="Scooter and bike rental"
         title="Self-drive by the hour"
-        description="Scooters and bikes for classes or a weekend run to Auroville and Rock Beach. Sign the lease on your phone, then show your DL and student ID at the hub to collect the keys."
+        description="Scooters and bikes by the hour or the day. Sign the lease on your phone, then show your driving licence and student ID at the hub to collect the keys."
         aside={
           <p className="flex items-center gap-2 text-[14px] text-body">
             <MapPin className="w-4 h-4 text-forest shrink-0" aria-hidden="true" />
@@ -200,11 +240,11 @@ export default function RentalView() {
               <span className="live-dot" aria-hidden="true" />
               Open now
             </span>
-            <p className="text-[15px] text-body">Vehicles are cleaned, fuelled and parked at the Gate 1 and Library hubs.</p>
+            <p className="text-[15px] text-body">Collect and return at the Gate 1 and Library hubs.</p>
           </div>
           {nextReturn && (
             <p className="text-[14px] text-muted shrink-0">
-              Next return <span className="num text-ink font-semibold">{formatTime(nextReturn.nextAvailableAt)}</span> ·{' '}
+              Next return <span className="num text-ink font-semibold">{formatReturn(nextReturn.nextAvailableAt)}</span> ·{' '}
               {nextReturn.model}
             </p>
           )}
@@ -219,7 +259,7 @@ export default function RentalView() {
               <p className="text-[16px] font-semibold text-ink">All vehicles are out on trips</p>
               <p className="text-[15px] text-body mt-0.5">
                 {nextReturn
-                  ? `Next one back: ${nextReturn.model} at ${formatTime(nextReturn.nextAvailableAt)}. `
+                  ? `Next one back: ${nextReturn.model} at ${formatReturn(nextReturn.nextAvailableAt)}. `
                   : ''}
                 You can still sign the lease below to pre-reserve one.
               </p>
@@ -243,7 +283,7 @@ export default function RentalView() {
           const statusLabel = isAvailable
             ? 'Available now'
             : vehicle.nextAvailableAt
-              ? `Back at ${formatTime(vehicle.nextAvailableAt)}`
+              ? `Back at ${formatReturn(vehicle.nextAvailableAt)}`
               : 'On lease';
 
           return (
@@ -377,6 +417,8 @@ export default function RentalView() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/40 backdrop-blur-sm animate-fade-in">
           <div className="min-h-full flex items-end sm:items-center justify-center sm:p-6">
             <div
+              ref={leaseDialogRef}
+              tabIndex={-1}
               role="dialog"
               aria-modal="true"
               aria-labelledby="lease-title"
@@ -543,14 +585,27 @@ export default function RentalView() {
                       ref={canvasRef}
                       width={560}
                       height={140}
-                      onPointerDown={startDrawing}
+                      onPointerDown={(e) => {
+                        if (typedSignature) clearSignature();
+                        startDrawing(e);
+                      }}
                       onPointerMove={draw}
                       onPointerUp={stopDrawing}
                       onPointerCancel={stopDrawing}
-                      aria-label="Signature pad"
+                      aria-hidden="true"
                       className="relative block w-full aspect-[4/1] cursor-crosshair touch-none"
                     />
                   </div>
+                  <label htmlFor="typed-signature" className="mt-3 block text-[13px] text-muted">
+                    Or type your full name to sign
+                  </label>
+                  <input
+                    id="typed-signature"
+                    value={typedSignature}
+                    onChange={(e) => signByTyping(e.target.value)}
+                    autoComplete="name"
+                    className="field mt-1.5"
+                  />
                 </div>
 
                 <label className="flex items-start gap-3 cursor-pointer">
@@ -580,7 +635,7 @@ export default function RentalView() {
                 <div className="surface p-5 sm:p-6">
                   <dl className="divide-y divide-hairline text-[15px]">
                     <SummaryRow label="Rider">
-                      {user.name || user.email}
+                      {user?.name || user?.email}
                       {rollNo.trim() && (
                         <span className="block font-mono text-[13px] text-muted font-normal uppercase">{rollNo.trim()}</span>
                       )}
@@ -614,6 +669,8 @@ export default function RentalView() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/40 backdrop-blur-sm animate-fade-in">
           <div className="min-h-full flex items-end sm:items-center justify-center sm:p-6">
             <div
+              ref={receiptDialogRef}
+              tabIndex={-1}
               role="dialog"
               aria-modal="true"
               aria-labelledby="receipt-title"

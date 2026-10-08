@@ -23,6 +23,15 @@ export const RETURN_TAB_KEY = 'unigo_return_tab';
 // Where Supabase sends people back after Google, a confirmation link or a password reset
 export const authRedirectUrl = () => `${window.location.origin}${window.location.pathname}`;
 
+// A sign-in error handed back in the page address. Anyone can put text in a link, so only known
+// errors get a specific message; anything else gets a fixed one rather than echoing the link's words.
+export function urlAuthError(description = '', code = '') {
+  if (/database error saving new user|pondiuni|only for pondicherry/i.test(description)) return friendlyAuthError(description);
+  if (/access_denied/i.test(code) || /denied|cancel/i.test(description)) return 'Google sign-in was cancelled. Try again when you are ready.';
+  if (/otp_expired|expired/i.test(`${code} ${description}`)) return 'That link has expired. Ask for a new one and use it straight away.';
+  return "Sign-in didn't complete. Please try again.";
+}
+
 // Supabase's messages, rewritten for students
 export function friendlyAuthError(error) {
   const message = typeof error === 'string' ? error : error?.message || '';
@@ -46,6 +55,8 @@ export function friendlyDbError(error) {
   // Messages raised by our own SQL (prices, pickup days, captain steps) are written for students already
   if (error?.code === '23514' && !/violates/i.test(message)) return message;
   if (/permission denied for function/i.test(message)) return "You don't have access to that.";
+  // Two people acted on the same thing at once (e.g. two bookings or two accepts racing)
+  if (error?.code === '23505') return 'That just changed. Refresh and try again.';
   return 'Something went wrong saving that. Please try again.';
 }
 

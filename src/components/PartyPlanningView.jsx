@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import { useApp } from '../context/useApp';
 import { supabase } from '../lib/supabase';
@@ -6,10 +6,10 @@ import { celebrate } from '../lib/celebrate';
 import { PageHeader, Reveal } from './ui';
 
 const EVENT_TYPES = [
-  'Midnight hostel room surprise',
-  'Kalapet beach sunset jam',
-  'Polaroid and film memories',
+  'Birthday in the hostel',
+  'Evening at Kalapet Beach',
   'Farewell or department treat',
+  'Something else',
 ];
 
 const CAKE_OPTIONS = [
@@ -18,47 +18,6 @@ const CAKE_OPTIONS = [
   'Fresh blueberry cheesecake (1 kg)',
   'Black forest classic (1 kg)',
   'No cake, decor and setup only',
-];
-
-const PACKAGES = [
-  {
-    title: 'Midnight hostel surprise',
-    eventType: EVENT_TYPES[0],
-    price: '₹1,199',
-    tag: 'Hostel',
-    perks: [
-      'Fresh 1 kg bakery cake delivered at 11:55 PM',
-      'Fairy lights and 15 helium balloons',
-      'Celebration banner for the room door',
-      'Candles, party popper and matches',
-      'Hostel gate clearance arranged in advance',
-    ],
-  },
-  {
-    title: 'Kalapet beach sunset jam',
-    eventType: EVENT_TYPES[1],
-    price: '₹2,999',
-    tag: 'Beach',
-    perks: [
-      'Beach tent and floor seating at Kalapet Beach',
-      'Portable JBL speaker',
-      'Permitted bonfire setup',
-      'Drinks cooler and pizza delivered to the beach',
-      'UniGo scooter pickup and drop included',
-    ],
-  },
-  {
-    title: 'Polaroid and film memories',
-    eventType: EVENT_TYPES[2],
-    price: '₹899',
-    tag: 'Rental',
-    perks: [
-      'Fujifilm Instax Mini camera for 24 hours',
-      '20 instant colour prints included',
-      'Mini album with college stickers',
-      'Return at the Gate 1 hub the next morning',
-    ],
-  },
 ];
 
 export default function PartyPlanningView() {
@@ -72,7 +31,6 @@ export default function PartyPlanningView() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState('');
   const [inquirySent, setInquirySent] = useState(false);
-  const plannerRef = useRef(null);
 
   // Fill the phone from the student's profile once it arrives
   const [filledFor, setFilledFor] = useState(user?.key);
@@ -112,67 +70,13 @@ export default function PartyPlanningView() {
       <PageHeader
         eyebrow="UniGo Party · coming soon"
         title="Hostel birthdays, planned"
-        description="Surprise a friend at midnight without getting caught, or take the group to Kalapet Beach for sunset. We bring the cake, the fairy lights and the Instax, and sort out the hostel gate."
+        description="Tell us the occasion, the date and the place. We call you back to plan the cake, the decorations and the setup, and give you a price before anything is booked."
         aside={<span className="badge badge-neutral !h-8 !px-3.5 !text-[13px]">Taking requests now</span>}
       />
 
-      {/* Packages */}
-      <section className="mt-16 sm:mt-24" aria-labelledby="party-packages-title">
-        <Reveal className="mb-8">
-          <p className="eyebrow mb-3">Packages</p>
-          <h2 id="party-packages-title" className="heading text-[30px] sm:text-[40px]">
-            Three ways to celebrate
-          </h2>
-        </Reveal>
-
-        <ul className="border-t border-ink">
-          {PACKAGES.map((pkg, i) => (
-            <Reveal
-              as="li"
-              key={pkg.title}
-              delay={i * 60}
-              className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)_auto] gap-6 lg:gap-12 py-8 sm:py-10 border-b border-hairline"
-            >
-              <div>
-                <span className="badge badge-neutral">{pkg.tag}</span>
-                <h3 className="heading text-[26px] sm:text-[32px] mt-4">{pkg.title}</h3>
-                <p className="mt-3 font-display font-black text-[30px] leading-none text-ink num [font-stretch:112%]">
-                  {pkg.price}
-                </p>
-              </div>
-
-              <ul className="space-y-2.5 lg:pt-1">
-                {pkg.perks.map((perk) => (
-                  <li key={perk} className="flex items-start gap-2.5 text-[15px] text-body leading-relaxed">
-                    <Check className="w-4 h-4 text-forest shrink-0 mt-1" strokeWidth={2.5} aria-hidden="true" />
-                    <span>{perk}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="lg:pt-1">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setEventType(pkg.eventType);
-                    setInquirySent(false);
-                    plannerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                  }}
-                  className="btn btn-outline w-full sm:w-auto"
-                >
-                  Plan this
-                  <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
-                </button>
-              </div>
-            </Reveal>
-          ))}
-        </ul>
-      </section>
-
       {/* Inquiry planner */}
       <section
-        ref={plannerRef}
-        className="mt-24 sm:mt-32 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 scroll-mt-28"
+        className="mt-16 sm:mt-24 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16"
         aria-labelledby="party-planner-title"
       >
         <Reveal className="lg:col-span-5">
@@ -181,8 +85,7 @@ export default function PartyPlanningView() {
             Tell us what you have in mind
           </h2>
           <p className="mt-4 text-[17px] text-body leading-relaxed max-w-md">
-            Send the details and a student event planner calls or WhatsApps you with cake photos and decorator
-            slots.
+            Send the details and we call or WhatsApp you to plan it.
           </p>
         </Reveal>
 

@@ -1,61 +1,122 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/useApp';
 import { Reveal, Segmented } from './ui';
 import CampusMap3D from './LazyCampusMap3D';
 import GoogleCampusMap from './GoogleCampusMap';
-import { rideFare } from '../lib/pricing';
+import { RENTAL_FLEET } from '../data/campusData';
+import HERO_PLAN from '../data/heroCampusPlan.json';
+import campusPlanUrl from '../assets/campus-plan.svg';
+import { CAMPUS_FARE, FIRST_RIDE_DISCOUNT, LAUNDRY_RATES, baseRideFare, rideFare } from '../lib/pricing';
 import { ArrowRight, Satellite, Map as MapIcon } from 'lucide-react';
 
 const HEADLINE = [['Ride.', 'Rent.'], ['Rinse.', 'Repeat.']];
 
-// Example trips cycled in the hero to show what a ₹20 hop looks like
-const SAMPLE_ROUTES = [
-  { from: 'Gate 1', to: 'SJC', fare: 20, mins: 3 },
-  { from: 'Central Library', to: 'Bharathiar Hostel', fare: 20, mins: 4 },
-  { from: 'Science Complex', to: 'Gate 2', fare: 20, mins: 3 },
-  { from: 'Mother Teresa Hostel', to: 'Rock Beach', fare: rideFare({ km: 12 }), mins: 18 },
+const PRICE_LIST = [
+  {
+    label: 'Rides',
+    price: `₹${CAMPUS_FARE}`,
+    detail: `Anywhere on campus. ₹${baseRideFare({ passengers: 2 })} for two, first ride ${FIRST_RIDE_DISCOUNT * 100}% off`,
+  },
+  {
+    label: 'Scooters',
+    from: true,
+    price: `₹${Math.min(...RENTAL_FLEET.map((v) => v.hourlyRate))}/hr`,
+    detail: 'Self-drive from the Gate 1 and Library hubs',
+  },
+  {
+    label: 'Laundry',
+    from: true,
+    price: `₹${LAUNDRY_RATES['Wash Only']}/kg`,
+    detail: 'Picked up Wednesday and Sunday, back in two days',
+  },
 ];
 
-const PASSES = [
-  { name: 'Unlimited campus rides', price: '₹499', per: 'month' },
-  { name: 'Semester laundry pass', price: '₹1,299', per: '20 kg' },
-  { name: 'Weekend beach scooter', price: '₹799', per: '2 weekends' },
+// The plan is drawn at a fixed scale per layout (px per map metre), pinned so that map point `at`
+// lands `left` px from the hero's centre line and `top` px below its top edge. That keeps the
+// route in the margin beside the copy at every width, which a stretch-to-fill crop can't do.
+const PLAN_VIEWS = [
+  { id: 'phone', className: 'sm:hidden', scale: 0.3, at: [-250, 450], left: 0, top: 520 },
+  { id: 'tablet', className: 'hidden sm:block xl:hidden', scale: 0.42, at: [-250, 520], left: 0, top: 460 },
+  // Wide screens: the route's last stop (Health Centre) sits 380px left of centre, level with the buttons
+  { id: 'wide', className: 'hidden xl:block', scale: 0.5, at: [-574, 809], left: -380, top: 600, route: true },
 ];
 
-function RouteTicker() {
-  const [index, setIndex] = useState(0);
+const planBox = ({ scale, at, left, top }, plan) => ({
+  width: plan.width * scale,
+  height: plan.height * scale,
+  left: `calc(50% + ${left - (at[0] - plan.x) * scale}px)`,
+  top: top - (at[1] - plan.y) * scale,
+});
 
-  useEffect(() => {
-    const id = setInterval(() => setIndex((i) => (i + 1) % SAMPLE_ROUTES.length), 2800);
-    return () => clearInterval(id);
-  }, []);
+// A zero-length round-capped stroke: a dot that stays the same size at any scale
+const Stop = ({ at, fill }) => (
+  <g className="hero-route-stop">
+    <path d={`M${at[0]} ${at[1]}h0`} stroke="var(--color-forest)" strokeWidth="15" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+    <path d={`M${at[0]} ${at[1]}h0`} stroke={fill} strokeWidth="8" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
+  </g>
+);
 
-  const route = SAMPLE_ROUTES[index];
+// The real campus in hairlines (from OpenStreetMap). Wide screens also draw one real trip across
+// it: Narmatha Hostel to the Health Centre by road. Built by scripts/build-hero-plan.mjs.
+function CampusPlanBackdrop() {
+  const { plan, route } = HERO_PLAN;
+  const viewBox = `${plan.x} ${plan.y} ${plan.width} ${plan.height}`;
 
   return (
-    <div
-      className="inline-flex items-center gap-3 px-4 sm:pr-5 py-2.5 sm:py-0 sm:h-11 rounded-[18px] sm:rounded-full bg-canvas shadow-[var(--shadow-ring)] text-[14px] max-w-full"
-      aria-live="polite"
-    >
-      <span className="eyebrow !text-[11px] !text-forest hidden sm:inline">For example</span>
-      <span
-        key={index}
-        className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 animate-pop-in"
-      >
-        <span className="flex items-center gap-2.5 whitespace-nowrap">
-          <span className="w-2.5 h-2.5 rounded-full border-2 border-forest shrink-0" aria-hidden="true" />
-          <span className="font-semibold text-ink">{route.from}</span>
-          <svg width="36" height="6" className="shrink-0 text-forest" aria-hidden="true">
-            <line x1="0" y1="3" x2="36" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="route-draw" />
-          </svg>
-          <span className="w-2.5 h-2.5 rounded-full bg-lime ring-2 ring-forest shrink-0" aria-hidden="true" />
-          <span className="font-semibold text-ink">{route.to}</span>
-        </span>
-        <span className="text-muted whitespace-nowrap num">
-          ₹{route.fare} · {route.mins} min
-        </span>
-      </span>
+    <div aria-hidden="true" className="absolute inset-0 pointer-events-none select-none">
+      {PLAN_VIEWS.map((view) => {
+        const box = planBox(view, plan);
+        return (
+          <div key={view.id} className={`absolute inset-0 ${view.className}`}>
+            <div className="hero-plan absolute inset-0 overflow-hidden">
+              <svg className="absolute max-w-none" style={box} viewBox={viewBox}>
+                <image href={campusPlanUrl} x={plan.x} y={plan.y} width={plan.width} height={plan.height} />
+              </svg>
+            </div>
+
+            {view.route && (
+              <svg className="absolute max-w-none overflow-visible" style={box} viewBox={viewBox}>
+                <path
+                  d={route.d}
+                  pathLength="1"
+                  className="hero-route-line"
+                  fill="none"
+                  stroke="var(--color-forest)"
+                  strokeWidth={4 / view.scale}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <Stop at={route.start} fill="var(--color-canvas)" />
+                <Stop at={route.end} fill="var(--color-lime)" />
+              </svg>
+            )}
+          </div>
+        );
+      })}
     </div>
+  );
+}
+
+// What things cost, as plain rows: three columns on wide screens, stacked on phones
+function PriceList() {
+  return (
+    <dl className="mt-12 sm:mt-14 max-w-[880px] mx-auto grid grid-cols-1 sm:grid-cols-3 text-left border-t sm:border-b border-hairline bg-canvas/80">
+      {PRICE_LIST.map((item) => (
+        <div
+          key={item.label}
+          className="grid grid-cols-[88px_1fr] items-baseline gap-x-3 sm:block py-4 sm:py-5 px-0.5 sm:px-6 border-b sm:border-b-0 sm:border-l sm:first:border-l-0 border-hairline"
+        >
+          <dt className="eyebrow">{item.label}</dt>
+          <dd className="sm:mt-2">
+            <span className="font-display font-black text-[26px] sm:text-[32px] leading-none text-ink num [font-stretch:112%]">
+              {item.from && <span className="mr-1.5 font-sans font-semibold text-[13px] text-muted [font-stretch:100%]">from</span>}
+              {item.price}
+            </span>
+            <span className="block mt-1.5 text-[14px] leading-snug text-muted [text-wrap:pretty]">{item.detail}</span>
+          </dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
@@ -69,15 +130,15 @@ export default function HomeHeroView() {
     {
       id: 'rides',
       title: 'Rides',
-      tagline: 'Flat ₹20 anywhere inside campus, ₹30 for two',
-      desc: 'Verified student captains between gates, hostels, SJC and the Science Complex, plus drops to Auroville and Rock Beach. Your first ride is 20% off.',
-      status: { tone: 'ghost', text: 'Book in seconds' },
+      tagline: `₹${CAMPUS_FARE} inside campus, ₹${baseRideFare({ passengers: 2 })} for two`,
+      desc: `Student captains between gates, hostels, departments and SJC. Off campus is charged by distance, so Rock Beach is ₹${rideFare({ km: 12 })}. Your first ride is ${FIRST_RIDE_DISCOUNT * 100}% off.`,
+      status: { tone: 'ghost', text: `First ride ${FIRST_RIDE_DISCOUNT * 100}% off` },
     },
     {
       id: 'rental',
       title: 'Rental',
-      tagline: 'Activa, Jupiter, Ather EV & Hunter 350',
-      desc: 'Self-drive by the hour or day. Sign the lease on your phone, show your DL and student ID at the Gate 1 hub, ride off.',
+      tagline: `Scooters and bikes from ₹${Math.min(...RENTAL_FLEET.map((v) => v.hourlyRate))} an hour`,
+      desc: 'Activa, Jupiter, Ather 450X, Hero Optima and Hunter 350. Sign the lease on your phone, then show your driving licence and student ID at the hub.',
       status: freeVehicles
         ? { tone: 'live', text: `${freeVehicles} available now` }
         : { tone: 'neutral', text: 'All out on trips' },
@@ -85,22 +146,22 @@ export default function HomeHeroView() {
     {
       id: 'laundry',
       title: 'Laundry',
-      tagline: 'Wednesday and Sunday pickups, back in two days',
-      desc: 'Pin your hostel on the 3D map. A runner collects from your floor, barcodes every bag and brings it back two days later.',
-      status: { tone: 'ghost', text: 'From ₹49 / kg' },
+      tagline: 'Picked up Wednesday and Sunday, back in two days',
+      desc: `₹${LAUNDRY_RATES['Wash Only']} a kg to wash, ₹${LAUNDRY_RATES['Wash + Iron']} with ironing. Pick your hostel on the map and book by the day before pickup.`,
+      status: { tone: 'ghost', text: `From ₹${LAUNDRY_RATES['Wash Only']} / kg` },
     },
     {
       id: 'food',
       title: 'Food',
-      tagline: 'Midnight canteen, zero surge fees',
-      desc: 'Exam-night Maggi, canteen dosas and Kalapet rolls delivered to your hostel entrance until 3 AM.',
+      tagline: 'Late-night food to your hostel',
+      desc: 'We are signing up campus and Kalapet kitchens now. Vote for the dishes you want first.',
       status: { tone: 'neutral', text: 'Coming soon' },
     },
     {
       id: 'party',
       title: 'Party',
-      tagline: 'Birthdays and hostel-night plans',
-      desc: 'Cakes, decor and a venue on campus, booked together and split with friends.',
+      tagline: 'Birthdays and hostel nights',
+      desc: "Cake, decorations and a place to celebrate. Tell us the date and we'll plan it with you.",
       status: { tone: 'neutral', text: 'Coming soon' },
     },
   ];
@@ -109,59 +170,58 @@ export default function HomeHeroView() {
 
   return (
     <div className="pb-24">
-      {/* Hero */}
-      <section className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-20 text-center">
-        <div className="flex justify-center animate-fade-in">
-          <span className="badge badge-ghost !h-8 !px-3.5 !text-[13px]">
-            <span className="live-dot" aria-hidden="true" />
-            Live at Pondicherry University, Kalapet
-          </span>
-        </div>
+      {/* Hero: the copy sits over a hairline plan of the real campus */}
+      <div className="relative overflow-hidden">
+        <CampusPlanBackdrop />
 
-        <h1 className="display mt-8 text-[56px] sm:text-[96px] lg:text-[128px]" aria-label="Ride. Rent. Rinse. Repeat.">
-          {HEADLINE.map((line, li) => (
-            <span key={li} className="block" aria-hidden="true">
-              {line.map((word) => {
-                const delay = 120 + wordIndex++ * 90;
-                return (
-                  <span key={word} className="word-mask mx-[0.12em]">
-                    <span className="word-rise" style={{ '--word-delay': `${delay}ms` }}>
-                      {word}
+        <section className="relative max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-20 pb-12 sm:pb-16 text-center">
+          <div className="flex justify-center animate-fade-in">
+            <span className="badge badge-ghost !h-8 !px-3.5 !text-[13px] bg-canvas">Pondicherry University · Kalapet</span>
+          </div>
+
+          <h1 className="display mt-8 text-[56px] sm:text-[96px] lg:text-[128px]" aria-label="Ride. Rent. Rinse. Repeat.">
+            {HEADLINE.map((line, li) => (
+              <span key={li} className="block" aria-hidden="true">
+                {line.map((word) => {
+                  const delay = 120 + wordIndex++ * 90;
+                  return (
+                    <span key={word} className="word-mask mx-[0.12em]">
+                      <span className="word-rise" style={{ '--word-delay': `${delay}ms` }}>
+                        {word}
+                      </span>
                     </span>
-                  </span>
-                );
-              })}
-            </span>
-          ))}
-        </h1>
+                  );
+                })}
+              </span>
+            ))}
+          </h1>
 
-        <Reveal delay={420}>
-          <p className="mt-8 text-[17px] sm:text-xl text-body max-w-2xl mx-auto leading-relaxed [text-wrap:pretty]">
-            Flat ₹20 bike rides between hostels and departments, self-drive scooters from Gate 1, and
-            laundry collected from your hostel floor every Wednesday and Sunday. Built for Pondicherry University.
-          </p>
+          <Reveal delay={420}>
+            <p className="mt-8 text-[17px] sm:text-xl text-body max-w-2xl mx-auto leading-relaxed [text-wrap:pretty]">
+              Book a ride with a student captain, rent a scooter at Gate 1, or get your laundry picked up from your
+              hostel. Sign in with your @pondiuni.ac.in email.
+            </p>
 
-          <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-7">
-            <button type="button" onClick={() => setActiveTab('rides')} className="btn btn-primary btn-lg">
-              Book a ride · ₹20
-              <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
-            </button>
-            <button type="button" onClick={() => setActiveTab('rental')} className="btn btn-link text-[16px]">
-              Rent a scooter
-            </button>
-          </div>
+            <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-7">
+              <button type="button" onClick={() => setActiveTab('rides')} className="btn btn-primary btn-lg">
+                Book a ride
+                <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
+              </button>
+              <button type="button" onClick={() => setActiveTab('rental')} className="btn btn-link text-[16px]">
+                Rent a scooter
+              </button>
+            </div>
 
-          <div className="mt-10 flex justify-center">
-            <RouteTicker />
-          </div>
-        </Reveal>
-      </section>
+            <PriceList />
+          </Reveal>
+        </section>
+      </div>
 
-      {/* Live campus stage: the 3D map is the product's hero image */}
-      <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-16 sm:mt-20">
+      {/* Campus stage: the 3D map is the product's hero image */}
+      <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-4 sm:mt-8">
         <Reveal className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-6">
           <div className="text-left">
-            <p className="eyebrow mb-2">800-acre campus, live</p>
+            <p className="eyebrow mb-2">Campus map</p>
             <h2 className="heading text-[30px] sm:text-[40px]">Find any gate, block or hostel in 3D</h2>
           </div>
           <Segmented
@@ -176,8 +236,8 @@ export default function HomeHeroView() {
         </Reveal>
 
         <Reveal delay={80}>
-          <div className="media-frame h-[540px] sm:h-[660px]">
-            {mapEngine === 'satellite' ? <GoogleCampusMap /> : <CampusMap3D />}
+          <div className="media-frame h-[min(810px,calc(100svh-96px))] sm:h-[990px]">
+            {mapEngine === 'satellite' ? <GoogleCampusMap /> : <CampusMap3D zoom={2} />}
           </div>
         </Reveal>
       </section>
@@ -186,11 +246,11 @@ export default function HomeHeroView() {
       <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-28 sm:mt-36">
         <Reveal className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
           <div>
-            <p className="eyebrow mb-4">What you can book</p>
-            <h2 className="display text-[44px] sm:text-[72px]">One app for<br />campus life</h2>
+            <p className="eyebrow mb-4">Services</p>
+            <h2 className="display text-[44px] sm:text-[72px]">What you<br />can book</h2>
           </div>
           <p className="text-[17px] text-body max-w-md leading-relaxed">
-            Every service runs from the same campus map and the same university account.
+            Sign in once with your university email to book any of them.
           </p>
         </Reveal>
 
@@ -230,34 +290,6 @@ export default function HomeHeroView() {
             </Reveal>
           ))}
         </ul>
-      </section>
-
-      {/* Campus Pass */}
-      <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-28 sm:mt-36">
-        <Reveal className="surface-feature p-8 sm:p-14 lg:p-16 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-12 lg:gap-16 items-center overflow-hidden">
-          <div>
-            <p className="eyebrow !text-lime mb-5">Campus Pass · coming soon</p>
-            <h2 className="display !text-white text-[44px] sm:text-[68px]">Save up to 40% all semester</h2>
-            <p className="mt-6 text-[17px] text-white/75 max-w-lg leading-relaxed">
-              One pass for automatic laundry pickups, priority scooter holds for weekend trips and
-              unlimited campus rides. Passes will be giftable to a friend's PU email.
-            </p>
-          </div>
-
-          <ul className="divide-y divide-white/15 border-y border-white/15">
-            {PASSES.map((pass) => (
-              <li key={pass.name} className="flex items-baseline justify-between gap-6 py-6">
-                <span className="text-[17px] font-semibold text-white">{pass.name}</span>
-                <span className="text-right shrink-0">
-                  <span className="font-display font-black text-[34px] sm:text-[40px] leading-none text-lime num [font-stretch:112%]">
-                    {pass.price}
-                  </span>
-                  <span className="block text-[13px] text-white/60 mt-1">per {pass.per}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Reveal>
       </section>
     </div>
   );

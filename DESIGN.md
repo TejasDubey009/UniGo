@@ -16,7 +16,7 @@ Tokens and component classes live in `src/index.css`. Shared React pieces live i
 | `muted` #6a6c6a / `subtle` #868685 | captions, metadata / placeholders, disabled | body copy |
 | `hairline` | 1px dividers and rings | |
 | `lime` #9fe870 | primary CTA fill, live/active badges, success, selected icon chips | large backgrounds, text on white |
-| `forest` #163300 | text on lime, selected states, links, `.surface-feature` | |
+| `forest` #163300 | text on lime, selected states, links, the hero's route line | |
 | `alert` + `alert-wash` | errors, destructive actions | |
 
 Do not use Tailwind's default palette (`slate-*`, `purple-*`, `emerald-*`, `indigo-*`, `pink-*`, etc.), gradients, glows, colored shadows, glassmorphism, or emoji as icons. Map pins and data viz inside the 3D maps may keep their own category colors.
@@ -33,14 +33,14 @@ Do not use Tailwind's default palette (`slate-*`, `purple-*`, `emerald-*`, `indi
 ## Shape
 
 - Buttons, badges, chips, segmented controls: full pill.
-- Inputs: 10px (`.field`). Option tiles: 18px (`.option`). Panels/cards: 28px (`.surface`, `.surface-line`). Feature block: 38px (`.surface-feature`).
+- Inputs: 10px (`.field`). Option tiles: 18px (`.option`). Panels/cards: 28px (`.surface`, `.surface-line`).
 - Depth comes from surface color, not shadows. `shadow-[var(--shadow-float)]` only for floating layers (dropdowns, modals, map overlays). `--shadow-ring` for 1px outlines.
 
 ## Components (classes)
 
 - Buttons: `.btn` + `.btn-primary` (lime, main action, one per view area) / `.btn-forest` (strong secondary) / `.btn-outline` / `.btn-quiet` (ash) / `.btn-danger` / `.btn-link` (underlined text action). Sizes `.btn-sm`, `.btn-lg`. Add `<ArrowRight className="btn-arrow" />` for forward actions. `.btn-icon` for round icon buttons.
 - Badges: `.badge` + `.badge-lime` (live/success) / `.badge-forest` / `.badge-neutral` / `.badge-ghost`. Prefix live states with `<span className="live-dot" />`.
-- Surfaces: `.surface` (paper, 28px), `.surface-ash`, `.surface-line` (white + 1px ring), `.surface-feature` (forest), `.media-frame` (maps, photos).
+- Surfaces: `.surface` (paper, 28px), `.surface-ash`, `.surface-line` (white + 1px ring), `.media-frame` (maps, photos).
 - Forms: `.label`, `.field` (input/select/textarea; selects get a chevron), `.field-error`. Radio-like choices: `<button className="option" aria-pressed={selected}>`.
 - `Segmented` for 2–4 way toggles (sliding thumb). `PageHeader` to open every page.
 - Cards only for things you interact with (selectable options, list items that open something, forms). Group static info with spacing, dividers (`border-hairline`, `divide-hairline`) and type instead.
@@ -61,6 +61,17 @@ Do not use Tailwind's default palette (`slate-*`, `purple-*`, `emerald-*`, `indi
 - Live states: `.live-dot`. No other infinite loops.
 - Never `transition-all`; list properties (`transition-colors`, `transition-[transform,background-color]`).
 - Reduced motion is handled globally in `index.css`.
+
+## Home hero backdrop
+
+The hero copy sits over a hairline plan of the real campus: OpenStreetMap roads, building outlines, the dashed university boundary and the shoreline. It is the only decoration on the home page; no gradients, blobs or patterns.
+
+- `scripts/build-hero-plan.mjs` bakes `src/assets/campus-plan.svg` (about 30 kB gzipped, loaded as an image, not in the JS bundle) and `src/data/heroCampusPlan.json` (where the plan sits, plus one real road route). Re-run it after `build-campus-map.mjs`.
+- The plan is drawn at a fixed scale per layout (`PLAN_VIEWS` in `HomeHeroView.jsx`), pinned to the hero's centre line, so it never stretches and its position against the copy is predictable.
+- `.hero-plan` masks keep it at 12–20% behind the copy and fade it out at every edge.
+- From 1280px wide, one real trip (Narmatha Hostel → Health Centre by road) is drawn in forest in the left margin beside the paragraph, never under text. It draws once on load. Narrower screens show the plan only.
+- Prices in the hero's price strip come from `src/lib/pricing.js` and the fleet data; never type a price into the copy.
+- The footer carries the OpenStreetMap credit; it must stay.
 
 ## Campus map (Apple Maps style)
 
@@ -83,9 +94,12 @@ Look and behaviour:
 - Badges are placed in priority order. A badge that collides shrinks to its icon, then hides; badges also stay clear of the map edge and of every control, the legend and the place card (anything marked `data-map-control`). The campus name and the sea label lead; district names give way to badges.
 - Building detail: walls carry a window per 3.6 m bay on every 3.4 m floor (one 256 px texture, tinted by each building's wall colour; some windows glow warm in the dark style). Flat roofs on buildings 6 m and taller get a 0.9 m parapet, a stair cabin and black water tanks. Gate pillars stay plain.
 - Trees: broadleaf crowns (three lumpy lobes, darker underneath) over a visible trunk across campus; casuarina spires within 260 m of East Coast Road; coconut palms along streets. All instanced, about 420k triangles in all, and only drawn when zoomed in.
+- The home and rides maps open 2× closer than the whole-campus fit (`<CampusMap3D zoom={2} />`, which also sets what **Overview** returns to); a ride route is framed at the same 2×, centred on the trip, so a long route's ends can sit just past the edges.
 - Trees fade out as you zoom out to the whole campus. The overview frames the real campus outline for the map's current shape and reframes on resize until the user moves the map.
-- Controls: drag to pan, shift/right-drag to turn and tilt, scroll or pinch to zoom about the pointer, arrow keys and +/- when the map has focus. On touch, two fingers move and zoom; one-finger vertical swipes still scroll the page. Frosted controls (`.map-glass`) are allowed only inside the map.
+- Controls: drag to pan, shift/right-drag to turn and tilt, ⌘/Ctrl + scroll (or scroll after clicking the map) or pinch to zoom about the pointer, so plain scrolling still moves the page past a tall map, arrow keys and +/- when the map has focus. On touch, two fingers move and zoom; one-finger vertical swipes still scroll the page. Frosted controls (`.map-glass`) are allowed only inside the map.
 - The app's hostel lists in `campusData.js` use the spec's ids, so map picks feed the laundry form and ride drop directly.
+- Any building on the map can be a pickup or drop: on the rides page the place card offers **Pickup here** and **Drop here**, and the search fields cover every map place (`src/data/campusPlaceIndex.json`, built by `scripts/build-place-index.mjs`).
+- Ride preview: `<CampusMap3D route={{ from, to }} />` draws the drive between two campus places along the real roads (shortest path over the drivable OSM network, `drivingRoute()` in the world module) as an Apple Maps blue line with a light halo, constant 6px on screen at every zoom, with a start ring, end dot and a distance chip, and frames the whole trip. Route blue (#0A84FF) is a map colour like the POI colours and stays inside the map.
 
 ## Voice
 

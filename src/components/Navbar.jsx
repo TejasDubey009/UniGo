@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/useApp';
 import { useSlidingThumb } from '../hooks/useMotion';
 import { Wordmark } from './ui';
-import { Menu, X, ChevronDown, ArrowUpRight, LogOut } from 'lucide-react';
+import { Menu, X, ChevronDown, ArrowUpRight, LogOut, Bike } from 'lucide-react';
 
 const initialsOf = (user) =>
   (user.name || user.email)
@@ -23,7 +23,7 @@ function Avatar({ user }) {
 }
 
 export default function Navbar() {
-  const { activeTab, setActiveTab, authReady, user, captain, openAuth, signOut, fleet } = useApp();
+  const { activeTab, setActiveTab, authReady, user, captain, isAdmin, openAuth, signOut, fleet } = useApp();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountOpen, setIsAccountOpen] = useState(false);
@@ -38,11 +38,14 @@ export default function Navbar() {
     { id: 'laundry', label: 'Laundry' },
     { id: 'food', label: 'Food', soon: true },
     { id: 'party', label: 'Party', soon: true },
-    // Only captains see their page in the menu
+    // Captains and admins see their own pages in the menu
     ...(captain ? [{ id: 'captain', label: 'Captain', live: captain.on_duty }] : []),
+    ...(isAdmin ? [{ id: 'admin', label: 'Admin' }] : []),
   ];
 
   const thumb = useSlidingThumb(navRef, activeTab);
+  // The Captain and Admin tabs make the bar wider, so the full menu needs a wider screen
+  const isLongMenu = navItems.length > 6;
 
   // Hairline under the bar only once the page has scrolled
   useEffect(() => {
@@ -91,7 +94,7 @@ export default function Navbar() {
         </button>
 
         {/* Desktop navigation with a thumb that slides to the active page */}
-        <nav ref={navRef} aria-label="Main" className="hidden lg:flex items-center relative">
+        <nav ref={navRef} aria-label="Main" className={`${isLongMenu ? 'hidden xl:flex' : 'hidden lg:flex'} items-center relative`}>
           {thumb && (
             <span
               aria-hidden="true"
@@ -158,6 +161,20 @@ export default function Navbar() {
                       <p className="text-[13px] text-muted truncate">{user.email}</p>
                     </div>
                   </div>
+                  {!captain && (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setIsAccountOpen(false);
+                        handleNavClick('captain');
+                      }}
+                      className="mt-1 w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-semibold text-ink hover:bg-paper transition-colors duration-150"
+                    >
+                      <Bike className="w-4 h-4 text-muted" aria-hidden="true" />
+                      Drive with UniGo
+                    </button>
+                  )}
                   <button
                     type="button"
                     role="menuitem"
@@ -184,7 +201,7 @@ export default function Navbar() {
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isMobileMenuOpen}
-            className="lg:hidden btn-icon"
+            className={`${isLongMenu ? 'xl:hidden' : 'lg:hidden'} btn-icon`}
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -193,7 +210,10 @@ export default function Navbar() {
 
       {/* Mobile menu */}
       {isMobileMenuOpen && (
-        <nav aria-label="Main" className="lg:hidden px-5 pb-5 pt-1 animate-pop-in origin-top">
+        <nav
+          aria-label="Main"
+          className={`${isLongMenu ? 'xl:hidden' : 'lg:hidden'} px-5 pb-5 pt-1 max-h-[calc(100dvh-72px)] overflow-y-auto overscroll-contain animate-pop-in origin-top`}
+        >
           <div className="surface p-2">
             {navItems.map((item) => {
               const isActive = activeTab === item.id;

@@ -1,5 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
+import { Line2 } from 'three/addons/lines/Line2.js';
+import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
+import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { CAMERA_PRESETS, APP_TO_SPEC_ID, SPEC_TO_APP_ID, APP_CATEGORY, PALETTE } from '../data/puAppleMap';
 import { PU_LANDMARKS, GIRLS_HOSTELS, BOYS_HOSTELS } from '../data/campusData';
 import {
@@ -11,7 +14,9 @@ import {
   applyStyle,
   createMaterialRegistry,
   fitRadius,
+  drivingRoute,
 } from './campusMapWorld';
+import { formatDistance } from '../lib/geo';
 import { useApp } from '../context/useApp';
 import {
   Scan,
@@ -34,6 +39,7 @@ import {
   Minus,
   X,
   Navigation,
+  MapPin,
   Shirt,
   Check,
   Hand,
@@ -97,6 +103,9 @@ const MAP_STYLES = [
   { value: 'night', label: 'Dark', icon: Moon, swatch: PALETTE.dark.terrain_fill },
 ];
 
+// Wheel zoom needs this key (or a click on the map first), so scrolling the page past a tall map still scrolls
+const ZOOM_KEY = typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent) ? '⌘' : 'Ctrl';
+
 const FOV = 40;
 const TILT_PHI = THREE.MathUtils.degToRad(52);
 const FLAT_PHI = 0.01;
@@ -110,14 +119,38 @@ const OVERVIEW_PITCH = THREE.MathUtils.degToRad(CAMERA_PRESETS[OVERVIEW].pitch_d
 // Trees thin out as you zoom out and are gone by the whole-campus view, as on Apple Maps
 const TREE_FADE = { start: 2000, end: 2900 };
 const EDGE_GAP = 6; // Badges stay this far inside the map edge rather than being cut off
+// The ride preview: a blue line along the roads with a light halo, as on Apple Maps. Widths are in
+// screen pixels so the line reads the same at every zoom.
+const ROUTE_Y = 1.6; // just above the road surface
+const ROUTE_STYLE = {
+  light: { halo: '#ffffff', core: '#0A84FF' },
+  dark: { halo: '#0d1b2a', core: '#409CFF' },
+};
+
+// The point halfway along a route, for its distance label
+const midpointOf = (points, metres) => {
+  let walked = 0;
+  for (let i = 1; i < points.length; i++) {
+    const [ax, az] = points[i - 1];
+    const [bx, bz] = points[i];
+    const segment = Math.hypot(bx - ax, bz - az);
+    if (walked + segment >= metres / 2) {
+      const t = (metres / 2 - walked) / (segment || 1);
+      return [ax + t * (bx - ax), az + t * (bz - az)];
+    }
+    walked += segment;
+  }
+  return points[0];
+};
+
 const CAMPUS_CENTRE = new THREE.Vector3((CAMPUS_BOUNDS.minX + CAMPUS_BOUNDS.maxX) / 2, 0, (CAMPUS_BOUNDS.minZ + CAMPUS_BOUNDS.maxZ) / 2);
 
-// Orbit for a chip; the overview frames the whole campus for the map's current shape
-const presetOrbit = (chip, aspect) => {
+// Orbit for a chip; the overview frames the whole campus for the map's current shape, `zoom` times closer
+const presetOrbit = (chip, aspect, zoom = 1) => {
   if (chip.value === OVERVIEW) {
     return {
       lookAt: CAMPUS_CENTRE.clone(),
-      radius: fitRadius(CAMPUS_POINTS, CAMPUS_CENTRE, -OVERVIEW_HEADING, OVERVIEW_PITCH, FOV, aspect, 0.9),
+      radius: fitRadius(CAMPUS_POINTS, CAMPUS_CENTRE, -OVERVIEW_HEADING, OVERVIEW_PITCH, FOV, aspect, 0.9) / zoom,
       phi: OVERVIEW_PITCH,
       theta: -OVERVIEW_HEADING,
     };
@@ -133,7 +166,9 @@ const presetOrbit = (chip, aspect) => {
   };
 };
 
-export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
+// `route` ({ from, to } place ids) draws the drive between two campus places and frames it.
+// `zoom` opens the overview that many times closer than the whole-campus fit (and tightens route framing).
+export default function CampusMap3D({ onHostelSelect, highlightedId = null, route = null, zoom = 1 }) {
   const mountRef = useRef(null);
   const containerRef = useRef(null);
   const {
@@ -141,7 +176,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
     setActiveTab,
     selected3DTarget,
     setSelected3DTarget,
-    setRideDropTarget,
+    pickForRide,
     mapDayNightMode,
     setMapDayNightMode,
   } = useApp();
@@ -153,6 +188,8 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
   const [is2D, setIs2D] = useState(false);
   const [isStyleMenuOpen, setIsStyleMenuOpen] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
+  // Shown briefly when someone scrolls over the map without the zoom key: the page scrolls instead
+  const [wheelHint, setWheelHint] = useState(false);
 
   // Follow picks made outside the map (laundry form, Google map card) by moving the pin there
   const [seenHighlight, setSeenHighlight] = useState(highlightedId);
@@ -160,6 +197,23 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
     setSeenHighlight(highlightedId);
     if (toSpecId(highlightedId)) setSelectedId(toSpecId(highlightedId));
   }
+  // The drive to preview, worked out once per pair of places
+  const routeFrom = toSpecId(route?.from);
+  const routeTo = toSpecId(route?.to);
+  const routeKey = routeFrom && routeTo && routeFrom !== routeTo ? `${routeFrom}>${routeTo}` : null;
+  const trip = useMemo(() => {
+    if (!routeKey) return null;
+    const [from, to] = routeKey.split('>');
+    const found = drivingRoute(from, to);
+    return found ? { ...found, mid: midpointOf(found.points, found.metres) } : null;
+  }, [routeKey]);
+  // A new route takes over the view, so no preset chip stays highlighted
+  const [seenRouteKey, setSeenRouteKey] = useState(null);
+  if (routeKey !== seenRouteKey) {
+    setSeenRouteKey(routeKey);
+    if (routeKey) setViewPreset(null);
+  }
+
   const [seenTarget, setSeenTarget] = useState(selected3DTarget);
   if (selected3DTarget !== seenTarget) {
     setSeenTarget(selected3DTarget);
@@ -175,6 +229,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
   const aspectRef = useRef(1.6);
   const is2DRef = useRef(false);
   const viewPresetRef = useRef(OVERVIEW);
+  const zoomRef = useRef(zoom);
   const userMovedRef = useRef(false);
   const selectedIdRef = useRef(selectedId);
   const overlayDirtyRef = useRef(true);
@@ -183,6 +238,10 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
   const areaLabelEls = useRef({});
   const areaLabelWidths = useRef({});
   const pinRef = useRef(null);
+  const tripRef = useRef(null);
+  const routeStartRef = useRef(null);
+  const routeEndRef = useRef(null);
+  const routeLabelRef = useRef(null);
   const compassRef = useRef(null);
   const styleMenuRef = useRef(null);
   const onHostelSelectRef = useRef(onHostelSelect);
@@ -199,6 +258,9 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
   useEffect(() => {
     viewPresetRef.current = viewPreset;
   }, [viewPreset]);
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
   // The card, the hint and the chip row change the no-go areas for badges
   useEffect(() => {
     overlayDirtyRef.current = true;
@@ -247,7 +309,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
   const showPreset = (chip) => {
     setViewPreset(chip.value);
     userMovedRef.current = false;
-    const { lookAt, radius, phi, theta } = presetOrbit(chip, aspectRef.current);
+    const { lookAt, radius, phi, theta } = presetOrbit(chip, aspectRef.current, zoomRef.current);
     setOrbit(lookAt, radius, theta, is2DRef.current ? FLAT_PHI : phi);
   };
 
@@ -309,7 +371,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
     applyStyle(sceneStateRef.current, 'day');
 
     // Open on the whole campus, framed for this container
-    const start = presetOrbit(PRESET_CHIPS[0], aspectRef.current);
+    const start = presetOrbit(PRESET_CHIPS[0], aspectRef.current, zoomRef.current);
     setOrbit(start.lookAt, start.radius, start.theta, start.phi);
     camera.position.copy(targetCamPos.current);
     currentLookAt.current.copy(targetLookAt.current);
@@ -381,6 +443,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
 
     const onPointerDown = (e) => {
       setHasInteracted(true);
+      engaged = true;
       pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       try {
         domEl.setPointerCapture(e.pointerId);
@@ -447,7 +510,21 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
       hoverAt = null;
       if (!gesture) setHover(null);
     };
+    // The wheel zooms only with the zoom key held (also how trackpad pinches arrive) or after a click on
+    // the map; otherwise it scrolls the page, so a map taller than the screen can't trap the reader
+    let engaged = false;
+    let hintTimer = null;
+    const disengage = (e) => {
+      if (!container.contains(e.target)) engaged = false;
+    };
+    document.addEventListener('pointerdown', disengage);
     const onWheel = (e) => {
+      if (!(e.ctrlKey || e.metaKey || engaged)) {
+        setWheelHint(true);
+        clearTimeout(hintTimer);
+        hintTimer = setTimeout(() => setWheelHint(false), 1400);
+        return;
+      }
       e.preventDefault();
       setHasInteracted(true);
       markMoved();
@@ -466,6 +543,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
 
     // ---- Overlays: badges, area text, the selected pin and the compass follow the camera ----
     const size = { w: container.clientWidth, h: container.clientHeight };
+    sceneStateRef.current.size = size;
     const projected = new THREE.Vector3();
     const worldPoint = new THREE.Vector3();
     const project = (x, y, z) => {
@@ -517,6 +595,21 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
         el.style.transform = `translate3d(${at.sx}px, ${at.sy}px, 0)`;
       };
       AREA_LABELS.filter((label) => label.lead).forEach(placeAreaLabel);
+
+      const trip = tripRef.current;
+      const placeRouteMark = (el, [x, z], w, h) => {
+        if (!el) return;
+        const at = project(x, ROUTE_Y, z);
+        if (!at) return hide(el);
+        el.style.visibility = 'visible';
+        el.style.transform = `translate3d(${at.sx}px, ${at.sy}px, 0) translate(-50%, -50%)`;
+        placed.push({ l: at.sx - w / 2, r: at.sx + w / 2, t: at.sy - h / 2, b: at.sy + h / 2 });
+      };
+      if (trip) {
+        placeRouteMark(routeStartRef.current, trip.points[0], 20, 20);
+        placeRouteMark(routeEndRef.current, trip.points[trip.points.length - 1], 22, 22);
+        placeRouteMark(routeLabelRef.current, trip.mid, (routeLabelRef.current?.offsetWidth || 56) + 8, 30);
+      }
 
       if (pinRef.current) {
         const node = NODE_BY_ID[selected];
@@ -600,6 +693,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
     let isVisible = true;
     const visibilityObserver = new IntersectionObserver(([entry]) => {
       isVisible = entry.isIntersecting;
+      if (!isVisible) engaged = false;
     });
     visibilityObserver.observe(container);
 
@@ -674,9 +768,10 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
+      sceneStateRef.current?.routeMaterials?.forEach((material) => material.resolution.set(w, h));
       overlayDirtyRef.current = true;
       if (viewPresetRef.current === OVERVIEW && !userMovedRef.current) {
-        const view = presetOrbit(PRESET_CHIPS[0], aspectRef.current);
+        const view = presetOrbit(PRESET_CHIPS[0], aspectRef.current, zoomRef.current);
         setOrbit(view.lookAt, view.radius, view.theta, is2DRef.current ? FLAT_PHI : view.phi);
       }
     });
@@ -692,6 +787,8 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
       domEl.removeEventListener('pointercancel', onPointerUp);
       domEl.removeEventListener('pointerleave', onPointerLeave);
       domEl.removeEventListener('wheel', onWheel);
+      document.removeEventListener('pointerdown', disengage);
+      clearTimeout(hintTimer);
       domEl.removeEventListener('contextmenu', onContextMenu);
 
       // Free GPU memory; browsers cap the number of live WebGL contexts
@@ -735,13 +832,61 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
     };
   }, []);
 
+  // Draw the route: a halo line under a blue core, sharing one geometry
+  useEffect(() => {
+    const state = sceneStateRef.current;
+    tripRef.current = trip;
+    overlayDirtyRef.current = true;
+    if (!state || !trip) return;
+    const colors = ROUTE_STYLE[mapDayNightMode === 'night' ? 'dark' : 'light'];
+    const geometry = new LineGeometry().setPositions(trip.points.flatMap(([x, z]) => [x, ROUTE_Y, z]));
+    const line = (color, width, order) => {
+      const material = new LineMaterial({ color, linewidth: width, worldUnits: false, depthWrite: false });
+      material.resolution.set(state.size.w, state.size.h);
+      const mesh = new Line2(geometry, material);
+      mesh.renderOrder = order;
+      return mesh;
+    };
+    const halo = line(colors.halo, 11, 20);
+    const core = line(colors.core, 6, 21);
+    const group = new THREE.Group();
+    group.add(halo, core);
+    state.scene.add(group);
+    state.routeMaterials = [halo.material, core.material];
+    return () => {
+      state.scene.remove(group);
+      geometry.dispose();
+      halo.material.dispose();
+      core.material.dispose();
+      state.routeMaterials = [];
+    };
+  }, [trip, mapDayNightMode]);
+
+  // Frame the whole drive when the route changes, keeping the current heading
+  useEffect(() => {
+    if (!trip) return;
+    const xs = trip.points.map(([x]) => x);
+    const zs = trip.points.map(([, z]) => z);
+    const lookAt = new THREE.Vector3((Math.min(...xs) + Math.max(...xs)) / 2, 0, (Math.min(...zs) + Math.max(...zs)) / 2);
+    const { theta } = getOrbit();
+    const phi = is2DRef.current ? FLAT_PHI : TILT_PHI;
+    userMovedRef.current = false;
+    // `zoom` times closer than a roomy fit of the whole route (at 2× a long route's ends can sit past the edges)
+    const roomy = fitRadius(trip.points, lookAt, theta, phi, FOV, aspectRef.current, 0.62);
+    setOrbit(lookAt, roomy / zoomRef.current, theta, phi);
+  }, [trip]);
+
   // Recolour for the chosen map style without rebuilding the scene or moving the camera
   useEffect(() => {
     if (sceneStateRef.current) applyStyle(sceneStateRef.current, mapDayNightMode);
   }, [mapDayNightMode]);
 
-  // Fly to places picked elsewhere (laundry hostel dropdown, Google map card)
+  // Fly to places picked elsewhere while this map is open (laundry hostel dropdown, Google map card).
+  // A pick made before the map opened is ignored, so it can't steal the opening view (e.g. a ride route).
+  const flownTargetRef = useRef(selected3DTarget);
   useEffect(() => {
+    if (selected3DTarget === flownTargetRef.current) return;
+    flownTargetRef.current = selected3DTarget;
     flyToPlace(NODE_BY_ID[toSpecId(selected3DTarget?.id)]);
   }, [selected3DTarget]);
 
@@ -794,7 +939,15 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
     showPreset(chip);
   };
 
+  // The zoom, 2D and north buttons move the view as much as a drag does
+  const userMoved = () => {
+    userMovedRef.current = true;
+    setViewPreset(null);
+    setHasInteracted(true);
+  };
+
   const toggle2D = () => {
+    userMoved();
     const next = !is2D;
     is2DRef.current = next;
     setIs2D(next);
@@ -804,6 +957,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
   };
 
   const resetNorth = () => {
+    userMoved();
     const { radius, phi } = getOrbit();
     setOrbit(targetLookAt.current.clone(), radius, 0, phi);
   };
@@ -890,6 +1044,16 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
             </span>
             <span className="map-poi-label">{selectedNode.label}</span>
           </div>
+        )}
+
+        {trip && (
+          <>
+            <span ref={routeStartRef} className="map-route-stop is-start" style={{ visibility: 'hidden' }} aria-hidden="true" />
+            <span ref={routeEndRef} className="map-route-stop is-end" style={{ visibility: 'hidden' }} aria-hidden="true" />
+            <span ref={routeLabelRef} className="map-route-chip num" style={{ visibility: 'hidden' }}>
+              {formatDistance(trip.metres)}
+            </span>
+          </>
         )}
       </div>
 
@@ -992,10 +1156,10 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
           </svg>
         </button>
         <div className="map-glass rounded-[12px] flex flex-col overflow-hidden divide-y divide-[var(--map-line)]">
-          <button type="button" onClick={() => zoomAbout(0.7)} aria-label="Zoom in" className="map-btn">
+          <button type="button" onClick={() => { userMoved(); zoomAbout(0.7); }} aria-label="Zoom in" className="map-btn">
             <Plus className="w-[18px] h-[18px]" aria-hidden="true" />
           </button>
-          <button type="button" onClick={() => zoomAbout(1.4)} aria-label="Zoom out" className="map-btn">
+          <button type="button" onClick={() => { userMoved(); zoomAbout(1.4); }} aria-label="Zoom out" className="map-btn">
             <Minus className="w-[18px] h-[18px]" aria-hidden="true" />
           </button>
         </div>
@@ -1020,9 +1184,23 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
           >
             <Hand className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
             <span className="@xl:hidden">Use two fingers to move the map</span>
-            <span className="hidden @xl:inline">Drag to move · shift-drag to turn · scroll to zoom</span>
+            <span className="hidden @xl:inline">Drag to move · shift-drag to turn · {ZOOM_KEY} + scroll to zoom</span>
           </p>
         </div>
+      )}
+
+      {wheelHint && (
+        <p
+          role="status"
+          className="map-glass absolute z-30 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 max-w-[calc(100%-32px)] px-4 py-2.5 rounded-full text-center text-[13px] font-semibold pointer-events-none animate-fade-in"
+        >
+          Hold {ZOOM_KEY} and scroll to zoom, or click the map first
+        </p>
+      )}
+      {routeKey && !trip && (
+        <p className="map-glass absolute z-20 left-1/2 bottom-16 -translate-x-1/2 max-w-[calc(100%-32px)] px-3.5 py-2 rounded-full text-center text-[12px] font-medium pointer-events-none">
+          No road route on the map between these places
+        </p>
       )}
 
       {/* Data credit, required by the OpenStreetMap licence */}
@@ -1093,19 +1271,34 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null }) {
             </p>
           )}
 
-          <div className="mt-3.5 flex gap-2">
+          <div className="mt-3.5 flex flex-wrap gap-2">
+            {/* On the rides page a place can be the pickup or the drop; elsewhere it opens a ride there */}
+            {activeTab === 'rides' && (
+              <button
+                type="button"
+                onClick={() => {
+                  pickForRide('pickup', appPlaceName);
+                  setIsCardOpen(false);
+                }}
+                className="btn btn-sm btn-quiet flex-1"
+              >
+                <MapPin className="w-3.5 h-3.5" aria-hidden="true" />
+                Pickup here
+              </button>
+            )}
             <button
               type="button"
               onClick={() => {
-                setRideDropTarget(appPlaceName);
-                setActiveTab('rides');
+                pickForRide('drop', appPlaceName);
+                if (activeTab === 'rides') setIsCardOpen(false);
+                else setActiveTab('rides');
               }}
               className="btn btn-sm btn-primary flex-1"
             >
               <Navigation className="w-3.5 h-3.5" aria-hidden="true" />
-              {activeTab === 'rides' ? 'Set as drop' : 'Ride here'}
+              {activeTab === 'rides' ? 'Drop here' : 'Ride here'}
             </button>
-            {!isLaundryPick && (
+            {!isLaundryPick && activeTab !== 'rides' && (
               <button
                 type="button"
                 onClick={() => {

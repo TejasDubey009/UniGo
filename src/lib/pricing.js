@@ -37,8 +37,15 @@ export const fromDateKey = (key) => {
 
 export const addDays = (date, days) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 
-// The next pickup days after today (orders close the day before pickup)
-export const nextPickupDays = (count = 4, from = new Date()) => {
+// Today's date in India, where UniGo runs, whatever timezone the phone is set to. The database
+// checks "book by the day before" against this date too.
+export const todayInIndia = () =>
+  fromDateKey(
+    new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date())
+  );
+
+// The next pickup days after today in India (orders close the day before pickup)
+export const nextPickupDays = (count = 4, from = todayInIndia()) => {
   const days = [];
   for (let offset = 1; days.length < count && offset < 60; offset++) {
     const day = addDays(from, offset);

@@ -1,4 +1,5 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
+import { useDialog } from '../hooks/useDialog';
 import { useApp } from '../context/useApp';
 import {
   supabase,
@@ -356,15 +357,7 @@ function AuthPanel({ prompt, onClose, ids }) {
 export default function AuthModal() {
   const { authPrompt, closeAuth } = useApp();
   const titleId = useId();
-
-  useEffect(() => {
-    if (!authPrompt) return;
-    const onKeyDown = (e) => {
-      if (e.key === 'Escape') closeAuth();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [authPrompt, closeAuth]);
+  const dialogRef = useDialog(Boolean(authPrompt), closeAuth);
 
   if (!authPrompt) return null;
 
@@ -376,6 +369,8 @@ export default function AuthModal() {
       }}
     >
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${titleId}-title`}

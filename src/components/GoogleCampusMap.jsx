@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useId } from 'react';
-import { PU_LANDMARKS, GIRLS_HOSTELS, BOYS_HOSTELS, ALL_PU_LOCATIONS } from '../data/campusData';
+import React, { useState, useEffect, useRef } from 'react';
+import { ALL_PU_LOCATIONS } from '../data/campusData';
 import { useApp } from '../context/useApp';
 import { Segmented } from './ui';
-import { Satellite, Map as MapIcon, Plus, Minus, ExternalLink, Navigation, Shirt, List, X } from 'lucide-react';
+import { Satellite, Map as MapIcon, Plus, Minus, ExternalLink, Navigation, Shirt } from 'lucide-react';
 
-// Below this width the places panel and the location card would overlap, so use a compact layout
+// Below this width the location card spans the map, with the zoom controls above it
 const COMPACT_WIDTH_PX = 800;
 const MIN_ZOOM = 14;
 const MAX_ZOOM = 21;
@@ -12,15 +12,6 @@ const MAX_ZOOM = 21;
 const categoryLabel = (category) => category?.replace('-', ' ');
 
 const formatCoords = (loc) => `${loc.lat.toFixed(4)}° N, ${loc.lng.toFixed(4)}° E`;
-
-const FILTERS = {
-  all: ALL_PU_LOCATIONS,
-  hostels: [...GIRLS_HOSTELS, ...BOYS_HOSTELS],
-  academic: PU_LANDMARKS.filter((l) => l.category === 'academic' || l.category === 'amenity'),
-  gates: PU_LANDMARKS.filter((l) => l.category === 'gate'),
-};
-
-const FILTER_LABELS = { all: 'All', hostels: 'Hostels', academic: 'Academic', gates: 'Gates' };
 
 const MODE_OPTIONS = [
   { value: 'satellite', label: 'Satellite', icon: Satellite },
@@ -35,92 +26,20 @@ const FLOAT_PANEL = 'bg-canvas rounded-[18px] shadow-[var(--shadow-float)]';
 const CONTROL_BUTTON =
   'w-9 h-9 rounded-full flex items-center justify-center text-body hover:bg-paper hover:text-ink transition-[background-color,color,transform] duration-150 active:scale-95';
 
-// Filterable list of campus places: a side panel on wide maps, a bottom sheet on narrow ones
-function PlacesPanel({ filter, onFilterChange, selectedId, onPick, onClose, id, className = '' }) {
-  const locations = FILTERS[filter];
-
-  return (
-    <section id={id} aria-label="Campus places" className={`flex flex-col min-h-0 overflow-hidden ${FLOAT_PANEL} ${className}`}>
-      <header className="px-4 pt-4 pb-3 flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="eyebrow !text-[11px]">Pondicherry University</p>
-          <h3 className="mt-0.5 text-[15px] font-semibold text-ink">Campus places</h3>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="badge badge-neutral num">{locations.length} places</span>
-          {onClose && (
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="Close campus places"
-              className="btn-icon !w-8 !h-8 !shadow-none bg-ash hover:bg-hairline"
-            >
-              <X className="w-4 h-4" aria-hidden="true" />
-            </button>
-          )}
-        </div>
-      </header>
-
-      <div role="group" aria-label="Filter places" className="px-4 pb-3 flex gap-1.5 overflow-x-auto">
-        {Object.keys(FILTERS).map((key) => (
-          <button
-            key={key}
-            type="button"
-            aria-pressed={filter === key}
-            onClick={() => onFilterChange(key)}
-            className={`btn ${filter === key ? 'btn-forest' : 'btn-quiet'} !px-3 !py-1 !text-[12px]`}
-          >
-            {FILTER_LABELS[key]}
-          </button>
-        ))}
-      </div>
-
-      <ul key={filter} className="flex-1 min-h-0 overflow-y-auto overscroll-contain border-t border-hairline p-2 space-y-0.5 animate-fade-in">
-        {locations.map((loc) => {
-          const isSelected = loc.id === selectedId;
-          return (
-            <li key={loc.id}>
-              <button
-                type="button"
-                aria-pressed={isSelected}
-                onClick={() => onPick(loc)}
-                className={`w-full text-left px-3 py-2.5 rounded-xl transition-[background-color,box-shadow] duration-150 ${
-                  isSelected ? 'bg-paper shadow-[inset_0_0_0_2px_var(--color-forest)]' : 'hover:bg-paper'
-                }`}
-              >
-                <span className="flex items-center gap-2">
-                  <span aria-hidden="true" className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: loc.color }} />
-                  <span className="flex-1 min-w-0 truncate text-[14px] font-semibold text-ink">{loc.name}</span>
-                </span>
-                <span className="block mt-0.5 pl-4 text-[13px] text-muted line-clamp-1">{loc.desc}</span>
-                <span className="block mt-1 pl-4 font-mono text-[11px] text-subtle">{formatCoords(loc)}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
-// Google's own satellite and road map of the campus, centred on the place picked from the list
-export default function GoogleCampusMap({ onLocationSelect, highlightedId = null }) {
-  const { setActiveTab, setSelected3DTarget, setRideDropTarget } = useApp();
+// Google's own satellite and road map of the campus, centred on the highlighted place (the library by default)
+export default function GoogleCampusMap({ highlightedId = null }) {
+  const { setActiveTab, setSelected3DTarget, pickForRide } = useApp();
 
   const [mode, setMode] = useState('satellite');
   const [zoom, setZoom] = useState(17);
   const [selectedLocation, setSelectedLocation] = useState(
     () => ALL_PU_LOCATIONS.find((loc) => loc.id === highlightedId) || ALL_PU_LOCATIONS.find((loc) => loc.id === 'library')
   );
-  const [filter, setFilter] = useState('all');
   const [isCompact, setIsCompact] = useState(() => window.innerWidth < COMPACT_WIDTH_PX);
-  // On compact maps the places list lives in a bottom sheet that the user opens on demand
-  const [isPlacesOpen, setIsPlacesOpen] = useState(false);
 
   const rootRef = useRef(null);
-  const placesSheetId = useId();
 
-  // Follow the highlightedId prop (e.g. hostel picked in the Laundry form) while still allowing local picks
+  // Follow the highlightedId prop (e.g. the hostel picked in the Laundry form)
   const [syncedHighlightId, setSyncedHighlightId] = useState(highlightedId);
   if (highlightedId !== syncedHighlightId) {
     setSyncedHighlightId(highlightedId);
@@ -138,16 +57,9 @@ export default function GoogleCampusMap({ onLocationSelect, highlightedId = null
     return () => observer.disconnect();
   }, []);
 
-  const handleLocationClick = (loc) => {
-    setSelectedLocation(loc);
-    onLocationSelect?.(loc);
-  };
-
   const iframeSrc = `https://maps.google.com/maps?q=${selectedLocation.lat},${selectedLocation.lng}&hl=en&z=${zoom}&t=${
     mode === 'satellite' ? 'k' : 'm'
   }&output=embed`;
-
-  const isSheetOpen = isCompact && isPlacesOpen;
 
   const zoomControls = (
     <div
@@ -213,7 +125,7 @@ export default function GoogleCampusMap({ onLocationSelect, highlightedId = null
         <button
           type="button"
           onClick={() => {
-            setRideDropTarget(selectedLocation.name);
+            pickForRide('drop', selectedLocation.name);
             setActiveTab('rides');
           }}
           className={`btn btn-sm btn-primary ${isCompact ? 'flex-1 !px-3' : ''}`}
@@ -246,74 +158,24 @@ export default function GoogleCampusMap({ onLocationSelect, highlightedId = null
         allowFullScreen
       />
 
-      {/* Top bar: map type, plus the places toggle on compact maps */}
-      <div className="absolute top-3 left-3 right-3 z-20 flex items-start justify-between gap-2 pointer-events-none">
-        <Segmented
-          size="sm"
-          ariaLabel="Map type"
-          value={mode}
-          onChange={setMode}
-          options={MODE_OPTIONS}
-          className={`pointer-events-auto ${FLOAT_SEGMENTED}`}
-        />
+      <Segmented
+        size="sm"
+        ariaLabel="Map type"
+        value={mode}
+        onChange={setMode}
+        options={MODE_OPTIONS}
+        className={`absolute top-3 left-3 z-20 ${FLOAT_SEGMENTED}`}
+      />
 
-        {isCompact && (
-          <button
-            type="button"
-            onClick={() => setIsPlacesOpen((open) => !open)}
-            aria-expanded={isPlacesOpen}
-            aria-controls={placesSheetId}
-            aria-label={isPlacesOpen ? 'Hide campus places' : 'Show campus places'}
-            className={`btn-icon pointer-events-auto shrink-0 shadow-[var(--shadow-float)] ${isPlacesOpen ? '!bg-forest !text-white' : ''}`}
-          >
-            {isPlacesOpen ? <X className="w-[18px] h-[18px]" aria-hidden="true" /> : <List className="w-[18px] h-[18px]" aria-hidden="true" />}
-          </button>
-        )}
+      {/* Wide: place card bottom-left, zoom bottom-right. Compact: zoom stacked above a full-width card */}
+      <div
+        className={`absolute left-3 right-3 bottom-3 z-20 flex gap-2 pointer-events-none ${
+          isCompact ? 'flex-col-reverse items-end' : 'items-end justify-between'
+        }`}
+      >
+        {locationCard}
+        {zoomControls}
       </div>
-
-      {isCompact ? (
-        <>
-          {/* Compact: zoom above a full-width place card, or the places sheet */}
-          {!isSheetOpen && (
-            <div className="absolute left-3 right-3 bottom-3 z-20 flex flex-col items-end gap-2 pointer-events-none">
-              {zoomControls}
-              {locationCard}
-            </div>
-          )}
-
-          {isSheetOpen && (
-            <div className="absolute left-3 right-3 bottom-3 z-30 flex flex-col max-h-[min(72%,440px)] animate-sheet-up">
-              <PlacesPanel
-                id={placesSheetId}
-                filter={filter}
-                onFilterChange={setFilter}
-                selectedId={selectedLocation.id}
-                onPick={(loc) => {
-                  handleLocationClick(loc);
-                  setIsPlacesOpen(false);
-                }}
-                onClose={() => setIsPlacesOpen(false)}
-              />
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          {/* Wide: places panel on the right with zoom under it */}
-          <div className="absolute top-16 right-3 bottom-3 z-20 flex flex-col items-end gap-3 pointer-events-none">
-            <PlacesPanel
-              filter={filter}
-              onFilterChange={setFilter}
-              selectedId={selectedLocation.id}
-              onPick={handleLocationClick}
-              className="pointer-events-auto w-80 max-h-[480px] animate-pop-in"
-            />
-            <div className="mt-auto">{zoomControls}</div>
-          </div>
-
-          <div className="absolute left-3 bottom-3 z-20 pointer-events-none">{locationCard}</div>
-        </>
-      )}
     </div>
   );
 }

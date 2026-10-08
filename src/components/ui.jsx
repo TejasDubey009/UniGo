@@ -75,7 +75,8 @@ export function PageHeader({ eyebrow, title, description, aside, className = '' 
     <header className={`flex flex-col lg:flex-row lg:items-end justify-between gap-6 ${className}`}>
       <div className="max-w-3xl">
         {eyebrow && <p className="eyebrow mb-4">{eyebrow}</p>}
-        <h1 className="display text-[44px] sm:text-[64px] lg:text-[76px]">{title}</h1>
+        {/* Scales down on the narrowest phones so long words fit */}
+        <h1 className="display text-[min(44px,11.5vw)] sm:text-[64px] lg:text-[76px]">{title}</h1>
         {description && (
           <p className="mt-5 text-[17px] sm:text-lg text-body max-w-2xl leading-relaxed [text-wrap:pretty]">
             {description}

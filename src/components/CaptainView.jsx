@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/useApp';
 import { supabase, friendlyDbError } from '../lib/supabase';
-import { shortRef } from '../lib/format';
+import { shortRef, formatWhen } from '../lib/format';
 import { toDateKey } from '../lib/pricing';
 import { placeByName, directionsUrl } from '../lib/geo';
 import { celebrate } from '../lib/celebrate';
@@ -23,7 +23,16 @@ const KEEP_ALIVE_MS = 30000;
 const MIN_MOVE_M = 20;
 // New requests arrive by broadcast; this slow refresh only covers a dropped connection
 const REQUEST_REFRESH_MS = 60000;
-const REQUEST_MAX_AGE_MIN = 30;
+// A new broadcast request is open for 30 minutes; the feed's seconds_left comes from the server's clock
+const REQUEST_OPEN_SECONDS = 1800;
+// While a ride is under way, it is re-read this often in case a cancel arrived while the phone slept
+const ACTIVE_RIDE_REFRESH_MS = 60000;
+
+// Turns a request (from the feed or a broadcast) into one that expires on this phone's clock
+const withExpiry = (request) => ({
+  ...request,
+  expiresAt: Date.now() + (request.seconds_left ?? REQUEST_OPEN_SECONDS) * 1000,
+});
 
 const firstName = (name = '') => name.split(' ')[0] || 'your rider';
 
@@ -42,6 +51,7 @@ function DutySwitch({ onDuty, busy, onToggle }) {
     <button
       type="button"
       role="switch"
+      aria-label="On duty"
       aria-checked={onDuty}
       onClick={onToggle}
       disabled={busy}
@@ -78,8 +88,11 @@ function Stop({ label, name, isTarget, mark }) {
   );
 }
 
-function CaptainConsole({ user, captain, setCaptainOnDuty }) {
+function CaptainConsole({ user, captain, setCaptainOnDuty, ownRides, resyncTick }) {
   const [rides, setRides] = useState([]);
+  const [rideTick, setRideTick] = useState(0);
+  // Rides this captain handed back: the database won't let them take those again
+  const [releasedIds, setReleasedIds] = useState(() => new Set());
   const [requests, setRequests] = useState([]);
   const [busy, setBusy] = useState('');
   const [error, setError] = useState('');
@@ -91,7 +104,14 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
   const activeRide = rides.find((r) => ACTIVE.has(r.status)) || null;
   const listening = captain.on_duty && !activeRide;
 
-  // The captain's own rides, kept live (the rider may cancel at any moment)
+  useEffect(() => {
+    if (!activeRide) return;
+    const timer = setInterval(() => setRideTick((tick) => tick + 1), ACTIVE_RIDE_REFRESH_MS);
+    return () => clearInterval(timer);
+  }, [activeRide]);
+
+  // The captain's own rides, kept live (the rider may cancel at any moment), and read again when the
+  // app comes back into view and every minute during a ride, in case an update was missed
   useEffect(() => {
     let cancelled = false;
     supabase
@@ -108,14 +128,16 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'rides', filter: `captain_id=eq.${user.id}` }, ({ new: row }) => {
         if (!row?.id) return;
         setRides((prev) => upsert(prev, row));
-        if (row.status === 'cancelled') setNotice(`${firstName(row.rider_name)} cancelled the ride.`);
+        if (row.status === 'cancelled') {
+          setNotice(row.cancel_reason === 'rider' ? `${firstName(row.rider_name)} cancelled the ride.` : 'UniGo cancelled this ride.');
+        }
       })
       .subscribe();
     return () => {
       cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [user.id]);
+  }, [user.id, resyncTick, rideTick]);
 
   // Open requests while on duty and free: one fetch, then broadcasts as students book
   useEffect(() => {
@@ -123,14 +145,14 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
     let cancelled = false;
     const load = () =>
       supabase.rpc('open_ride_requests').then(({ data }) => {
-        if (!cancelled && data) setRequests(data);
+        if (!cancelled && data) setRequests(data.map(withExpiry));
       });
     load();
     const timer = setInterval(load, REQUEST_REFRESH_MS);
     const channel = supabase
       .channel('captains', { config: { private: true } })
       .on('broadcast', { event: 'request' }, ({ payload }) =>
-        setRequests((prev) => (prev.some((r) => r.id === payload.id) ? prev : [...prev, payload]))
+        setRequests((prev) => (prev.some((r) => r.id === payload.id) ? prev : [...prev, withExpiry(payload)]))
       )
       .on('broadcast', { event: 'taken' }, ({ payload }) => setRequests((prev) => prev.filter((r) => r.id !== payload.id)))
       .subscribe();
@@ -139,7 +161,7 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
       clearInterval(timer);
       supabase.removeChannel(channel);
     };
-  }, [listening]);
+  }, [listening, resyncTick]);
 
   // Share live location with the rider for the length of the ride
   const activeId = activeRide?.id;
@@ -161,10 +183,13 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
         if (last && elapsed < KEEP_ALIVE_MS && metresBetween(last, spot) < MIN_MOVE_M) return;
         last = { ...spot, at };
         const payload = { ...spot, accuracy: Math.round(coords.accuracy), at };
-        // Over the open websocket once joined; a single HTTP call until then
-        if (channel.state === 'joined') channel.send({ type: 'broadcast', event: 'location', payload });
-        else channel.httpSend('location', payload).catch(() => {});
-        setSharing('on');
+        // Over the open websocket once joined; a single HTTP call until then. "Sharing" shows only
+        // once a position has actually been delivered.
+        const sent =
+          channel.state === 'joined'
+            ? channel.send({ type: 'broadcast', event: 'location', payload }).then((status) => status === 'ok')
+            : channel.httpSend('location', payload).then(() => true);
+        sent.then((ok) => setSharing(ok ? 'on' : 'starting')).catch(() => setSharing('starting'));
       },
       (err) => setSharing(err.code === err.PERMISSION_DENIED ? 'denied' : 'unavailable'),
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 }
@@ -203,6 +228,7 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
 
   const accept = async (request) => {
     setNotice('');
+    setError('');
     const ride = await call(`accept:${request.id}`, supabase.rpc('accept_ride', { ride: request.id }));
     setRequests((prev) => prev.filter((r) => r.id !== request.id));
     if (ride) {
@@ -221,8 +247,15 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
     const result = await call('start', supabase.rpc('start_ride', { ride: activeRide.id, code }));
     if (!result) return;
     if (!result.ok) {
-      setError(`${result.message} ${result.attempts_left === 1 ? '1 try' : `${result.attempts_left} tries`} left.`);
       setCode('');
+      if (result.cancelled) {
+        // Five wrong codes: the database cancelled the ride
+        setError('');
+        setNotice(result.message);
+        setRides((prev) => prev.map((r) => (r.id === activeRide.id ? { ...r, status: 'cancelled', cancel_reason: 'code' } : r)));
+        return;
+      }
+      setError(`${result.message} ${result.attempts_left === 1 ? '1 try' : `${result.attempts_left} tries`} left.`);
       return;
     }
     setCode('');
@@ -239,13 +272,17 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
 
   const release = async () => {
     const ride = await call('release', supabase.rpc('release_ride', { ride: activeRide.id }));
-    if (ride) setRides((prev) => prev.filter((r) => r.id !== ride.id));
+    if (!ride) return;
+    setRides((prev) => prev.filter((r) => r.id !== ride.id));
+    setReleasedIds((prev) => new Set(prev).add(ride.id));
   };
 
   const today = toDateKey(new Date(now));
   const doneToday = rides.filter((r) => r.status === 'completed' && r.completed_at && toDateKey(new Date(r.completed_at)) === today);
   const earnedToday = doneToday.reduce((sum, r) => sum + r.fare, 0);
-  const freshRequests = requests.filter((r) => now - new Date(r.created_at).getTime() < REQUEST_MAX_AGE_MIN * 60000);
+  // Still open, not the captain's own booking, and not one they handed back
+  const ownRideIds = new Set(ownRides.map((r) => r.id));
+  const freshRequests = requests.filter((r) => now < r.expiresAt && !ownRideIds.has(r.id) && !releasedIds.has(r.id));
 
   // Where the captain is heading next, for the map and the Navigate button
   const target = activeRide ? (activeRide.status === 'in_transit' ? activeRide.drop_off : activeRide.pickup) : null;
@@ -263,7 +300,7 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
     <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
       <PageHeader
         eyebrow="UniGo captain"
-        title={`Hi, ${firstName(captain.display_name)}`}
+        title={<span className="block truncate">{`Hi, ${firstName(captain.display_name)}`}</span>}
         description="Accept a ride, pick your rider up with the code on their phone, and drop them off. Riders see you coming while you share your location."
         aside={<DutySwitch onDuty={captain.on_duty} busy={busy === 'duty'} onToggle={toggleDuty} />}
       />
@@ -426,7 +463,7 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
               {freshRequests.length ? (
                 <ul className="mt-6 space-y-3">
                   {freshRequests.map((request) => {
-                    const mins = Math.max(0, Math.round((now - new Date(request.created_at).getTime()) / 60000));
+                    const mins = Math.max(0, Math.round((REQUEST_OPEN_SECONDS * 1000 - (request.expiresAt - now)) / 60000));
                     return (
                       <li key={request.id} className="rounded-[18px] bg-canvas shadow-[var(--shadow-ring)] p-4 animate-pop-in">
                         <div className="flex items-start justify-between gap-3">
@@ -496,39 +533,186 @@ function CaptainConsole({ user, captain, setCaptainOnDuty }) {
   );
 }
 
-// The captain console, for accounts staff have set up as captains
-export default function CaptainView() {
-  const { authReady, user, captain, setCaptainOnDuty, openAuth } = useApp();
+// Students apply to drive here; an admin approves them
+function CaptainApplication({ user, application, applyToDrive }) {
+  const rejected = application?.status === 'rejected';
+  const [editing, setEditing] = useState(false);
+  const source = application || {};
+  const [form, setForm] = useState({
+    name: source.display_name || user.name || '',
+    phone: source.phone || user.phone || '',
+    vehicle: source.vehicle_model || '',
+    plate: source.vehicle_plate || '',
+    licence: source.dl_number || '',
+  });
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
+  const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
-  if (user && captain) return <CaptainConsole user={user} captain={captain} setCaptainOnDuty={setCaptainOnDuty} />;
+  const submit = async (e) => {
+    e.preventDefault();
+    setSending(true);
+    setError('');
+    const { error: applyError } = await applyToDrive({
+      name: form.name,
+      phone_number: form.phone,
+      vehicle: form.vehicle,
+      plate: form.plate,
+      licence: form.licence,
+    });
+    setSending(false);
+    if (applyError) setError(applyError);
+    else setEditing(false);
+  };
+
+  if (application?.status === 'pending' && !editing) {
+    return (
+      <div role="status" className="animate-pop-in">
+        <span className="badge badge-ghost">Waiting for review</span>
+        <h2 className="heading text-[24px] mt-4">Application sent</h2>
+        <p className="mt-2 text-[15px] text-body leading-relaxed">
+          Sent {formatWhen(application.updated_at)}. An admin checks your licence and vehicle details. This page
+          switches to the captain console as soon as you are approved.
+        </p>
+        <dl className="mt-5 divide-y divide-hairline border-y border-hairline text-[14px]">
+          {[
+            ['Vehicle', `${application.vehicle_model} · ${application.vehicle_plate}`],
+            ['Phone', application.phone],
+            ['Driving licence', application.dl_number],
+          ].map(([label, value]) => (
+            <div key={label} className="py-2.5 flex justify-between gap-4">
+              <dt className="text-muted">{label}</dt>
+              <dd className="font-semibold text-ink text-right break-all">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <button type="button" onClick={() => setEditing(true)} className="btn btn-quiet mt-6">
+          Edit details
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={submit}>
+      <h2 className="heading text-[24px]">{rejected ? 'Apply again' : 'Apply to drive'}</h2>
+      {rejected ? (
+        <p role="alert" className="mt-3 rounded-[10px] bg-alert-wash px-4 py-3 text-[14px] text-alert">
+          Your last application was not approved{application.review_note ? `: ${application.review_note}` : '.'} Fix the
+          details and send it again.
+        </p>
+      ) : (
+        <p className="mt-2 text-[15px] text-body">
+          You need your own two-wheeler and a valid driving licence. Riders see your name and vehicle when you accept.
+        </p>
+      )}
+
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-5">
+        <div className="sm:col-span-2">
+          <label htmlFor="cap-name" className="label">Name riders will see</label>
+          <input id="cap-name" required autoComplete="name" value={form.name} onChange={set('name')} className="field" />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="cap-phone" className="label">Phone</label>
+          <input id="cap-phone" type="tel" required autoComplete="tel" value={form.phone} onChange={set('phone')} placeholder="+91 9XXXX XXXXX" className="field num" />
+        </div>
+        <div>
+          <label htmlFor="cap-vehicle" className="label">Vehicle</label>
+          <input id="cap-vehicle" required value={form.vehicle} onChange={set('vehicle')} placeholder="Honda Shine" className="field" />
+        </div>
+        <div>
+          <label htmlFor="cap-plate" className="label">Number plate</label>
+          <input id="cap-plate" required value={form.plate} onChange={set('plate')} placeholder="PY 01 AB 1234" className="field uppercase" />
+        </div>
+        <div className="sm:col-span-2">
+          <label htmlFor="cap-licence" className="label">Driving licence number</label>
+          <input id="cap-licence" required value={form.licence} onChange={set('licence')} className="field uppercase" />
+        </div>
+      </div>
+
+      {error && (
+        <p role="alert" className="mt-5 rounded-[10px] bg-alert-wash px-4 py-3 text-[14px] text-alert">
+          {error}
+        </p>
+      )}
+
+      <div className="mt-7 flex flex-wrap items-center gap-3">
+        <button type="submit" disabled={sending} className="btn btn-primary">
+          {sending ? 'Sending…' : application ? 'Send again' : 'Send application'}
+          {!sending && <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />}
+        </button>
+        {editing && (
+          <button type="button" onClick={() => setEditing(false)} className="btn btn-link">
+            Cancel
+          </button>
+        )}
+      </div>
+    </form>
+  );
+}
+
+// The captain console for approved captains; everyone else can apply here
+export default function CaptainView() {
+  const {
+    authReady,
+    user,
+    captain,
+    captainPaused,
+    captainApplication,
+    rolesLoaded,
+    setCaptainOnDuty,
+    applyToDrive,
+    openAuth,
+    rides,
+    resyncTick,
+  } = useApp();
+
+  if (user && captain) {
+    return <CaptainConsole user={user} captain={captain} setCaptainOnDuty={setCaptainOnDuty} ownRides={rides} resyncTick={resyncTick} />;
+  }
+
+  // Paused means a captain record exists but an admin switched it off; an approval that is still
+  // being set up shows the application status until the record arrives
+  const suspended = captainPaused;
 
   return (
     <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
       <PageHeader
         eyebrow="UniGo captain"
         title="Drive with UniGo"
-        description="Captains are Pondicherry University students who give rides across campus. They accept requests here, check each rider's pickup code, and see their earnings for the day."
+        description="Captains are Pondicherry University students who give rides on their own two-wheeler. Apply here, and once an admin approves you, go on duty and accept rides from other students."
       />
       <div className="mt-12 surface p-6 sm:p-8 max-w-xl">
-        {!authReady ? (
+        {!authReady || (user && !rolesLoaded) ? (
           <p className="text-[15px] text-muted">Checking your account…</p>
         ) : !user ? (
           <>
-            <h2 className="heading text-[24px]">Captains sign in here</h2>
-            <p className="mt-2 text-[15px] text-body">Use the university account your captain profile is linked to.</p>
-            <button type="button" onClick={() => openAuth({ reason: 'Sign in with the university account linked to your captain profile.' })} className="btn btn-primary mt-6">
+            <h2 className="heading text-[24px]">Sign in to apply</h2>
+            <p className="mt-2 text-[15px] text-body">Use your Pondicherry University account. Captains sign in here too.</p>
+            <button type="button" onClick={() => openAuth({ reason: 'Sign in with your university account to drive with UniGo.' })} className="btn btn-primary mt-6">
               Sign in
               <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
             </button>
           </>
-        ) : (
+        ) : captainApplication?.status === 'approved' && !suspended ? (
+          <p role="status" className="text-[15px] text-body">
+            You're approved. Setting up your captain account…
+          </p>
+        ) : suspended ? (
           <>
-            <h2 className="heading text-[24px]">This account isn't a captain yet</h2>
+            <h2 className="heading text-[24px]">Your captain account is paused</h2>
             <p className="mt-2 text-[15px] text-body leading-relaxed">
-              Captain accounts are set up by UniGo staff. To drive with UniGo, visit the Gate 1 hub with your driving licence
-              and give them your university email, <span className="font-semibold text-ink break-all">{user.email}</span>.
+              An admin has paused <span className="font-semibold text-ink break-all">{user.email}</span>. Speak to the
+              UniGo team at the Gate 1 hub to get back on the road.
             </p>
           </>
+        ) : (
+          <CaptainApplication
+            key={`${user.id}:${captainApplication?.updated_at ?? 'new'}`}
+            user={user}
+            application={captainApplication}
+            applyToDrive={applyToDrive}
+          />
         )}
       </div>
     </div>

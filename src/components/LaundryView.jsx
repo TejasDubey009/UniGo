@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDialog } from '../hooks/useDialog';
 import { useApp } from '../context/useApp';
 import { useCountUp } from '../hooks/useMotion';
 import { GIRLS_HOSTELS, BOYS_HOSTELS, OTHER_LOCATIONS } from '../data/campusData';
@@ -17,7 +18,7 @@ import {
 import { PageHeader, Reveal, Segmented } from './ui';
 import CampusMap3D from './LazyCampusMap3D';
 import GoogleCampusMap from './GoogleCampusMap';
-import { ArrowRight, Map as MapIcon, Check, Clock, PackageCheck, Satellite, Shirt, ShieldCheck } from 'lucide-react';
+import { ArrowRight, Map as MapIcon, Check, Clock, PackageCheck, Satellite, CalendarDays, Scale } from 'lucide-react';
 
 const HOSTELS_BY_CATEGORY = { 'Girls Hostel': GIRLS_HOSTELS, 'Boys Hostel': BOYS_HOSTELS };
 const CATEGORY_BY_NODE = { 'girls-hostel': 'Girls Hostel', 'boys-hostel': 'Boys Hostel' };
@@ -59,12 +60,12 @@ const MAP_OPTIONS = [
 ];
 
 const GUARANTEES = [
-  { icon: ShieldCheck, title: 'Barcoded bags', desc: 'Every bag is tagged at pickup' },
-  { icon: Shirt, title: 'Steam ironed', desc: 'Packed on hangers' },
+  { icon: CalendarDays, title: 'Wednesday and Sunday', desc: 'Book by the day before pickup' },
+  { icon: Scale, title: 'Weighed at pickup', desc: `₹${LAUNDRY_RATES['Wash Only']}/kg wash, ₹${LAUNDRY_RATES['Wash + Iron']}/kg with ironing` },
   { icon: Clock, title: 'Back in two days', desc: 'Returned to your hostel' },
 ];
 
-// Order statuses as stored in Supabase (staff move an order along), in the order they happen
+// Order statuses as stored in Supabase (an admin moves the order along), in the order they happen
 const ORDER_STEPS = [
   { status: 'scheduled', step: 'Booked', badge: 'Pickup scheduled' },
   { status: 'collected', step: 'Collected', badge: 'Collected' },
@@ -168,7 +169,7 @@ function OrderTimeline({ status }) {
 }
 
 export default function LaundryView() {
-  const { user, laundryOrders, placeLaundryOrder, requireAuth, saveProfileDetails, selected3DTarget, setSelected3DTarget } =
+  const { user, laundryOrders, placeLaundryOrder, requireAuth, saveProfileDetails, selected3DTarget, setSelected3DTarget, resyncTick } =
     useApp();
   const [laundryMapMode, setLaundryMapMode] = useState('webgl'); // 'webgl' | 'satellite'
 
@@ -191,13 +192,23 @@ export default function LaundryView() {
   const [phone, setPhone] = useState(user?.phone || '');
   const [washType, setWashType] = useState('Wash + Iron'); // 'Wash Only' | 'Wash + Iron'
   const [weightKg, setWeightKg] = useState(4.5);
-  // The next four Wednesdays and Sundays; orders close the day before pickup
-  const [pickupDays] = useState(() => nextPickupDays(4));
+  // The next four Wednesdays and Sundays (in India's date); orders close the day before pickup. Worked
+  // out again when the page comes back into view, so a tab left open overnight doesn't offer a day
+  // that has already closed.
+  const [pickupDays, setPickupDays] = useState(() => nextPickupDays(4));
   const [pickupDate, setPickupDate] = useState(() => toDateKey(pickupDays[0]));
+  const [daysFor, setDaysFor] = useState(resyncTick);
+  if (resyncTick !== daysFor) {
+    setDaysFor(resyncTick);
+    const days = nextPickupDays(4);
+    setPickupDays(days);
+    if (!days.some((day) => toDateKey(day) === pickupDate)) setPickupDate(toDateKey(days[0]));
+  }
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [submittedOrder, setSubmittedOrder] = useState(null);
+  const confirmDialogRef = useDialog(Boolean(submittedOrder), () => setSubmittedOrder(null));
 
   // Fill blank fields from the student's profile once it arrives (sign-in can happen after the page opens)
   const [filledFor, setFilledFor] = useState(user?.key);
@@ -284,7 +295,7 @@ export default function LaundryView() {
       <PageHeader
         eyebrow="Hostel laundry · Wednesday and Sunday pickups"
         title="Laundry, back in two days"
-        description="Pick your hostel on the map, choose wash or wash + iron, and a runner collects from your floor on Wednesday or Sunday. Every bag is barcoded and back at your hostel two days later."
+        description="Pick your hostel on the map, choose wash or wash + iron, and we collect it on Wednesday or Sunday. It is weighed at pickup and back at your hostel two days later."
       />
 
       <div className="mt-12 sm:mt-14 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
@@ -293,7 +304,7 @@ export default function LaundryView() {
           <div className="flex flex-wrap items-start justify-between gap-3 mb-7">
             <div>
               <h2 className="heading text-[26px] sm:text-[30px]">Book a pickup</h2>
-              <p className="text-[15px] text-body mt-1.5">A runner collects from your door.</p>
+              <p className="text-[15px] text-body mt-1.5">We collect it from your hostel.</p>
             </div>
             <span className="badge badge-ghost">PU students only</span>
           </div>
@@ -571,7 +582,7 @@ export default function LaundryView() {
 
           <div className="media-frame h-[420px] sm:h-[520px] lg:h-[600px]">
             {laundryMapMode === 'satellite' ? (
-              <GoogleCampusMap highlightedId={activeHostelObject?.id} onLocationSelect={handleMapLocationSelect} />
+              <GoogleCampusMap highlightedId={activeHostelObject?.id} />
             ) : (
               <CampusMap3D highlightedId={activeHostelObject?.id} onHostelSelect={handleMapLocationSelect} />
             )}
@@ -684,6 +695,8 @@ export default function LaundryView() {
       {submittedOrder && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-ink/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
           <div
+            ref={confirmDialogRef}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-labelledby="laundry-confirm-title"

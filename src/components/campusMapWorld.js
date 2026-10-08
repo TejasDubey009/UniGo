@@ -1132,6 +1132,161 @@ function buildPlace(scene, registry, place, edge, random) {
 }
 
 // Camera distance that fits a set of ground points on screen for a given heading, pitch and aspect
+// ---------------------------------------------------------------------------
+// Driving routes over the real road network, for the ride preview
+// ---------------------------------------------------------------------------
+
+let roadGraph = null;
+const nodeKey = ([x, z]) => `${x},${z}`;
+
+// OSM roads that meet share a vertex, so joining vertices with the same coordinates gives the network.
+// A few short roads in the data don't connect to the rest; places snap only to the main network, so
+// every pair of places has a route.
+function getRoadGraph() {
+  if (roadGraph) return roadGraph;
+  const nodes = new Map();
+  const nodeFor = (pt) => {
+    const key = nodeKey(pt);
+    if (!nodes.has(key)) nodes.set(key, { pt, edges: [] });
+    return key;
+  };
+  DRIVABLE.forEach((road) => {
+    for (let i = 1; i < road.p.length; i++) {
+      const a = nodeFor(road.p[i - 1]);
+      const b = nodeFor(road.p[i]);
+      const metres = Math.hypot(road.p[i][0] - road.p[i - 1][0], road.p[i][1] - road.p[i - 1][1]);
+      nodes.get(a).edges.push([b, metres]);
+      nodes.get(b).edges.push([a, metres]);
+    }
+  });
+
+  // Label connected pieces and keep the roads of the largest one for snapping
+  const piece = new Map();
+  const sizes = [];
+  for (const start of nodes.keys()) {
+    if (piece.has(start)) continue;
+    const id = sizes.length;
+    const stack = [start];
+    piece.set(start, id);
+    let size = 0;
+    while (stack.length) {
+      const key = stack.pop();
+      size += 1;
+      nodes.get(key).edges.forEach(([next]) => {
+        if (!piece.has(next)) {
+          piece.set(next, id);
+          stack.push(next);
+        }
+      });
+    }
+    sizes.push(size);
+  }
+  const main = sizes.indexOf(Math.max(...sizes));
+  const mainRoads = DRIVABLE.filter((road) => piece.get(nodeKey(road.p[0])) === main);
+
+  roadGraph = { nodes, mainRoads };
+  return roadGraph;
+}
+
+// Where a place meets its nearest drivable road, and the two road vertices either side of that point
+function snapToRoad(place, roads) {
+  const near = nearestRoad(place.x, place.z, roads);
+  if (!near) return null;
+  const [ax, az] = near.a;
+  const [bx, bz] = near.b;
+  const dx = bx - ax;
+  const dz = bz - az;
+  const t = Math.max(0, Math.min(1, ((place.x - ax) * dx + (place.z - az) * dz) / (dx * dx + dz * dz || 1)));
+  const point = [ax + t * dx, az + t * dz];
+  return {
+    point,
+    ends: [
+      [nodeKey(near.a), Math.hypot(point[0] - ax, point[1] - az)],
+      [nodeKey(near.b), Math.hypot(point[0] - bx, point[1] - bz)],
+    ],
+  };
+}
+
+// Dijkstra from several weighted starts to several weighted goals, with a small binary heap
+function shortestPath(graph, starts, goals) {
+  const heap = [];
+  const push = (item) => {
+    heap.push(item);
+    for (let i = heap.length - 1; i > 0; ) {
+      const parent = (i - 1) >> 1;
+      if (heap[parent][0] <= heap[i][0]) break;
+      [heap[parent], heap[i]] = [heap[i], heap[parent]];
+      i = parent;
+    }
+  };
+  const pop = () => {
+    const top = heap[0];
+    const last = heap.pop();
+    if (heap.length) {
+      heap[0] = last;
+      for (let i = 0; ; ) {
+        const l = 2 * i + 1;
+        const r = l + 1;
+        let m = i;
+        if (l < heap.length && heap[l][0] < heap[m][0]) m = l;
+        if (r < heap.length && heap[r][0] < heap[m][0]) m = r;
+        if (m === i) break;
+        [heap[m], heap[i]] = [heap[i], heap[m]];
+        i = m;
+      }
+    }
+    return top;
+  };
+
+  const dist = new Map();
+  const prev = new Map();
+  starts.forEach(([key, cost]) => {
+    if (cost < (dist.get(key) ?? Infinity)) {
+      dist.set(key, cost);
+      push([cost, key]);
+    }
+  });
+  const goalCost = new Map(goals);
+  let best = null;
+  while (heap.length) {
+    const [d, key] = pop();
+    if (d > (dist.get(key) ?? Infinity)) continue;
+    if (best && d >= best.total) break;
+    if (goalCost.has(key) && (!best || d + goalCost.get(key) < best.total)) best = { key, total: d + goalCost.get(key) };
+    graph.get(key)?.edges.forEach(([next, metres]) => {
+      const nd = d + metres;
+      if (nd < (dist.get(next) ?? Infinity)) {
+        dist.set(next, nd);
+        prev.set(next, key);
+        push([nd, next]);
+      }
+    });
+  }
+  if (!best) return null;
+  const keys = [];
+  for (let key = best.key; key; key = prev.get(key)) keys.unshift(key);
+  return { points: keys.map((key) => graph.get(key).pt), metres: best.total };
+}
+
+const PLACE_BY_ID = new Map(PLACES.map((place) => [place.id, place]));
+
+// The drive from one campus place to another along real roads: [x, z] points from the first place's
+// door to the second's, and the distance in metres. Null if either place is unknown or unreachable.
+export function drivingRoute(fromId, toId) {
+  const from = PLACE_BY_ID.get(fromId);
+  const to = PLACE_BY_ID.get(toId);
+  if (!from || !to || from === to) return null;
+  const { nodes, mainRoads } = getRoadGraph();
+  const start = snapToRoad(from, mainRoads);
+  const end = snapToRoad(to, mainRoads);
+  if (!start || !end) return null;
+  const path = shortestPath(nodes, start.ends, end.ends);
+  if (!path) return null;
+  const points = [[from.x, from.z], start.point, ...path.points, end.point, [to.x, to.z]];
+  const metres = points.slice(1).reduce((sum, [x, z], i) => sum + Math.hypot(x - points[i][0], z - points[i][1]), 0);
+  return { points, metres };
+}
+
 export function fitRadius(points, lookAt, theta, phi, fovDeg, aspect, margin = 0.9) {
   const camera = new THREE.PerspectiveCamera(fovDeg, aspect, 1, 50000);
   const corners = points.map(([x, z]) => new THREE.Vector3(x, 0, z));
