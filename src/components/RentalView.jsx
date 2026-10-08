@@ -1,20 +1,20 @@
 import React, { useState, useRef } from 'react';
+import { useDialog } from '../hooks/useDialog';
 import { useApp } from '../context/useApp';
 import { useCountUp } from '../hooks/useMotion';
+import { celebrate } from '../lib/celebrate';
+import { shortRef, formatWhen, formatTime } from '../lib/format';
 import { PageHeader, Reveal } from './ui';
-import {
-  Fuel,
-  Gauge,
-  HardHat,
-  Check,
-  Clock,
-  IdCard,
-  MapPin,
-  RotateCcw,
-  ArrowRight,
-  X
-} from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { Gauge, HardHat, Check, Clock, IdCard, MapPin, RotateCcw, ArrowRight, X } from 'lucide-react';
+
+// Lease statuses as stored in Supabase; staff move a lease along at the hub
+const LEASE_STATUS = {
+  reserved: { label: 'Pre-reserved', tone: 'badge-neutral' },
+  confirmed: { label: 'Ready for pickup', tone: 'badge-lime' },
+  active: { label: 'On a trip', tone: 'badge-forest' },
+  returned: { label: 'Returned', tone: 'badge-ghost' },
+  cancelled: { label: 'Cancelled', tone: 'badge-neutral' },
+};
 
 // One summary row in the lease and receipt panels
 function SummaryRow({ label, children }) {
@@ -26,19 +26,35 @@ function SummaryRow({ label, children }) {
   );
 }
 
+// "10:30 am" today, "11 Oct, 10:30 am" for a later day
+const formatReturn = (iso) => (new Date(iso).toDateString() === new Date().toDateString() ? formatTime(iso) : formatWhen(iso));
+
 export default function RentalView() {
-  const { user, fleet, rentalSettings, addRentalAgreement, setActiveTab } = useApp();
+  const { user, fleet, leases, signLease, requireAuth, saveProfileDetails, refreshFleet } = useApp();
 
   const [selectedVehicle, setSelectedVehicle] = useState(null);
   const [isAgreementModalOpen, setIsAgreementModalOpen] = useState(false);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const leaseDialogRef = useDialog(isAgreementModalOpen && Boolean(selectedVehicle), () => setIsAgreementModalOpen(false));
+  const receiptDialogRef = useDialog(Boolean(confirmedBooking), () => setConfirmedBooking(null));
 
   // Agreement form states
   const [dlNumber, setDlNumber] = useState('');
   const [rentalDuration, setRentalDuration] = useState('4 Hours');
   const [pickupHub, setPickupHub] = useState('Gate 1 UniGo Hub (ECR Entrance)');
   const [hasAgreedTerms, setHasAgreedTerms] = useState(false);
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [rollNo, setRollNo] = useState(user?.rollNo || '');
   const [formError, setFormError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Fill blank fields from the student's profile once it arrives
+  const [filledFor, setFilledFor] = useState(user?.key);
+  if (user && user.key !== filledFor) {
+    setFilledFor(user.key);
+    if (!phone) setPhone(user.phone);
+    if (!rollNo) setRollNo(user.rollNo);
+  }
 
   // Digital Signature Pad Canvas
   const canvasRef = useRef(null);
@@ -96,18 +112,52 @@ export default function RentalView() {
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setHasSigned(false);
+    setTypedSignature('');
+  };
+
+  // For anyone who can't draw (keyboard, screen reader): typing your full name signs the pad
+  const [typedSignature, setTypedSignature] = useState('');
+  const signByTyping = (text) => {
+    setTypedSignature(text);
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const name = text.trim();
+    if (name.length < 3) {
+      setHasSigned(false);
+      return;
+    }
+    ctx.fillStyle = '#0e0f0c';
+    ctx.font = 'italic 600 44px Georgia, "Times New Roman", serif';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(name, 28, canvas.height * 0.72, canvas.width - 56);
+    setHasSigned(true);
+    setFormError('');
+  };
+
+  // Each vehicle's own hub, as listed in the fleet
+  const hubFor = (vehicle) => {
+    const where = vehicle?.pickupLocation || '';
+    if (/library/i.test(where)) return 'Library Hub & Parking Dock';
+    if (/gate 2/i.test(where)) return 'Gate 2 Kalapet Entrance';
+    return 'Gate 1 UniGo Hub (ECR Entrance)';
   };
 
   const handleOpenRental = (bike) => {
+    if (!requireAuth('Sign in with your university account to rent a vehicle.')) return;
     setSelectedVehicle(bike);
+    setPickupHub(hubFor(bike));
     setIsAgreementModalOpen(true);
     setHasSigned(false);
+    setTypedSignature('');
     setHasAgreedTerms(false);
     setFormError('');
   };
 
-  // Booking an unavailable vehicle (or while the service is paused) only pre-reserves it
-  const isPreReservation = selectedVehicle ? !(rentalSettings.isAvailable && selectedVehicle.available) : false;
+  // Booking a vehicle that's out on a trip only pre-reserves it (availability is live, so read the current fleet)
+  const liveVehicle = fleet.find((v) => v.id === selectedVehicle?.id);
+  const isPreReservation = liveVehicle ? !liveVehicle.available : false;
 
   const calculateAmount = () => {
     if (!selectedVehicle) return 0;
@@ -121,9 +171,13 @@ export default function RentalView() {
 
   // Total tweens when the duration changes
   const shownTotal = useCountUp(calculateAmount());
-  const freeCount = fleet.filter((v) => rentalSettings.isAvailable && v.available).length;
+  const freeCount = fleet.filter((v) => v.available).length;
+  // Earliest known return among vehicles out on trips
+  const nextReturn = fleet
+    .filter((v) => !v.available && v.nextAvailableAt)
+    .sort((a, b) => new Date(a.nextAvailableAt) - new Date(b.nextAvailableAt))[0];
 
-  const handleCompleteAgreement = (e) => {
+  const handleCompleteAgreement = async (e) => {
     e.preventDefault();
     if (!hasSigned) {
       setFormError('Draw your signature on the pad to continue.');
@@ -134,35 +188,34 @@ export default function RentalView() {
       return;
     }
 
-    const canvas = canvasRef.current;
-    const signatureData = canvas ? canvas.toDataURL() : '';
+    if (isSubmitting) return;
 
-    const agreement = addRentalAgreement({
-      vehicleId: selectedVehicle.id,
-      vehicleName: selectedVehicle.model,
-      vehicleType: selectedVehicle.type,
-      studentName: user.name,
-      userEmail: user.email,
-      rollNo: user.rollNo,
-      phone: user.phone,
-      dlNumber: dlNumber.trim().toUpperCase(),
+    setIsSubmitting(true);
+    // The database sets the vehicle name and the price from its own fleet rates
+    const { data, error } = await signLease({
+      vehicle_id: selectedVehicle.id,
+      rider_name: user?.name || user?.email.split('@')[0] || '',
+      roll_no: rollNo.trim().toUpperCase() || null,
+      phone: phone.trim(),
+      dl_number: dlNumber.trim().toUpperCase(),
       duration: rentalDuration,
-      pickupHub: pickupHub,
-      totalAmount: calculateAmount(),
-      signatureUrl: signatureData,
-      helmets: selectedVehicle.helmetsIncluded,
-      preReserved: isPreReservation,
+      pickup_hub: pickupHub,
+      signature: canvasRef.current.toDataURL('image/png'),
+      pre_reserved: isPreReservation,
     });
+    setIsSubmitting(false);
+    if (error) {
+      setFormError(error);
+      // Someone else just took it: re-read the fleet so the form switches to pre-reserving
+      if (/just taken/i.test(error)) refreshFleet();
+      return;
+    }
 
     setIsAgreementModalOpen(false);
-    setConfirmedBooking(agreement);
-
-    confetti({
-      particleCount: 100,
-      spread: 80,
-      origin: { y: 0.5 },
-      colors: ['#9fe870', '#163300', '#ffd300'],
-    });
+    setConfirmedBooking(data);
+    setDlNumber('');
+    saveProfileDetails({ phone: phone.trim(), roll_no: rollNo.trim().toUpperCase() });
+    celebrate(100);
   };
 
   return (
@@ -170,7 +223,7 @@ export default function RentalView() {
       <PageHeader
         eyebrow="Scooter and bike rental"
         title="Self-drive by the hour"
-        description="Scooters and bikes for classes or a weekend run to Auroville and Rock Beach. Sign the lease on your phone, then show your DL and student ID at the hub to collect the keys."
+        description="Scooters and bikes by the hour or the day. Sign the lease on your phone, then show your driving licence and student ID at the hub to collect the keys."
         aside={
           <p className="flex items-center gap-2 text-[14px] text-body">
             <MapPin className="w-4 h-4 text-forest shrink-0" aria-hidden="true" />
@@ -179,22 +232,22 @@ export default function RentalView() {
         }
       />
 
-      {/* Service status set by the admin */}
-      {rentalSettings.isAvailable ? (
+      {/* Live availability from Supabase */}
+      {freeCount > 0 ? (
         <div className="mt-10 flex flex-col md:flex-row md:items-center justify-between gap-3 py-4 border-y border-hairline">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
             <span className="badge badge-lime self-start sm:self-auto">
               <span className="live-dot" aria-hidden="true" />
               Open now
             </span>
-            <p className="text-[15px] text-body">
-              {rentalSettings.adminNote || 'Vehicles are cleaned, fuelled and parked at the Gate 1 and Library hubs.'}
-            </p>
+            <p className="text-[15px] text-body">Collect and return at the Gate 1 and Library hubs.</p>
           </div>
-          <p className="text-[14px] text-muted shrink-0">
-            Next return <span className="num text-ink font-semibold">{rentalSettings.nextAvailableTime}</span> ·{' '}
-            {rentalSettings.nextAvailableModel}
-          </p>
+          {nextReturn && (
+            <p className="text-[14px] text-muted shrink-0">
+              Next return <span className="num text-ink font-semibold">{formatReturn(nextReturn.nextAvailableAt)}</span> ·{' '}
+              {nextReturn.model}
+            </p>
+          )}
         </div>
       ) : (
         <div className="mt-10 surface-ash p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -203,18 +256,15 @@ export default function RentalView() {
               <Clock className="w-5 h-5 text-forest" aria-hidden="true" />
             </span>
             <div className="min-w-0">
-              <p className="text-[16px] font-semibold text-ink">All scooters are out on trips</p>
+              <p className="text-[16px] font-semibold text-ink">All vehicles are out on trips</p>
               <p className="text-[15px] text-body mt-0.5">
-                Next one back: {rentalSettings.nextAvailableModel} at{' '}
-                <span className="num">{rentalSettings.nextAvailableTime}</span>. You can still sign the lease
-                below to pre-reserve it.
+                {nextReturn
+                  ? `Next one back: ${nextReturn.model} at ${formatReturn(nextReturn.nextAvailableAt)}. `
+                  : ''}
+                You can still sign the lease below to pre-reserve one.
               </p>
             </div>
           </div>
-          <span className="badge badge-neutral self-start sm:self-auto">
-            <Clock className="w-3.5 h-3.5" aria-hidden="true" />
-            Back at {rentalSettings.nextAvailableTime}
-          </span>
         </div>
       )}
 
@@ -228,15 +278,13 @@ export default function RentalView() {
 
       <ul className="mt-6 space-y-4">
         {fleet.map((vehicle, i) => {
-          const isAvailable = rentalSettings.isAvailable && vehicle.available;
+          const isAvailable = vehicle.available;
           const isSelected = selectedVehicle?.id === vehicle.id;
           const statusLabel = isAvailable
             ? 'Available now'
-            : !vehicle.available
-            ? vehicle.nextAvailableTime
-              ? `Free at ${vehicle.nextAvailableTime}`
-              : 'On lease'
-            : `Back at ${rentalSettings.nextAvailableTime}`;
+            : vehicle.nextAvailableAt
+              ? `Back at ${formatReturn(vehicle.nextAvailableAt)}`
+              : 'On lease';
 
           return (
             <Reveal as="li" key={vehicle.id} delay={i * 60}>
@@ -277,11 +325,6 @@ export default function RentalView() {
                   </p>
 
                   <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-[14px] text-ink">
-                    <li className="flex items-center gap-1.5">
-                      <Fuel className="w-4 h-4 text-muted shrink-0" aria-hidden="true" />
-                      <span className="sr-only">Fuel or battery: </span>
-                      <span className="num">{vehicle.fuelLevel}</span>
-                    </li>
                     <li className="flex items-center gap-1.5">
                       <Gauge className="w-4 h-4 text-muted shrink-0" aria-hidden="true" />
                       <span className="sr-only">Range: </span>
@@ -340,11 +383,42 @@ export default function RentalView() {
         })}
       </ul>
 
+      {/* The student's leases, with status kept live from Supabase */}
+      {leases.length > 0 && (
+        <section className="mt-16 sm:mt-20" aria-labelledby="leases-title">
+          <h2 id="leases-title" className="heading text-[28px] sm:text-[34px]">
+            Your leases
+          </h2>
+          <ul className="mt-6 divide-y divide-hairline border-y border-hairline">
+            {leases.map((lease) => {
+              const status = LEASE_STATUS[lease.status] || { label: lease.status, tone: 'badge-neutral' };
+              return (
+                <li key={lease.id} className="py-4 flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
+                  <div className="min-w-0">
+                    <p className="font-mono text-[13px] text-muted">{shortRef(lease.id)}</p>
+                    <p className="text-[17px] font-semibold text-ink">{lease.vehicle_name}</p>
+                    <p className="text-[14px] text-body">
+                      {lease.duration} · {lease.pickup_hub} · signed {formatWhen(lease.created_at)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className={`badge ${status.tone}`}>{status.label}</span>
+                    <span className="text-[17px] font-semibold text-ink num">₹{lease.total_amount}</span>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
       {/* Lease agreement and signature */}
       {isAgreementModalOpen && selectedVehicle && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/40 backdrop-blur-sm animate-fade-in">
           <div className="min-h-full flex items-end sm:items-center justify-center sm:p-6">
             <div
+              ref={leaseDialogRef}
+              tabIndex={-1}
               role="dialog"
               aria-modal="true"
               aria-labelledby="lease-title"
@@ -416,6 +490,36 @@ export default function RentalView() {
                     </select>
                   </div>
 
+                  <div>
+                    <label htmlFor="rental-phone" className="label">
+                      Phone number
+                    </label>
+                    <input
+                      id="rental-phone"
+                      type="tel"
+                      required
+                      autoComplete="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+91 9XXXX XXXXX"
+                      className="field num"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="rental-roll" className="label">
+                      PU roll number <span className="font-normal text-muted">(optional)</span>
+                    </label>
+                    <input
+                      id="rental-roll"
+                      type="text"
+                      value={rollNo}
+                      onChange={(e) => setRollNo(e.target.value)}
+                      autoComplete="off"
+                      className="field font-mono uppercase"
+                    />
+                  </div>
+
                   <div className="sm:col-span-2">
                     <label htmlFor="rental-dl" className="label">
                       Driving licence number
@@ -481,14 +585,27 @@ export default function RentalView() {
                       ref={canvasRef}
                       width={560}
                       height={140}
-                      onPointerDown={startDrawing}
+                      onPointerDown={(e) => {
+                        if (typedSignature) clearSignature();
+                        startDrawing(e);
+                      }}
                       onPointerMove={draw}
                       onPointerUp={stopDrawing}
                       onPointerCancel={stopDrawing}
-                      aria-label="Signature pad"
+                      aria-hidden="true"
                       className="relative block w-full aspect-[4/1] cursor-crosshair touch-none"
                     />
                   </div>
+                  <label htmlFor="typed-signature" className="mt-3 block text-[13px] text-muted">
+                    Or type your full name to sign
+                  </label>
+                  <input
+                    id="typed-signature"
+                    value={typedSignature}
+                    onChange={(e) => signByTyping(e.target.value)}
+                    autoComplete="name"
+                    className="field mt-1.5"
+                  />
                 </div>
 
                 <label className="flex items-start gap-3 cursor-pointer">
@@ -518,11 +635,9 @@ export default function RentalView() {
                 <div className="surface p-5 sm:p-6">
                   <dl className="divide-y divide-hairline text-[15px]">
                     <SummaryRow label="Rider">
-                      {user.name}
-                      {user.rollNo ? (
-                        <span className="block font-mono text-[13px] text-muted font-normal">{user.rollNo}</span>
-                      ) : (
-                        <span className="block text-[13px] text-muted font-normal">Roll no. not on file</span>
+                      {user?.name || user?.email}
+                      {rollNo.trim() && (
+                        <span className="block font-mono text-[13px] text-muted font-normal uppercase">{rollNo.trim()}</span>
                       )}
                     </SummaryRow>
                     <SummaryRow label="Helmets">
@@ -539,9 +654,9 @@ export default function RentalView() {
                   </div>
                 </div>
 
-                <button type="submit" className="btn btn-primary btn-lg w-full">
-                  {isPreReservation ? 'Sign and pre-reserve' : 'Sign and confirm rental'}
-                  <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
+                <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting} className="btn btn-primary btn-lg w-full">
+                  {isSubmitting ? 'Saving your lease…' : isPreReservation ? 'Sign and pre-reserve' : 'Sign and confirm rental'}
+                  {!isSubmitting && <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />}
                 </button>
               </form>
             </div>
@@ -554,6 +669,8 @@ export default function RentalView() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-ink/40 backdrop-blur-sm animate-fade-in">
           <div className="min-h-full flex items-end sm:items-center justify-center sm:p-6">
             <div
+              ref={receiptDialogRef}
+              tabIndex={-1}
               role="dialog"
               aria-modal="true"
               aria-labelledby="receipt-title"
@@ -564,15 +681,15 @@ export default function RentalView() {
               </span>
 
               <p className="eyebrow mt-6">Lease signed</p>
-              {confirmedBooking.preReserved ? (
+              {confirmedBooking.pre_reserved ? (
                 <>
                   <h3 id="receipt-title" className="heading text-[28px] mt-2">
                     Pre-reservation confirmed
                   </h3>
                   <p className="text-[15px] text-body mt-2 leading-relaxed">
-                    We will hold the <strong className="font-semibold text-ink">{confirmedBooking.vehicleName}</strong>{' '}
-                    for you. Collect it at <strong className="font-semibold text-ink">{confirmedBooking.pickupHub}</strong>{' '}
-                    once it is back, expected at <span className="num">{rentalSettings.nextAvailableTime}</span>.
+                    We will hold the <strong className="font-semibold text-ink">{confirmedBooking.vehicle_name}</strong>{' '}
+                    for you. Collect it at <strong className="font-semibold text-ink">{confirmedBooking.pickup_hub}</strong>{' '}
+                    once it is back; the hub will call you.
                   </p>
                 </>
               ) : (
@@ -581,20 +698,20 @@ export default function RentalView() {
                     Ready for pickup
                   </h3>
                   <p className="text-[15px] text-body mt-2 leading-relaxed">
-                    Your lease for <strong className="font-semibold text-ink">{confirmedBooking.vehicleName}</strong> is
-                    on record. Head to <strong className="font-semibold text-ink">{confirmedBooking.pickupHub}</strong>.
+                    Your lease for <strong className="font-semibold text-ink">{confirmedBooking.vehicle_name}</strong> is
+                    on record. Head to <strong className="font-semibold text-ink">{confirmedBooking.pickup_hub}</strong>.
                   </p>
                 </>
               )}
 
               <dl className="surface p-5 mt-6 divide-y divide-hairline text-[15px]">
                 <SummaryRow label="Lease ID">
-                  <span className="font-mono text-[14px]">{confirmedBooking.id}</span>
+                  <span className="font-mono text-[14px]">{shortRef(confirmedBooking.id)}</span>
                 </SummaryRow>
                 <SummaryRow label="Duration">{confirmedBooking.duration}</SummaryRow>
-                <SummaryRow label="Pickup hub">{confirmedBooking.pickupHub}</SummaryRow>
+                <SummaryRow label="Pickup hub">{confirmedBooking.pickup_hub}</SummaryRow>
                 <SummaryRow label="Total">
-                  <span className="num font-semibold">₹{confirmedBooking.totalAmount}</span>
+                  <span className="num font-semibold">₹{confirmedBooking.total_amount}</span>
                 </SummaryRow>
               </dl>
 
@@ -603,26 +720,9 @@ export default function RentalView() {
                 Bring your original driving licence and PU student ID card.
               </p>
 
-              <div className="mt-7 flex flex-col-reverse sm:flex-row gap-3">
-                <button
-                  type="button"
-                  onClick={() => setConfirmedBooking(null)}
-                  className="btn btn-quiet"
-                >
-                  Close
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setConfirmedBooking(null);
-                    setActiveTab('user-dashboard');
-                  }}
-                  className="btn btn-primary flex-1"
-                >
-                  View in dashboard
-                  <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
-                </button>
-              </div>
+              <button type="button" onClick={() => setConfirmedBooking(null)} className="btn btn-forest w-full mt-7">
+                Done
+              </button>
             </div>
           </div>
         </div>

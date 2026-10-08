@@ -5,8 +5,6 @@
  * Token roles (keep them; see DESIGN.md):
  *   lime    – primary CTA fills, live/active accents, success. Never a large background.
  *   forest  – selected states, links, text on lime, the dark feature block.
- *   gold    – UniGo coins only.
- *   teal    – info badges and secondary links.
  *   alert   – errors and destructive actions.
  */
 @theme {
@@ -22,11 +20,8 @@
   --color-forest-deep: #0f2400;
   --color-lime: #9fe870;
   --color-lime-strong: #86dc4f;
-  --color-mint-wash: #ecf9f9;
-  --color-teal: #0b4c72;
   --color-alert: #cb272f;
   --color-alert-wash: #fdeced;
-  --color-gold: #ffd300;
 
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Archivo', 'Inter', system-ui, sans-serif;
@@ -35,16 +30,16 @@
   --radius-field: 10px;
   --radius-card-sm: 18px;
   --radius-card: 28px;
-  --radius-card-xl: 38px;
 
   --shadow-ring: 0 0 0 1px rgb(14 15 12 / 0.12);
-  --shadow-soft: 0 6px 20px rgb(0 0 0 / 0.08);
   --shadow-float: 0 10px 32px rgb(0 0 0 / 0.15), 0 40px 40px rgb(0 0 0 / 0.04);
 
   --ease-emph: cubic-bezier(0.2, 0, 0, 1);
   --ease-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
 
-  --animate-page-in: page-in 420ms var(--ease-decel) both;
+  /* No fill: a finished-but-filling transform animation would make every position:fixed dialog
+     inside the page position against the page instead of the screen */
+  --animate-page-in: page-in 420ms var(--ease-decel);
   --animate-pop-in: pop-in 200ms var(--ease-emph) both;
   --animate-fade-in: fade-in 200ms var(--ease-emph) both;
   --animate-sheet-up: sheet-up 320ms var(--ease-decel) both;
@@ -107,6 +102,8 @@
 @layer components {
   /* ---------- Type ---------- */
   .display {
+    /* A single long word (a name, "OPERATIONS") breaks rather than running off a narrow screen */
+    overflow-wrap: anywhere;
     font-family: var(--font-display);
     font-weight: 900;
     font-stretch: 112%;
@@ -288,14 +285,6 @@
     color: var(--color-forest);
     box-shadow: var(--shadow-ring);
   }
-  .badge-info {
-    background: var(--color-mint-wash);
-    color: var(--color-teal);
-  }
-  .badge-alert {
-    background: var(--color-alert-wash);
-    color: var(--color-alert);
-  }
 
   /* Live status dot: forest core with a lime halo that pulses */
   .live-dot {
@@ -336,30 +325,6 @@
     background: var(--color-canvas);
     border-radius: var(--radius-card);
     box-shadow: var(--shadow-ring);
-  }
-  .surface-feature {
-    background: var(--color-forest);
-    color: #ffffff;
-    border-radius: var(--radius-card-xl);
-  }
-  .console {
-    background: var(--color-ink);
-    color: #d4dacf;
-    font-family: var(--font-mono);
-    border-radius: var(--radius-card-sm);
-  }
-
-  /* Interactive tile: lifts slightly and tints on hover */
-  .tile {
-    transition: background-color 160ms var(--ease-emph), box-shadow 160ms var(--ease-emph),
-      transform 160ms var(--ease-emph);
-  }
-  .tile:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-soft);
-  }
-  .tile:active {
-    transform: translateY(0) scale(0.99);
   }
 
   /* Selectable option (radio-like button) */
@@ -403,6 +368,12 @@
     font-size: 15px;
     line-height: 1.4;
     transition: box-shadow 120ms var(--ease-emph);
+  }
+  /* iPhones zoom into any field under 16px and stay zoomed; phones get 16px */
+  @media (max-width: 639px) {
+    .field {
+      font-size: 16px;
+    }
   }
   .field::placeholder {
     color: var(--color-subtle);
@@ -546,65 +517,119 @@
     box-shadow: 0 2px 8px rgb(0 0 0 / 0.18);
   }
 
-  /* Place markers: a coloured glyph dot with its name beside it, haloed like map text */
-  .map-poi {
+  /* Place badges: Apple Maps pills (spec: 14px radius, 12px blur, category icon + name).
+     Far away or crowded, a badge shrinks to its icon ("dot" mode). */
+  .map-badge {
     position: absolute;
     left: 0;
     top: 0;
-    width: 0;
-    height: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px 0 3px;
+    border-radius: 14px;
+    background: var(--badge-bg);
+    color: #1d1d1f;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    translate: -50% -50%;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.12), 0 0 0 0.5px rgb(0 0 0 / 0.06);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     pointer-events: auto;
     will-change: transform;
+    transition: scale 160ms var(--ease-emph), padding 160ms var(--ease-emph);
   }
-  .map-poi-dot {
-    position: absolute;
-    left: -11px;
-    top: -11px;
-    width: 22px;
-    height: 22px;
+  .campus-map[data-theme='dark'] .map-badge {
+    background: rgb(44 44 46 / 0.88);
+    color: #f5f5f7;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.4), 0 0 0 0.5px rgb(255 255 255 / 0.08);
+  }
+  .map-badge-icon {
+    width: 16px;
+    height: 16px;
+    flex: none;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
     background: var(--poi);
     color: #ffffff;
-    box-shadow: 0 0 0 1.5px var(--map-halo), 0 1px 4px rgb(0 0 0 / 0.3);
-    transition: transform 160ms var(--ease-emph);
+  }
+  .map-badge[data-mode='dot'] {
+    padding: 0 3px;
+    gap: 0;
+  }
+  .map-badge[data-mode='dot'] .map-badge-text {
+    display: none;
+  }
+  .map-badge:hover,
+  .map-badge.is-hover {
+    scale: 1.08;
+  }
+  .map-badge:focus-visible {
+    outline: 2px solid var(--poi);
+    outline-offset: 2px;
+  }
+
+  /* Pin anchor for the selected place */
+  /* Ride preview: start ring, end dot and the distance chip on the blue route line */
+  .map-route-stop {
+    position: absolute;
+    left: 0;
+    top: 0;
+    border-radius: 9999px;
+    pointer-events: none;
+    z-index: 90;
+    will-change: transform;
+  }
+  .map-route-stop.is-start {
+    width: 16px;
+    height: 16px;
+    background: #ffffff;
+    box-shadow: inset 0 0 0 4px #0a84ff, 0 1px 4px rgb(0 0 0 / 0.3);
+  }
+  .map-route-stop.is-end {
+    width: 16px;
+    height: 16px;
+    background: #0a84ff;
+    box-shadow: 0 0 0 3px #ffffff, 0 1px 5px rgb(0 0 0 / 0.35);
+  }
+  .map-route-chip {
+    position: absolute;
+    left: 0;
+    top: 0;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    background: #0a84ff;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    white-space: nowrap;
+    box-shadow: 0 0 0 2px #ffffff, 0 2px 6px rgb(0 0 0 / 0.25);
+    pointer-events: none;
+    z-index: 95;
+    will-change: transform;
+  }
+
+  .map-poi {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    will-change: transform;
   }
   .map-poi-label {
     position: absolute;
-    left: 15px;
-    top: -9px;
-    font-size: 12px;
-    line-height: 18px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
     white-space: nowrap;
     color: var(--poi);
     text-shadow: 0 0 2px var(--map-halo), 0 0 2px var(--map-halo), 0 0 3px var(--map-halo), 0 0 4px var(--map-halo);
     pointer-events: none;
-    transition: opacity 180ms var(--ease-emph);
-  }
-  .map-poi[data-far='1'] .map-poi-dot {
-    transform: scale(0.78);
-  }
-  .map-poi[data-far='1'] .map-poi-label {
-    opacity: 0;
-  }
-  .map-poi:hover .map-poi-dot,
-  .map-poi.is-hover .map-poi-dot {
-    transform: scale(1.15);
-  }
-  .map-poi:hover .map-poi-label,
-  .map-poi.is-hover .map-poi-label,
-  .map-poi:focus-visible .map-poi-label {
-    opacity: 1;
-  }
-  .map-poi:focus-visible {
-    outline: none;
-  }
-  .map-poi:focus-visible .map-poi-dot {
-    box-shadow: 0 0 0 1.5px var(--map-halo), 0 0 0 4px var(--poi);
   }
 
   /* Selected place: a balloon pin that drops in, with a soft shadow where it lands */
@@ -711,6 +736,39 @@
     animation-delay: var(--word-delay, 0ms);
   }
 
+  /* Home hero backdrop: the campus plan stays faint behind the copy and fades out at the edges */
+  .hero-plan {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, rgb(0 0 0 / 0.9) 6%, rgb(0 0 0 / 0.4) 20%,
+      rgb(0 0 0 / 0.14) 36%, rgb(0 0 0 / 0.14) 62%, rgb(0 0 0 / 0.6) 80%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, rgb(0 0 0 / 0.9) 6%, rgb(0 0 0 / 0.4) 20%,
+      rgb(0 0 0 / 0.14) 36%, rgb(0 0 0 / 0.14) 62%, rgb(0 0 0 / 0.6) 80%, transparent);
+  }
+  @media (min-width: 640px) {
+    .hero-plan {
+      -webkit-mask-image: radial-gradient(ellipse 46% 52% at 50% 46%, rgb(0 0 0 / 0.12), rgb(0 0 0 / 0.2) 55%, #000),
+        linear-gradient(to bottom, transparent, #000 8%, #000 80%, transparent),
+        linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+      -webkit-mask-composite: source-in, source-in;
+      mask-image: radial-gradient(ellipse 46% 52% at 50% 46%, rgb(0 0 0 / 0.12), rgb(0 0 0 / 0.2) 55%, #000),
+        linear-gradient(to bottom, transparent, #000 8%, #000 80%, transparent),
+        linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+      mask-composite: intersect;
+    }
+  }
+  /* The hero's route draws once on load, after the headline words land */
+  .hero-route-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    animation: hero-route-draw 1.6s var(--ease-emph) 700ms forwards;
+  }
+  .hero-route-stop {
+    opacity: 0;
+    animation: hero-stop-in 240ms var(--ease-emph) 600ms forwards;
+  }
+  .hero-route-stop:last-of-type {
+    animation-delay: 2200ms;
+  }
+
   /* Route line that draws itself between two stops */
   .route-draw {
     stroke-dasharray: 4 6;
@@ -732,6 +790,14 @@
 @keyframes word-rise {
   from { transform: translateY(105%); }
   to { transform: none; }
+}
+
+@keyframes hero-route-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes hero-stop-in {
+  to { opacity: 1; }
 }
 
 @keyframes route-flow {

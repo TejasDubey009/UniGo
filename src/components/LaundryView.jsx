@@ -1,26 +1,27 @@
 import React, { useState } from 'react';
+import { useDialog } from '../hooks/useDialog';
 import { useApp } from '../context/useApp';
 import { useCountUp } from '../hooks/useMotion';
-import { GIRLS_HOSTELS, BOYS_HOSTELS, OTHER_LOCATIONS, UNIGO_HELPLINE } from '../data/campusData';
+import { GIRLS_HOSTELS, BOYS_HOSTELS, OTHER_LOCATIONS } from '../data/campusData';
+import { celebrate } from '../lib/celebrate';
+import { shortRef, formatWhen } from '../lib/format';
+import {
+  LAUNDRY_RATES,
+  LAUNDRY_TURNAROUND_DAYS,
+  laundryPrice,
+  nextPickupDays,
+  toDateKey,
+  fromDateKey,
+  addDays,
+  formatDay,
+} from '../lib/pricing';
 import { PageHeader, Reveal, Segmented } from './ui';
 import CampusMap3D from './LazyCampusMap3D';
-import GoogleCampus3DMap from './GoogleCampus3DMap';
-import confetti from 'canvas-confetti';
-import {
-  ArrowRight,
-  Map as MapIcon,
-  Check,
-  Clock,
-  MessageSquare,
-  PackageCheck,
-  Satellite,
-  Shirt,
-  ShieldCheck,
-} from 'lucide-react';
+import GoogleCampusMap from './GoogleCampusMap';
+import { ArrowRight, Map as MapIcon, Check, Clock, PackageCheck, Satellite, CalendarDays, Scale } from 'lucide-react';
 
 const HOSTELS_BY_CATEGORY = { 'Girls Hostel': GIRLS_HOSTELS, 'Boys Hostel': BOYS_HOSTELS };
 const CATEGORY_BY_NODE = { 'girls-hostel': 'Girls Hostel', 'boys-hostel': 'Boys Hostel' };
-const WASH_RATES = { 'Wash Only': 49, 'Wash + Iron': 79 };
 
 // Values are what gets stored on the order; labels are what students read
 const SERVICES = [
@@ -29,13 +30,9 @@ const SERVICES = [
 ];
 const SERVICE_LABEL = Object.fromEntries(SERVICES.map((s) => [s.value, s.label]));
 
-const PICKUP_SLOTS = [
-  { value: 'Today Evening (05:00 PM - 07:30 PM)', label: 'Today evening, 5:00–7:30 PM' },
-  { value: 'Tonight Night-Owl (08:30 PM - 10:30 PM)', label: 'Tonight, 8:30–10:30 PM' },
-  { value: 'Tomorrow Morning (07:30 AM - 09:30 AM)', label: 'Tomorrow morning, 7:30–9:30 AM' },
-  { value: 'Tomorrow Noon (12:30 PM - 02:30 PM)', label: 'Tomorrow noon, 12:30–2:30 PM' },
-];
-const slotLabel = (value) => PICKUP_SLOTS.find((s) => s.value === value)?.label ?? value;
+// Pickup days are stored as YYYY-MM-DD; delivery is two days later
+const dayLabel = (key) => (key ? formatDay(fromDateKey(key)) : '');
+const deliveryLabel = (key) => (key ? formatDay(addDays(fromDateKey(key), LAUNDRY_TURNAROUND_DAYS)) : '');
 
 const CATEGORY_OPTIONS = [
   {
@@ -59,27 +56,27 @@ const CATEGORY_OPTIONS = [
 
 const MAP_OPTIONS = [
   { value: 'webgl', label: 'Map', icon: MapIcon },
-  { value: 'google3d', label: 'Satellite', icon: Satellite },
+  { value: 'satellite', label: 'Satellite', icon: Satellite },
 ];
 
 const GUARANTEES = [
-  { icon: ShieldCheck, title: 'Barcoded bags', desc: 'Every bag is tagged at pickup' },
-  { icon: Shirt, title: 'Steam ironed', desc: 'Packed on hangers' },
-  { icon: Clock, title: 'Back in 24 hours', desc: 'Returned to your hostel' },
+  { icon: CalendarDays, title: 'Wednesday and Sunday', desc: 'Book by the day before pickup' },
+  { icon: Scale, title: 'Weighed at pickup', desc: `₹${LAUNDRY_RATES['Wash Only']}/kg wash, ₹${LAUNDRY_RATES['Wash + Iron']}/kg with ironing` },
+  { icon: Clock, title: 'Back in two days', desc: 'Returned to your hostel' },
 ];
 
-// Order statuses as set from the admin console, in the order they happen
+// Order statuses as stored in Supabase (an admin moves the order along), in the order they happen
 const ORDER_STEPS = [
-  { status: 'Pickup Scheduled', step: 'Booked', badge: 'Pickup scheduled' },
-  { status: 'Clothes Collected', step: 'Collected', badge: 'Collected' },
-  { status: 'Washing & Steam Ironing', step: 'Washing', badge: 'Washing' },
-  { status: 'Ready for Delivery', step: 'Ready', badge: 'Ready for delivery' },
-  { status: 'Delivered', step: 'Delivered', badge: 'Delivered' },
+  { status: 'scheduled', step: 'Booked', badge: 'Pickup scheduled' },
+  { status: 'collected', step: 'Collected', badge: 'Collected' },
+  { status: 'washing', step: 'Washing', badge: 'Washing' },
+  { status: 'ready', step: 'Ready', badge: 'Ready for delivery' },
+  { status: 'delivered', step: 'Delivered', badge: 'Delivered' },
 ];
 
 // Index of the step in progress; a delivered order has every step done
 const currentStepIndex = (status) => {
-  if (status === 'Delivered') return ORDER_STEPS.length;
+  if (status === 'delivered') return ORDER_STEPS.length;
   return Math.max(0, ORDER_STEPS.findIndex((s) => s.status === status));
 };
 
@@ -94,8 +91,10 @@ const pickupFromLocation = (loc) => {
     : { mainCategory: 'Others', hostelName: '', otherLocation: loc.name };
 };
 
+// The student's saved hostel, or the first girls hostel for someone not signed in yet
 const pickupFromUser = (user) => {
-  const hostels = HOSTELS_BY_CATEGORY[user?.hostelCategory];
+  if (!user?.hostelCategory) return { mainCategory: 'Girls Hostel', hostelName: GIRLS_HOSTELS[0].name, otherLocation: '' };
+  const hostels = HOSTELS_BY_CATEGORY[user.hostelCategory];
   if (hostels) {
     // Older profiles may store a short name ("Bharathiar Hostel"), so fall back to a partial match
     const shortName = (user.hostelName || '').replace(/ Hostel$/, '');
@@ -105,13 +104,13 @@ const pickupFromUser = (user) => {
       hostels[0];
     return { mainCategory: user.hostelCategory, hostelName: hostel.name, otherLocation: '' };
   }
-  return { mainCategory: 'Others', hostelName: '', otherLocation: user?.hostelName || OTHER_LOCATIONS[0] };
+  return { mainCategory: 'Others', hostelName: '', otherLocation: user.hostelName || OTHER_LOCATIONS[0] };
 };
 
 function OrderStatusBadge({ status }) {
   const step = ORDER_STEPS.find((s) => s.status === status);
   const text = step?.badge ?? status;
-  if (status === 'Delivered') {
+  if (status === 'delivered') {
     return (
       <span className="badge badge-lime">
         <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden="true" />
@@ -119,7 +118,8 @@ function OrderStatusBadge({ status }) {
       </span>
     );
   }
-  if (status === 'Pickup Scheduled') return <span className="badge badge-ghost">{text}</span>;
+  if (status === 'scheduled') return <span className="badge badge-ghost">{text}</span>;
+  if (status === 'cancelled') return <span className="badge badge-neutral">Cancelled</span>;
   return (
     <span className="badge badge-forest">
       {/* The dot's forest core would vanish on a forest badge, so it goes lime here */}
@@ -169,8 +169,9 @@ function OrderTimeline({ status }) {
 }
 
 export default function LaundryView() {
-  const { user, laundryOrders, addLaundryOrder, selected3DTarget, setSelected3DTarget } = useApp();
-  const [laundryMapMode, setLaundryMapMode] = useState('webgl'); // 'webgl' | 'google3d'
+  const { user, laundryOrders, placeLaundryOrder, requireAuth, saveProfileDetails, selected3DTarget, setSelected3DTarget, resyncTick } =
+    useApp();
+  const [laundryMapMode, setLaundryMapMode] = useState('webgl'); // 'webgl' | 'satellite'
 
   // Pickup location: starts from a location picked on the campus map ("Book Laundry"), else the student's hostel
   const [pickup, setPickup] = useState(() =>
@@ -188,13 +189,36 @@ export default function LaundryView() {
   // Form states
   const [studentName, setStudentName] = useState(user?.name || '');
   const [roomNumber, setRoomNumber] = useState(user?.room || '');
-  const [whatsappNumber, setWhatsappNumber] = useState(user?.phone || '');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [washType, setWashType] = useState('Wash + Iron'); // 'Wash Only' | 'Wash + Iron'
   const [weightKg, setWeightKg] = useState(4.5);
-  const [pickupSlot, setPickupSlot] = useState('Today Evening (05:00 PM - 07:30 PM)');
+  // The next four Wednesdays and Sundays (in India's date); orders close the day before pickup. Worked
+  // out again when the page comes back into view, so a tab left open overnight doesn't offer a day
+  // that has already closed.
+  const [pickupDays, setPickupDays] = useState(() => nextPickupDays(4));
+  const [pickupDate, setPickupDate] = useState(() => toDateKey(pickupDays[0]));
+  const [daysFor, setDaysFor] = useState(resyncTick);
+  if (resyncTick !== daysFor) {
+    setDaysFor(resyncTick);
+    const days = nextPickupDays(4);
+    setPickupDays(days);
+    if (!days.some((day) => toDateKey(day) === pickupDate)) setPickupDate(toDateKey(days[0]));
+  }
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [submittedOrder, setSubmittedOrder] = useState(null);
+  const confirmDialogRef = useDialog(Boolean(submittedOrder), () => setSubmittedOrder(null));
+
+  // Fill blank fields from the student's profile once it arrives (sign-in can happen after the page opens)
+  const [filledFor, setFilledFor] = useState(user?.key);
+  if (user && user.key !== filledFor) {
+    setFilledFor(user.key);
+    if (!studentName) setStudentName(user.name);
+    if (!roomNumber) setRoomNumber(user.room);
+    if (!phone) setPhone(user.phone);
+    if (!selected3DTarget && user.hostelCategory) setPickup(pickupFromUser(user));
+  }
 
   // Selecting a hostel also flies both 3D maps to it
   const handleSelectHostel = (hostel) => {
@@ -223,68 +247,55 @@ export default function LaundryView() {
   const pickupLabel = mainCategory === 'Others' ? otherLocation || 'Custom pickup point' : hostelName;
 
   // Rate calculation
-  const ratePerKg = WASH_RATES[washType];
-  const totalPrice = Math.round(weightKg * ratePerKg);
+  const ratePerKg = LAUNDRY_RATES[washType];
+  const totalPrice = laundryPrice(washType, weightKg);
   const shownTotal = useCountUp(totalPrice);
 
-  // This student's orders: new records carry their email, older/seed ones match by name
-  const myOrders = laundryOrders.filter((o) => (o.userEmail ? o.userEmail === user.email : o.studentName === user.name));
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
+    if (!requireAuth('Sign in with your university account to book a laundry pickup.')) return;
+
     setIsSubmitting(true);
+    setSubmitError('');
+    const pickupPoint = mainCategory === 'Others' ? otherLocation.trim() : hostelName;
+    const { data, error } = await placeLaundryOrder({
+      student_name: studentName.trim(),
+      phone: phone.trim(),
+      pickup_category: mainCategory,
+      pickup_point: pickupPoint,
+      room: roomNumber.trim(),
+      service: washType,
+      weight_kg: weightKg,
+      pickup_date: pickupDate,
+      instructions: specialInstructions.trim() || null,
+    });
+    setIsSubmitting(false);
+    if (error) {
+      setSubmitError(error);
+      return;
+    }
 
-    const effectiveHostel = mainCategory === 'Others' ? otherLocation.trim() : hostelName;
-
-    setTimeout(() => {
-      const created = addLaundryOrder({
-        studentName,
-        userEmail: user.email,
-        phone: whatsappNumber,
-        category: mainCategory,
-        hostelName: effectiveHostel,
-        room: roomNumber,
-        type: washType,
-        weightEstimate: `${weightKg} kg`,
-        price: totalPrice,
-        slot: pickupSlot,
-        instructions: specialInstructions.trim(),
-      });
-
-      setSubmittedOrder(created);
-      setIsSubmitting(false);
-      setSpecialInstructions('');
-
-      // Confetti burst
-      confetti({
-        particleCount: 90,
-        spread: 70,
-        origin: { y: 0.6 },
-        colors: ['#9fe870', '#163300', '#ffd300'],
-      });
-    }, 700);
+    setSubmittedOrder(data);
+    setSpecialInstructions('');
+    saveProfileDetails({
+      full_name: user.name ? undefined : studentName.trim(),
+      phone: phone.trim(),
+      hostel_category: mainCategory,
+      hostel_name: pickupPoint,
+      room: roomNumber.trim(),
+    });
+    celebrate(90);
   };
-
-  const whatsappConfirmUrl = submittedOrder
-    ? `https://wa.me/${UNIGO_HELPLINE.replace(/\D/g, '')}?text=${encodeURIComponent(
-        `Hi UniGo PU, I have booked laundry order ${submittedOrder.id} from ${submittedOrder.hostelName} ${submittedOrder.room}. Please confirm pickup!`
-      )}`
-    : '';
 
   const quickPicks = HOSTELS_BY_CATEGORY[mainCategory];
 
   return (
     <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
       <PageHeader
-        eyebrow="Hostel laundry · 24-hour turnaround"
-        title="Laundry by tomorrow"
-        description="Pick your hostel on the map, choose wash or wash + iron, and a runner collects from your floor. Every bag is barcoded and back at your hostel within 24 hours."
-        aside={
-          <span className="badge badge-lime !h-8 !px-3.5 !text-[13px]">
-            <span className="live-dot" aria-hidden="true" />4 runners on duty
-          </span>
-        }
+        eyebrow="Hostel laundry · Wednesday and Sunday pickups"
+        title="Laundry, back in two days"
+        description="Pick your hostel on the map, choose wash or wash + iron, and we collect it on Wednesday or Sunday. It is weighed at pickup and back at your hostel two days later."
       />
 
       <div className="mt-12 sm:mt-14 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
@@ -293,7 +304,7 @@ export default function LaundryView() {
           <div className="flex flex-wrap items-start justify-between gap-3 mb-7">
             <div>
               <h2 className="heading text-[26px] sm:text-[30px]">Book a pickup</h2>
-              <p className="text-[15px] text-body mt-1.5">A runner collects from your door.</p>
+              <p className="text-[15px] text-body mt-1.5">We collect it from your hostel.</p>
             </div>
             <span className="badge badge-ghost">PU students only</span>
           </div>
@@ -310,7 +321,7 @@ export default function LaundryView() {
                 autoComplete="name"
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
-                placeholder="e.g. Arjun Sharma"
+                placeholder="As on your student ID"
                 className="field"
               />
             </div>
@@ -383,17 +394,17 @@ export default function LaundryView() {
                 />
               </div>
               <div>
-                <label htmlFor="laundry-whatsapp" className="label">
-                  WhatsApp number
+                <label htmlFor="laundry-phone" className="label">
+                  Phone number
                 </label>
                 <input
-                  id="laundry-whatsapp"
+                  id="laundry-phone"
                   type="tel"
                   required
                   autoComplete="tel"
-                  value={whatsappNumber}
-                  onChange={(e) => setWhatsappNumber(e.target.value)}
-                  placeholder="+91 98765 43210"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+91 9XXXX XXXXX"
                   className="field num"
                 />
               </div>
@@ -426,7 +437,7 @@ export default function LaundryView() {
                         </span>
                       </span>
                       <span className="mt-1 text-[14px] font-semibold text-forest num">
-                        ₹{WASH_RATES[service.value]} / kg
+                        ₹{LAUNDRY_RATES[service.value]} / kg
                       </span>
                       <span className="mt-2 text-[13px] text-muted leading-snug">{service.desc}</span>
                       {service.tag && <span className="badge badge-neutral !h-5 !text-[11px] mt-3">{service.tag}</span>}
@@ -470,21 +481,30 @@ export default function LaundryView() {
             </div>
 
             <div>
-              <label htmlFor="laundry-slot" className="label">
-                Pickup slot
-              </label>
-              <select
-                id="laundry-slot"
-                value={pickupSlot}
-                onChange={(e) => setPickupSlot(e.target.value)}
-                className="field"
-              >
-                {PICKUP_SLOTS.map((slot) => (
-                  <option key={slot.value} value={slot.value}>
-                    {slot.label}
-                  </option>
-                ))}
-              </select>
+              <div className="flex items-baseline justify-between gap-3">
+                <span id="laundry-day-label" className="label">
+                  Pickup day
+                </span>
+                <span className="text-[12px] text-muted mb-1.5">Wednesdays and Sundays</span>
+              </div>
+              <div role="group" aria-labelledby="laundry-day-label" className="grid grid-cols-2 gap-2.5">
+                {pickupDays.map((day) => {
+                  const key = toDateKey(day);
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setPickupDate(key)}
+                      aria-pressed={pickupDate === key}
+                      className="option px-3.5 py-3 text-left"
+                    >
+                      <span className="block text-[15px] font-semibold text-ink">{formatDay(day)}</span>
+                      <span className="block text-[13px] text-muted">Back {deliveryLabel(key)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-[13px] text-muted">Book by the day before pickup.</p>
             </div>
 
             <div>
@@ -516,6 +536,12 @@ export default function LaundryView() {
                   PU student rate
                 </p>
               </div>
+
+              {submitError && (
+                <p role="alert" className="mt-5 rounded-[10px] bg-alert-wash px-4 py-3 text-[14px] text-alert">
+                  {submitError}
+                </p>
+              )}
 
               <button
                 type="submit"
@@ -555,8 +581,8 @@ export default function LaundryView() {
           </div>
 
           <div className="media-frame h-[420px] sm:h-[520px] lg:h-[600px]">
-            {laundryMapMode === 'google3d' ? (
-              <GoogleCampus3DMap highlightedId={activeHostelObject?.id} onLocationSelect={handleMapLocationSelect} />
+            {laundryMapMode === 'satellite' ? (
+              <GoogleCampusMap highlightedId={activeHostelObject?.id} />
             ) : (
               <CampusMap3D highlightedId={activeHostelObject?.id} onHostelSelect={handleMapLocationSelect} />
             )}
@@ -617,24 +643,24 @@ export default function LaundryView() {
               Your laundry orders
             </h2>
           </div>
-          {myOrders.length > 0 && (
+          {laundryOrders.length > 0 && (
             <span className="badge badge-neutral num">
-              {myOrders.length} {myOrders.length === 1 ? 'order' : 'orders'}
+              {laundryOrders.length} {laundryOrders.length === 1 ? 'order' : 'orders'}
             </span>
           )}
         </Reveal>
 
-        {myOrders.length > 0 ? (
+        {laundryOrders.length > 0 ? (
           <ul className="space-y-3">
-            {myOrders.map((order, i) => (
+            {laundryOrders.map((order, i) => (
               <Reveal as="li" key={order.id} delay={Math.min(i, 5) * 60}>
                 <div className="surface-line p-5 sm:p-6 animate-pop-in">
                   <div className="flex flex-wrap items-start justify-between gap-x-6 gap-y-3">
                     <div className="min-w-0">
-                      <p className="font-mono text-[13px] text-muted">{order.id}</p>
-                      <h3 className="mt-1 text-[18px] font-semibold text-ink leading-snug">{order.hostelName}</h3>
+                      <p className="font-mono text-[13px] text-muted">{shortRef(order.id)}</p>
+                      <h3 className="mt-1 text-[18px] font-semibold text-ink leading-snug">{order.pickup_point}</h3>
                       <p className="text-[14px] text-body">
-                        {order.room} · {SERVICE_LABEL[order.type] ?? order.type} · {order.weightEstimate}
+                        {order.room} · {SERVICE_LABEL[order.service] ?? order.service} · {order.weight_kg} kg
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
@@ -645,11 +671,10 @@ export default function LaundryView() {
                     </div>
                   </div>
 
-                  <OrderTimeline status={order.status} />
+                  {order.status !== 'cancelled' && <OrderTimeline status={order.status} />}
 
                   <p className="mt-4 text-[13px] text-muted">
-                    {order.date}
-                    {order.eta && ` · ${order.eta}`}
+                    Booked {formatWhen(order.created_at)} · pickup {dayLabel(order.pickup_date)} · back {deliveryLabel(order.pickup_date)}
                   </p>
                 </div>
               </Reveal>
@@ -658,8 +683,9 @@ export default function LaundryView() {
         ) : (
           <Reveal className="border-t border-hairline pt-8">
             <p className="text-[15px] text-muted max-w-md">
-              No laundry orders yet. Book a pickup above and it shows up here with its status, from pickup to
-              delivery.
+              {user
+                ? 'No laundry orders yet. Book a pickup above and it shows up here with its status, from pickup to delivery.'
+                : 'Sign in to see your laundry orders and follow each one from pickup to delivery.'}
             </p>
           </Reveal>
         )}
@@ -669,6 +695,8 @@ export default function LaundryView() {
       {submittedOrder && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-ink/40 backdrop-blur-sm overflow-y-auto animate-fade-in">
           <div
+            ref={confirmDialogRef}
+            tabIndex={-1}
             role="dialog"
             aria-modal="true"
             aria-labelledby="laundry-confirm-title"
@@ -683,28 +711,32 @@ export default function LaundryView() {
               A runner is scheduled
             </h3>
             <p className="text-[15px] text-body mt-2 leading-relaxed">
-              Your runner will collect from <span className="font-semibold text-ink">{submittedOrder.hostelName}</span>,{' '}
+              Your runner will collect from <span className="font-semibold text-ink">{submittedOrder.pickup_point}</span>,{' '}
               {submittedOrder.room}.
             </p>
 
             <dl className="my-6 divide-y divide-hairline border-y border-hairline text-[14px]">
               <div className="flex justify-between gap-4 py-3">
                 <dt className="text-muted">Order ID</dt>
-                <dd className="font-mono text-ink">{submittedOrder.id}</dd>
+                <dd className="font-mono text-ink">{shortRef(submittedOrder.id)}</dd>
               </div>
               <div className="flex justify-between gap-4 py-3">
                 <dt className="text-muted">Service</dt>
-                <dd className="text-ink font-medium">{SERVICE_LABEL[submittedOrder.type] ?? submittedOrder.type}</dd>
+                <dd className="text-ink font-medium">{SERVICE_LABEL[submittedOrder.service] ?? submittedOrder.service}</dd>
               </div>
               <div className="flex justify-between gap-4 py-3">
                 <dt className="text-muted">Weight and estimate</dt>
                 <dd className="text-ink font-medium num text-right">
-                  {submittedOrder.weightEstimate} · ₹{submittedOrder.price}
+                  {submittedOrder.weight_kg} kg · ₹{submittedOrder.price}
                 </dd>
               </div>
               <div className="flex justify-between gap-4 py-3">
-                <dt className="text-muted shrink-0">Pickup slot</dt>
-                <dd className="text-ink font-medium text-right">{slotLabel(submittedOrder.slot)}</dd>
+                <dt className="text-muted shrink-0">Pickup</dt>
+                <dd className="text-ink font-medium text-right">{dayLabel(submittedOrder.pickup_date)}</dd>
+              </div>
+              <div className="flex justify-between gap-4 py-3">
+                <dt className="text-muted shrink-0">Back at your hostel</dt>
+                <dd className="text-ink font-medium text-right">{deliveryLabel(submittedOrder.pickup_date)}</dd>
               </div>
               {submittedOrder.instructions && (
                 <div className="flex justify-between gap-4 py-3">
@@ -713,20 +745,14 @@ export default function LaundryView() {
                 </div>
               )}
               <div className="flex justify-between gap-4 py-3">
-                <dt className="text-muted">WhatsApp updates to</dt>
+                <dt className="text-muted">Runner calls</dt>
                 <dd className="text-ink font-medium num text-right">{submittedOrder.phone}</dd>
               </div>
             </dl>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <a href={whatsappConfirmUrl} target="_blank" rel="noreferrer" className="btn btn-forest flex-1">
-                <MessageSquare className="w-4 h-4" aria-hidden="true" />
-                Confirm on WhatsApp
-              </a>
-              <button type="button" onClick={() => setSubmittedOrder(null)} className="btn btn-quiet">
-                Done
-              </button>
-            </div>
+            <button type="button" onClick={() => setSubmittedOrder(null)} className="btn btn-forest w-full">
+              Done
+            </button>
           </div>
         </div>
       )}

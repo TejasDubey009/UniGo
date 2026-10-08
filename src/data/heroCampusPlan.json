@@ -1,0 +1,23 @@
+{
+  "attribution": "Map data © OpenStreetMap contributors (ODbL); place catalogue from APPLE_MAPS_PU_SPEC",
+  "plan": {
+    "x": -1750,
+    "y": -1400,
+    "width": 3750,
+    "height": 3600
+  },
+  "route": {
+    "from": "Narmatha Hostel",
+    "to": "University Health Centre",
+    "meters": 564,
+    "d": "M-917 404L-893 452L-889 455L-887 458L-881 463L-876 467L-867 471L-832 483L-741 513L-724 519L-713 527L-708 532L-701 546L-645 657L-611 736L-590 777L-574 809",
+    "start": [
+      -917,
+      404
+    ],
+    "end": [
+      -574,
+      809
+    ]
+  }
+}

@@ -2,6 +2,7 @@
 // World units are metres: +X east, +Z south, origin at 12.026728° N, 79.855588° E.
 // Only the lazily loaded 3D map imports this, so the JSON stays out of the main bundle.
 import spec from './pu_apple_maps_reference.json';
+import geometry from './pu_campus_map.json';
 
 const design = spec.apple_maps_design_system;
 
@@ -10,11 +11,10 @@ export const PALETTE = {
   dark: design.color_tokens.dark_mode,
 };
 
-export const LIGHTING = design.lighting_and_atmosphere;
 export const BUILDINGS = spec.buildings;
-export const ROADS = spec.road_network;
 export const BUS_STOPS = spec.bus_stops;
-export const SECTORS = spec.campus_sectors;
+// Real outlines, roads, areas and coastline from OpenStreetMap (scripts/build-campus-map.mjs)
+export const GEOMETRY = geometry;
 
 // Short names for map badges; the full name shows in the place card
 const SHORT_LABELS = {
@@ -63,13 +63,23 @@ const SHORT_LABELS = {
   'gate-1-main': 'Gate 1',
   'gate-2-kalapet': 'Gate 2',
   'transit-hostel': 'Transit Hostel',
+  'new-mega-mess': 'New Mega Mess',
+  // Stops carry "stop" so they don't read as a second badge for the building beside them
+  'stop-sj': 'SJC stop',
+  'stop-unesco': 'UNESCO stop',
+  'stop-central-library': 'Library stop',
+  'stop-gate-1-ecr': 'Gate 1 stop',
 };
+
+// Some catalogue names are in capitals; badges and place cards use title case
+export const displayName = (place) =>
+  place.name === place.name.toUpperCase() ? place.name.toLowerCase().replace(/\b[a-z]/g, (c) => c.toUpperCase()) : place.name;
 
 export const shortLabel = (place) =>
   SHORT_LABELS[place.id] ||
-  place.name
+  displayName(place)
     .replace(/ (Boys|Ladies) Hostel/, ' Hostel')
-    .replace(/ (Bus Stop|Shuttle Stop|Main Gate Bus Shelter)$/, '')
+    .replace(/ (Bus Stop|Shuttle Stop)$/, ' stop')
     .replace(/^Department of /, '');
 
 // Places that read on the overview, like a city's landmarks on Apple Maps

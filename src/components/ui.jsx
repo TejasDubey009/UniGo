@@ -54,7 +54,7 @@ export function Segmented({ options, value, onChange, ariaLabel, className = '',
 }
 
 // Brand mark: the UniGo unicorn on an ink tile
-export function LogoMark({ className = 'w-9 h-9' }) {
+function LogoMark({ className = 'w-9 h-9' }) {
   return <img src={logoUrl} alt="" className={`${className} rounded-[10px] object-cover shrink-0`} />;
 }
 
@@ -69,24 +69,14 @@ export function Wordmark({ className = '' }) {
   );
 }
 
-// UniGo coin (gold is reserved for coins)
-export function CoinIcon({ className = 'w-4 h-4' }) {
-  return (
-    <svg viewBox="0 0 20 20" className={className} aria-hidden="true">
-      <circle cx="10" cy="10" r="9" fill="#ffd300" />
-      <circle cx="10" cy="10" r="6.2" fill="none" stroke="#b99400" strokeWidth="1.4" />
-      <path d="M8 7.2v3.3a2 2 0 0 0 4 0V7.2" fill="none" stroke="#7a6200" strokeWidth="1.6" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 // Consistent page opening: small label, big display title, optional supporting copy and a right-side slot
 export function PageHeader({ eyebrow, title, description, aside, className = '' }) {
   return (
     <header className={`flex flex-col lg:flex-row lg:items-end justify-between gap-6 ${className}`}>
       <div className="max-w-3xl">
         {eyebrow && <p className="eyebrow mb-4">{eyebrow}</p>}
-        <h1 className="display text-[44px] sm:text-[64px] lg:text-[76px]">{title}</h1>
+        {/* Scales down on the narrowest phones so long words fit */}
+        <h1 className="display text-[min(44px,11.5vw)] sm:text-[64px] lg:text-[76px]">{title}</h1>
         {description && (
           <p className="mt-5 text-[17px] sm:text-lg text-body max-w-2xl leading-relaxed [text-wrap:pretty]">
             {description}
