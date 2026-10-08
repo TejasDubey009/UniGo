@@ -272,13 +272,43 @@ while (coastWays.length) {
 coast = coast.filter(([x, z]) => z > -4200 && z < 5200 && x > -2500 && x < 5000);
 if (coast.length && coast[0][1] > coast.at(-1)[1]) coast.reverse();
 
+// ---- Leave out Kalapet village between East Coast Road and the beach ----
+// The map is about the campus; the dense village east of the highway only clutters it. Anything
+// whose middle lies more than 8 m east of the highway goes: houses, lanes, the village ground.
+const highway = roads.filter((r) => r.c === 'trunk');
+const highwayX = (z) => {
+  let x = null;
+  for (const road of highway) {
+    for (let i = 1; i < road.p.length; i++) {
+      const [ax, az] = road.p[i - 1];
+      const [bx, bz] = road.p[i];
+      if (az !== bz && (az - z) * (bz - z) <= 0) x = Math.max(x ?? -Infinity, ax + ((bx - ax) * (z - az)) / (bz - az));
+    }
+  }
+  if (x !== null) return x;
+  // Beyond the highway's ends: compare with its nearest point
+  const ends = highway.flatMap((r) => r.p);
+  return ends.reduce((best, p) => (Math.abs(p[1] - z) < Math.abs(best[1] - z) ? p : best), ends[0])[0];
+};
+const eastOfHighway = (pts) => {
+  const x = pts.reduce((s, p) => s + p[0], 0) / pts.length;
+  const z = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+  return highway.length > 0 && x > highwayX(z) + 8;
+};
+const keptBuildings = contextBuildings.filter((b) => !eastOfHighway(b.fp));
+const keptRoads = roads.filter((r) => r.c === 'trunk' || !eastOfHighway(r.p));
+const keptAreas = areas.filter((a) => !eastOfHighway(a.p));
+console.log(
+  `left out east of the highway: ${contextBuildings.length - keptBuildings.length} buildings, ${roads.length - keptRoads.length} roads, ${areas.length - keptAreas.length} areas`
+);
+
 const out = {
   attribution: 'Map data © OpenStreetMap contributors (ODbL); place catalogue from APPLE_MAPS_PU_SPEC',
   generated: new Date().toISOString().slice(0, 10),
   places,
-  buildings: contextBuildings,
-  roads,
-  areas,
+  buildings: keptBuildings,
+  roads: keptRoads,
+  areas: keptAreas,
   coast,
 };
 writeFileSync(join(root, 'src/data/pu_campus_map.json'), JSON.stringify(out));

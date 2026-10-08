@@ -12,11 +12,13 @@ import {
   CAMPUS_POINTS,
   buildWorld,
   applyStyle,
+  applyLighting,
   createMaterialRegistry,
   fitRadius,
   drivingRoute,
 } from './campusMapWorld';
 import { formatDistance } from '../lib/geo';
+import { skyNow } from '../lib/sky';
 import { useApp } from '../context/useApp';
 import {
   Scan,
@@ -46,8 +48,10 @@ import {
   Check,
   Hand,
   Sun,
+  Sunrise,
   Sunset,
   Moon,
+  SunMoon,
 } from 'lucide-react';
 
 // ---------------------------------------------------------------------------
@@ -99,11 +103,18 @@ const LEGEND = [
   { label: 'Campus gates', color: '#8E8E93' },
 ];
 
+// Auto follows the real sun and moon over campus: sunrise light at dawn, shadows that turn with
+// the sun through the day, a warm dusk, then moonlight and street lights after dark
 const MAP_STYLES = [
-  { value: 'day', label: 'Light', icon: Sun, swatch: PALETTE.light.terrain_fill },
+  { value: 'auto', label: 'Auto', icon: SunMoon, swatch: `linear-gradient(135deg, ${PALETTE.light.terrain_fill} 50%, ${PALETTE.dark.terrain_fill} 50%)` },
+  { value: 'sunrise', label: 'Sunrise', icon: Sunrise, swatch: '#f8e1da' },
+  { value: 'day', label: 'Day', icon: Sun, swatch: PALETTE.light.terrain_fill },
   { value: 'sunset', label: 'Sunset', icon: Sunset, swatch: '#f4e2d2' },
-  { value: 'night', label: 'Dark', icon: Moon, swatch: PALETTE.dark.terrain_fill },
+  { value: 'night', label: 'Night', icon: Moon, swatch: PALETTE.dark.terrain_fill },
 ];
+
+const PHASE_LABEL = { sunrise: 'sunrise', day: 'daytime', sunset: 'sunset', night: 'night, street lights on' };
+const IST_TIME = new Intl.DateTimeFormat('en-IN', { timeZone: 'Asia/Kolkata', hour: 'numeric', minute: '2-digit' });
 
 // Wheel zoom needs this key (or a click on the map first), so scrolling the page past a tall map still scrolls
 const ZOOM_KEY = typeof navigator !== 'undefined' && /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent) ? '⌘' : 'Ctrl';
@@ -147,8 +158,19 @@ const midpointOf = (points, metres) => {
 
 const CAMPUS_CENTRE = new THREE.Vector3((CAMPUS_BOUNDS.minX + CAMPUS_BOUNDS.maxX) / 2, 0, (CAMPUS_BOUNDS.minZ + CAMPUS_BOUNDS.maxZ) / 2);
 
+// Phones open close in, on the Library & admin area: about 250 m across the middle of the view, a
+// few buildings wide (measured from a phone screenshot the team picked). Place chips and flights to a
+// place use the same closeness there; Overview and the recentre button still show the whole campus.
+const PHONE_MAX_WIDTH = 640;
+const PHONE_VIEW_METRES = 250;
+const PHONE_HOME = 'central_library_and_admin';
+const isPhoneWidth = (width) => width > 0 && width < PHONE_MAX_WIDTH;
+// Orbit radius that puts PHONE_VIEW_METRES across the view's centre for this container shape
+const phoneRadius = (aspect) => PHONE_VIEW_METRES / (2 * Math.tan(THREE.MathUtils.degToRad(FOV / 2)) * aspect);
+const chipFor = (value) => PRESET_CHIPS.find((chip) => chip.value === value) || PRESET_CHIPS[0];
+
 // Orbit for a chip; the overview frames the whole campus for the map's current shape, `zoom` times closer
-const presetOrbit = (chip, aspect, zoom = 1) => {
+const presetOrbit = (chip, aspect, zoom = 1, phone = false) => {
   if (chip.value === OVERVIEW) {
     return {
       lookAt: CAMPUS_CENTRE.clone(),
@@ -161,7 +183,7 @@ const presetOrbit = (chip, aspect, zoom = 1) => {
   const target = chip.target ? NODE_BY_ID[chip.target] : null;
   return {
     lookAt: new THREE.Vector3(target ? target.x : preset.target_local_m[0], 0, target ? target.z : preset.target_local_m[2]),
-    radius: preset.altitude_m,
+    radius: phone ? phoneRadius(aspect) : preset.altitude_m,
     phi: THREE.MathUtils.degToRad(preset.pitch_deg),
     // Heading turns the view clockwise from north, so the camera swings the other way
     theta: -THREE.MathUtils.degToRad(preset.heading_deg),
@@ -169,7 +191,8 @@ const presetOrbit = (chip, aspect, zoom = 1) => {
 };
 
 // `route` ({ from, to } place ids) draws the drive between two campus places and frames it.
-// `zoom` opens the overview that many times closer than the whole-campus fit (and tightens route framing).
+// `zoom` opens the overview that many times closer than the whole-campus fit (and tightens route framing);
+// phone-width maps open on a close-up instead (PHONE_VIEW_METRES).
 export default function CampusMap3D({ onHostelSelect, highlightedId = null, route = null, zoom = 1 }) {
   const mountRef = useRef(null);
   const containerRef = useRef(null);
@@ -183,7 +206,11 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
     setMapDayNightMode,
   } = useApp();
 
-  const [viewPreset, setViewPreset] = useState(OVERVIEW);
+  // The view the map opens on: a place it was asked to show, else (phones) Library & admin up close,
+  // else the whole campus
+  const [viewPreset, setViewPreset] = useState(() =>
+    toSpecId(highlightedId) ? null : typeof window !== 'undefined' && isPhoneWidth(window.innerWidth) ? PHONE_HOME : OVERVIEW
+  );
   const [hoveredId, setHoveredId] = useState(null);
   const [selectedId, setSelectedId] = useState(() => toSpecId(highlightedId));
   const [isCardOpen, setIsCardOpen] = useState(false);
@@ -195,6 +222,14 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
   // Full screen covers the app; on phones one finger then drives the map instead of scrolling the page
   const [isFullscreen, setIsFullscreen] = useState(false);
   const fullscreenRef = useRef(false);
+  // The real sky over campus, refreshed every minute while the style follows it
+  const [sky, setSky] = useState(() => skyNow());
+  const isAutoStyle = mapDayNightMode === 'auto';
+  const mapStyle = isAutoStyle ? sky.phase : mapDayNightMode;
+  const isNightStyle = mapStyle === 'night';
+  // The style the scene was last recoloured for; within one style only the lights move
+  const appliedStyleRef = useRef(null);
+  const chipRowRef = useRef(null);
 
   // Follow picks made outside the map (laundry form, Google map card) by moving the pin there
   const [seenHighlight, setSeenHighlight] = useState(highlightedId);
@@ -233,7 +268,9 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
   const interactiveObjects = useRef([]);
   const aspectRef = useRef(1.6);
   const is2DRef = useRef(false);
-  const viewPresetRef = useRef(OVERVIEW);
+  const viewPresetRef = useRef(viewPreset);
+  // Whether the map is phone-width right now (kept up to date on resize)
+  const isPhoneRef = useRef(false);
   const zoomRef = useRef(zoom);
   const userMovedRef = useRef(false);
   const selectedIdRef = useRef(selectedId);
@@ -298,7 +335,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
   const flyToPlace = (node) => {
     if (!node) return;
     const { theta } = getOrbit();
-    const radius = THREE.MathUtils.clamp(node.size * 6, 300, 700);
+    const radius = isPhoneRef.current ? phoneRadius(aspectRef.current) : THREE.MathUtils.clamp(node.size * 6, 300, 700);
     setOrbit(new THREE.Vector3(node.x, 0, node.z), radius, theta, is2DRef.current ? FLAT_PHI : TILT_PHI);
   };
 
@@ -314,7 +351,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
   const showPreset = (chip) => {
     setViewPreset(chip.value);
     userMovedRef.current = false;
-    const { lookAt, radius, phi, theta } = presetOrbit(chip, aspectRef.current, zoomRef.current);
+    const { lookAt, radius, phi, theta } = presetOrbit(chip, aspectRef.current, zoomRef.current, isPhoneRef.current);
     setOrbit(lookAt, radius, theta, is2DRef.current ? FLAT_PHI : phi);
   };
 
@@ -373,10 +410,12 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
     const world = buildWorld(scene, registry);
     interactiveObjects.current = world.places;
     sceneStateRef.current = { scene, registry, world, ambient, hemi, sun, sunDirection };
-    applyStyle(sceneStateRef.current, 'day');
+    // A new scene has default colours: the style effect below colours it in full
+    appliedStyleRef.current = null;
 
-    // Open on the whole campus, framed for this container
-    const start = presetOrbit(PRESET_CHIPS[0], aspectRef.current, zoomRef.current);
+    // Open on the starting view, framed for this container
+    isPhoneRef.current = isPhoneWidth(container.clientWidth);
+    const start = presetOrbit(chipFor(viewPresetRef.current), aspectRef.current, zoomRef.current, isPhoneRef.current);
     setOrbit(start.lookAt, start.radius, start.theta, start.phi);
     camera.position.copy(targetCamPos.current);
     currentLookAt.current.copy(targetLookAt.current);
@@ -754,6 +793,11 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
         mesh.material.transparent = treeFade < 0.99;
         mesh.material.opacity = treeFade;
       });
+      // Lamp posts go with the trees; their light stays, so lit streets still show from afar
+      world.streetLights.posts.forEach((mesh) => {
+        mesh.visible = treeFade > 0.01;
+      });
+      world.moonSheen.tick(time / 1000);
 
       if (hoverAt) {
         const node = pickNode(hoverAt.x, hoverAt.y);
@@ -788,8 +832,10 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
       renderer.setSize(w, h);
       sceneStateRef.current?.routeMaterials?.forEach((material) => material.resolution.set(w, h));
       overlayDirtyRef.current = true;
-      if (viewPresetRef.current === OVERVIEW && !userMovedRef.current) {
-        const view = presetOrbit(PRESET_CHIPS[0], aspectRef.current, zoomRef.current);
+      // An untouched chip view (the overview, or a phone's close-up) reframes to the new shape
+      isPhoneRef.current = isPhoneWidth(w);
+      if (viewPresetRef.current && !userMovedRef.current) {
+        const view = presetOrbit(chipFor(viewPresetRef.current), aspectRef.current, zoomRef.current, isPhoneRef.current);
         setOrbit(view.lookAt, view.radius, view.theta, is2DRef.current ? FLAT_PHI : view.phi);
       }
     });
@@ -856,7 +902,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
     tripRef.current = trip;
     overlayDirtyRef.current = true;
     if (!state || !trip) return;
-    const colors = ROUTE_STYLE[mapDayNightMode === 'night' ? 'dark' : 'light'];
+    const colors = ROUTE_STYLE[isNightStyle ? 'dark' : 'light'];
     const geometry = new LineGeometry().setPositions(trip.points.flatMap(([x, z]) => [x, ROUTE_Y, z]));
     const line = (color, width, order) => {
       const material = new LineMaterial({ color, linewidth: width, worldUnits: false, depthWrite: false });
@@ -878,7 +924,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
       core.material.dispose();
       state.routeMaterials = [];
     };
-  }, [trip, mapDayNightMode]);
+  }, [trip, isNightStyle]);
 
   // Frame the whole drive when the route changes, keeping the current heading
   useEffect(() => {
@@ -894,10 +940,31 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
     setOrbit(lookAt, roomy / zoomRef.current, theta, phi);
   }, [trip]);
 
-  // Recolour for the chosen map style without rebuilding the scene or moving the camera
+  // Recolour for the map style without rebuilding the scene or moving the camera. Following the real
+  // sky, the sun (or moon) moves each minute and the palette changes only at dawn, day, dusk and night.
   useEffect(() => {
-    if (sceneStateRef.current) applyStyle(sceneStateRef.current, mapDayNightMode);
-  }, [mapDayNightMode]);
+    const state = sceneStateRef.current;
+    if (!state) return;
+    const liveSky = isAutoStyle ? sky : null;
+    if (appliedStyleRef.current === mapStyle) applyLighting(state, mapStyle, liveSky);
+    else applyStyle(state, mapStyle, liveSky);
+    appliedStyleRef.current = mapStyle;
+  }, [mapStyle, sky, isAutoStyle]);
+
+  useEffect(() => {
+    if (!isAutoStyle) return;
+    const refresh = () => setSky(skyNow());
+    const timer = setInterval(refresh, 60000);
+    // A phone waking up shouldn't show the sky from when it went to sleep
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') refresh();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [isAutoStyle]);
 
   // Fly to places picked elsewhere while this map is open (laundry hostel dropdown, Google map card).
   // A pick made before the map opened is ignored, so it can't steal the opening view (e.g. a ride route).
@@ -977,6 +1044,18 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
     setHasInteracted(true);
   };
 
+  // Keep the active chip in view in the scrolling chip row (a phone opens on one past the edge).
+  // Scrolls only the row, never the page.
+  useEffect(() => {
+    const row = chipRowRef.current;
+    const chip = row?.querySelector('[aria-pressed="true"]');
+    if (!chip) return;
+    const left = chip.offsetLeft - 12;
+    const right = chip.offsetLeft + chip.offsetWidth + 24 - row.clientWidth;
+    if (row.scrollLeft > left) row.scrollLeft = left;
+    else if (row.scrollLeft < right) row.scrollLeft = right;
+  }, [viewPreset]);
+
   const handlePreset = (chip) => {
     setHasInteracted(true);
     showPreset(chip);
@@ -1005,7 +1084,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
     setOrbit(targetLookAt.current.clone(), radius, 0, phi);
   };
 
-  const theme = mapDayNightMode === 'night' ? 'dark' : 'light';
+  const theme = isNightStyle ? 'dark' : 'light';
   const selectedNode = NODE_BY_ID[selectedId];
   const SelectedIcon = selectedNode?.Icon;
   const card = isCardOpen ? selectedNode : null;
@@ -1033,6 +1112,14 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
       data-theme={theme}
     >
       <div ref={mountRef} className="absolute inset-0" />
+
+      {/* Night: the edges of the map fall into darkness, like looking out at night */}
+      <div
+        aria-hidden="true"
+        className={`absolute inset-0 z-[4] pointer-events-none transition-opacity duration-700 bg-[radial-gradient(120%_95%_at_50%_45%,transparent_52%,rgb(3_7_20/0.55)_100%)] ${
+          isNightStyle ? 'opacity-100' : 'opacity-0'
+        }`}
+      />
 
       {/* Map text and place badges, positioned by the render loop */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-[5]">
@@ -1103,7 +1190,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
       </div>
 
       {/* Quick places, like the category chips under a map search bar */}
-      <div className="absolute top-[calc(var(--map-inset-top,0px)+12px)] left-3 right-[60px] z-10 flex gap-1.5 overflow-x-auto pb-1 ![scrollbar-width:none] pointer-events-none [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]">
+      <div ref={chipRowRef} className="absolute top-[calc(var(--map-inset-top,0px)+12px)] left-3 right-[60px] z-10 flex gap-1.5 overflow-x-auto pb-1 ![scrollbar-width:none] pointer-events-none [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]">
         {PRESET_CHIPS.map((chip) => {
           const Icon = chip.icon;
           const isActive = viewPreset === chip.value;
@@ -1161,7 +1248,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
           <div
             role="menu"
             aria-label="Map style"
-            className="map-glass absolute top-0 right-[52px] w-[200px] rounded-[14px] p-1.5 origin-top-right animate-pop-in"
+            className="map-glass absolute top-0 right-[52px] w-[236px] rounded-[14px] p-1.5 origin-top-right animate-pop-in"
           >
             <p className="px-2.5 pt-1.5 pb-1 text-[12px] font-semibold text-[var(--map-muted)]">Map style</p>
             {MAP_STYLES.map((option) => {
@@ -1174,22 +1261,35 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
                   role="menuitemradio"
                   aria-checked={isActive}
                   onClick={() => {
+                    if (option.value === 'auto') setSky(skyNow());
                     setMapDayNightMode(option.value);
                     setIsStyleMenuOpen(false);
                   }}
                   className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-[10px] text-[14px] font-medium hover:bg-[var(--map-hover)] transition-colors duration-150"
                 >
                   <span
-                    className="w-6 h-6 rounded-[7px] flex items-center justify-center shadow-[inset_0_0_0_0.5px_rgb(0_0_0/0.2)]"
-                    style={{ background: option.swatch, color: option.value === 'night' ? '#f5f5f7' : '#6e6e73' }}
+                    className="w-6 h-6 rounded-[7px] flex items-center justify-center shrink-0 shadow-[inset_0_0_0_0.5px_rgb(0_0_0/0.2)]"
+                    style={{
+                      background: option.swatch,
+                      color: option.value === 'night' || option.value === 'auto' ? '#f5f5f7' : '#6e6e73',
+                      filter: option.value === 'auto' ? 'drop-shadow(0 0 1px rgb(0 0 0 / 0.35))' : undefined,
+                    }}
                   >
                     <Icon className="w-3.5 h-3.5" aria-hidden="true" />
                   </span>
-                  <span className="flex-1 text-left">{option.label}</span>
-                  {isActive && <Check className="w-4 h-4 text-[#0a84ff]" aria-hidden="true" />}
+                  <span className="flex-1 min-w-0 text-left">
+                    {option.label}
+                    {option.value === 'auto' && (
+                      <span className="block text-[11px] leading-tight text-[var(--map-muted)]">Now {PHASE_LABEL[sky.phase]}</span>
+                    )}
+                  </span>
+                  {isActive && <Check className="w-4 h-4 text-[#0a84ff] shrink-0" aria-hidden="true" />}
                 </button>
               );
             })}
+            <p className="mt-1 px-2.5 pt-2 pb-1 border-t border-[var(--map-line)] text-[11px] text-[var(--map-muted)] num">
+              Campus today: sunrise {IST_TIME.format(sky.times.sunrise)}, sunset {IST_TIME.format(sky.times.sunset)}
+            </p>
           </div>
         )}
       </div>

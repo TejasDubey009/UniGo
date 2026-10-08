@@ -325,22 +325,41 @@ export const AREA_LABELS = (() => {
 // ---------------------------------------------------------------------------
 
 // three's lights are physical, so these are tuned for flat ground to render at its token colour
+// At night the "sun" light is the moon: cool, dimmer, and from wherever the moon is
 const LIGHT_RIGS = {
+  // Dawn: a fresh, cool sky with a pale peach sun low in the east
+  sunrise: { ambient: ['#EEF2FA', 1.3], hemi: ['#E2EBFF', '#D2D5D0', 0.9], sun: ['#FFD9BC', 1.3], azimuth: 100, elevation: 22 },
   day: { ambient: ['#E6EEF8', 1.25], hemi: ['#DCEEFF', '#D6DCD4', 0.9], sun: ['#FFF8EE', 1.35], azimuth: 220, elevation: 45 },
   sunset: { ambient: ['#F6F0EC', 1.3], hemi: ['#FFEDE0', '#D9CEC3', 0.85], sun: ['#FFC69A', 1.35], azimuth: 250, elevation: 24 },
   night: { ambient: ['#B9C4DC', 1.6], hemi: ['#A9B4D0', '#202125', 0.9], sun: ['#C8D5FF', 0.8], azimuth: 140, elevation: 55 },
 };
 
-const SUNSET_TINT = new THREE.Color('#ffc9a0');
+// Low sun washes the light palette with its colour: rose-gold at dawn, amber at dusk
+const STYLE_TINT = { sunrise: [new THREE.Color('#ffe0d6'), 0.05], sunset: [new THREE.Color('#ffc9a0'), 0.08] };
 const colourForStyle = (lightHex, darkHex, style) => {
   if (style === 'night') return darkHex;
-  if (style === 'sunset') return `#${new THREE.Color(lightHex).lerp(SUNSET_TINT, 0.08).getHexString()}`;
+  const tint = STYLE_TINT[style];
+  if (tint) return `#${new THREE.Color(lightHex).lerp(tint[0], tint[1]).getHexString()}`;
   return lightHex;
 };
 
+// Where the light comes from. With the real sky (automatic style) the sun's shadows follow its
+// actual bearing over campus, kept high enough to read; at night the moon lights the map if it is
+// up, brighter when fuller, and otherwise a faint starlight from overhead does.
+function lightFor(style, rig, sky) {
+  if (!sky) return { azimuth: rig.azimuth, elevation: rig.elevation, intensity: rig.sun[1] };
+  if (style !== 'night') {
+    return { azimuth: sky.sun.azimuth, elevation: THREE.MathUtils.clamp(sky.sun.altitude, 20, 75), intensity: rig.sun[1] };
+  }
+  if (sky.moon.altitude > 3) {
+    return { azimuth: sky.moon.azimuth, elevation: THREE.MathUtils.clamp(sky.moon.altitude, 18, 75), intensity: rig.sun[1] * (0.55 + 0.45 * sky.moonLit) };
+  }
+  return { azimuth: rig.azimuth, elevation: 70, intensity: rig.sun[1] * 0.45 };
+}
+
 // ---------------------------------------------------------------------------
-// Facades: a window per bay on every floor, drawn once into a small texture. The night
-// style lights some of them from a matching mask.
+// Facades: a window per bay on every floor, drawn once into a small texture. At night a matching
+// mask lights a few of them: about one in nine on hostels (late-night study), one in twenty elsewhere.
 // ---------------------------------------------------------------------------
 
 const FLOOR_HEIGHT = 3.4;
@@ -356,7 +375,7 @@ function getFacadeTextures() {
   const cell = FACADE_PX / FACADE_CELLS;
   const bays = [];
   for (let row = 0; row < FACADE_CELLS; row++) {
-    for (let col = 0; col < FACADE_CELLS; col++) bays.push({ x: col * cell, y: row * cell, glass: 150 + random() * 26, lit: random() < 0.42 });
+    for (let col = 0; col < FACADE_CELLS; col++) bays.push({ x: col * cell, y: row * cell, glass: 150 + random() * 26, chance: random() });
   }
   const pane = (ctx, { x, y }) => ctx.fillRect(x + cell * 0.2, y + cell * 0.2, cell * 0.6, cell * 0.46);
   const paint = (draw) => {
@@ -384,13 +403,15 @@ function getFacadeTextures() {
         ctx.fillRect(bay.x + cell * 0.16, bay.y + cell * 0.66, cell * 0.68, 3);
       });
     }),
-    lights: paint((ctx) => {
+  };
+  const lights = (share) =>
+    paint((ctx) => {
       ctx.fillStyle = '#000000';
       ctx.fillRect(0, 0, FACADE_PX, FACADE_PX);
       ctx.fillStyle = '#ffffff';
-      bays.filter((bay) => bay.lit).forEach((bay) => pane(ctx, bay));
-    }),
-  };
+      bays.filter((bay) => bay.chance < share).forEach((bay) => pane(ctx, bay));
+    });
+  facadeTextures.lights = { hostel: lights(0.11), few: lights(0.05) };
   return facadeTextures;
 }
 
@@ -408,13 +429,14 @@ export function createMaterialRegistry() {
     remember(`mesh|${light}|${dark}|${side}`, () => new THREE.MeshLambertMaterial({ side }), light, dark);
   const line = (light, dark) => remember(`line|${light}|${dark}`, () => new THREE.LineBasicMaterial(), light, dark);
   const token = (name, side) => lambert(PALETTE.light[name], PALETTE.dark[name], side);
-  // Walls with windows (needs UVs from wallsGeometry); falls back to plain walls without a DOM
-  const facade = (light, dark) => {
+  // Walls with windows (needs UVs from wallsGeometry); falls back to plain walls without a DOM.
+  // `glow` picks how many windows light up at night: 'hostel' or 'few'.
+  const facade = (light, dark, glow = 'few') => {
     const textures = getFacadeTextures();
     if (!textures) return lambert(light, dark);
     return remember(
-      `facade|${light}|${dark}`,
-      () => new THREE.MeshLambertMaterial({ map: textures.map, emissiveMap: textures.lights }),
+      `facade|${light}|${dark}|${glow}`,
+      () => new THREE.MeshLambertMaterial({ map: textures.map, emissiveMap: textures.lights[glow] }),
       light,
       dark,
       { lit: true }
@@ -423,17 +445,18 @@ export function createMaterialRegistry() {
   return { entries, lambert, line, token, facade };
 }
 
-export function applyStyle({ scene, registry, world, ambient, hemi, sun, sunDirection }, style) {
-  const rig = LIGHT_RIGS[style] || LIGHT_RIGS.day;
-  const sky = colourForStyle(PALETTE.light.canvas_background, PALETTE.dark.canvas_background, style);
-  scene.background.set(sky);
-  scene.fog.color.set(sky);
+// Recolours the whole scene for a style ('sunrise' | 'day' | 'sunset' | 'night'), then lights it
+export function applyStyle(state, style, sky = null) {
+  const { scene, registry, world } = state;
+  const background = colourForStyle(PALETTE.light.canvas_background, PALETTE.dark.canvas_background, style);
+  scene.background.set(background);
+  scene.fog.color.set(background);
   registry.entries.forEach(({ mat, light, dark, lit }) => {
     mat.color.set(colourForStyle(light, dark, style));
     // Some windows glow warm after dark
     if (lit) {
       mat.emissive.set(style === 'night' ? '#ffcf8a' : '#000000');
-      mat.emissiveIntensity = style === 'night' ? 0.75 : 0;
+      mat.emissiveIntensity = style === 'night' ? 0.5 : 0;
     }
   });
 
@@ -443,17 +466,30 @@ export function applyStyle({ scene, registry, world, ambient, hemi, sun, sunDire
     if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
   });
 
+  // Street lights come on after dark
+  world.streetLights?.setOn(style === 'night');
+  applyLighting(state, style, sky);
+}
+
+// Just the lights: cheap enough to run every minute as the real sun and moon move
+export function applyLighting({ ambient, hemi, sun, sunDirection, world }, style, sky = null) {
+  const rig = LIGHT_RIGS[style] || LIGHT_RIGS.day;
   ambient.color.set(rig.ambient[0]);
   ambient.intensity = rig.ambient[1];
   hemi.color.set(rig.hemi[0]);
   hemi.groundColor.set(rig.hemi[1]);
   hemi.intensity = rig.hemi[2];
   sun.color.set(rig.sun[0]);
-  sun.intensity = rig.sun[1];
+  const light = lightFor(style, rig, sky);
+  sun.intensity = light.intensity;
   // Azimuth is clockwise from north (-Z); elevation is above the horizon
-  const az = THREE.MathUtils.degToRad(rig.azimuth);
-  const el = THREE.MathUtils.degToRad(rig.elevation);
+  const az = THREE.MathUtils.degToRad(light.azimuth);
+  const el = THREE.MathUtils.degToRad(light.elevation);
   sunDirection.set(Math.sin(az) * Math.cos(el), Math.sin(el), -Math.cos(az) * Math.cos(el)).normalize();
+
+  // Moonlight on the sea while the moon is up (a fixed style assumes a bright moon in the south-east)
+  const moonUp = style === 'night' && (!sky || sky.moon.altitude > 3);
+  world?.moonSheen?.set(moonUp, sky ? sky.moon.azimuth : rig.azimuth, sky ? sky.moonLit : 0.8);
 }
 
 // ---------------------------------------------------------------------------
@@ -771,6 +807,290 @@ const ROAD_STYLE = {
   path: ['pedestrian_walkway', null],
 };
 
+// ---------------------------------------------------------------------------
+// Street lights: a few lamps along the university's own main roads, lit after dark. Night should
+// read from the moonlight and a scatter of warm pools, not from floodlit streets. Each lamp's light
+// is faked (a soft pool on the road and a small glow at the head, drawn additively), so the lamps
+// cost four draw calls and no real lights.
+// ---------------------------------------------------------------------------
+
+// Inside the university almost every road is mapped as a service road; footpaths, the highway and
+// the village outside stay dark
+const LAMP_SPACING = { road: 110, service: 120 };
+const LAMP_HEIGHT = 8;
+const LAMP_REACH = 2.2; // the arm holds the lamp this far out over the road
+const LAMP_POOL = 24; // diameter of the pool of light on the road
+const LAMP_GAP = 60; // no two lamps closer than this, so junctions don't bunch up
+
+function lampPositions() {
+  // Lamps keep off buildings and off the carriageway of every road (junctions, crossings). Exact
+  // tests against nearby shapes only, found through a coarse bucket grid.
+  const BUCKET = 60;
+  const bucketKey = (bx, bz) => `${bx},${bz}`;
+  const buckets = new Map();
+  const file = (box, item) => {
+    for (let bx = Math.floor(box.minX / BUCKET); bx <= Math.floor(box.maxX / BUCKET); bx++) {
+      for (let bz = Math.floor(box.minZ / BUCKET); bz <= Math.floor(box.maxZ / BUCKET); bz++) {
+        const key = bucketKey(bx, bz);
+        if (!buckets.has(key)) buckets.set(key, []);
+        buckets.get(key).push(item);
+      }
+    }
+  };
+  [...GEOMETRY.buildings.map(({ fp }) => openRing(fp)), ...PLACES.filter((p) => p.footprint).map((p) => p.footprint)].forEach((ring) => {
+    if (ring.length >= 3) file(bboxOf(ring), { ring, box: bboxOf(ring) });
+  });
+  ROADS.forEach((road) => {
+    const half = (road.w * ROAD_SCALE) / 2;
+    for (let i = 0; i < road.p.length - 1; i++) {
+      const [a, b] = [road.p[i], road.p[i + 1]];
+      file({ minX: Math.min(a[0], b[0]) - half, maxX: Math.max(a[0], b[0]) + half, minZ: Math.min(a[1], b[1]) - half, maxZ: Math.max(a[1], b[1]) + half }, { a, b, half });
+    }
+  });
+  const isClear = (x, z) =>
+    !(buckets.get(bucketKey(Math.floor(x / BUCKET), Math.floor(z / BUCKET))) || []).some((item) => {
+      if (item.ring) {
+        const { box, ring } = item;
+        if (x < box.minX - 1 || x > box.maxX + 1 || z < box.minZ - 1 || z > box.maxZ + 1) return false;
+        return insidePolygon(x, z, ring) || ring.some((p, i) => distanceToSegment(x, z, p, ring[(i + 1) % ring.length]) < 1);
+      }
+      return distanceToSegment(x, z, item.a, item.b) < item.half + 0.4;
+    });
+
+  const lamps = [];
+  const nearby = new Map();
+  const tooClose = (x, z) => {
+    const cx = Math.floor(x / LAMP_GAP);
+    const cz = Math.floor(z / LAMP_GAP);
+    for (let i = -1; i <= 1; i++) {
+      for (let j = -1; j <= 1; j++) {
+        if (nearby.get(bucketKey(cx + i, cz + j))?.some(([a, b]) => (a - x) ** 2 + (b - z) ** 2 < LAMP_GAP ** 2)) return true;
+      }
+    }
+    return false;
+  };
+
+  ROADS.forEach((road) => {
+    const spacing = LAMP_SPACING[road.c];
+    if (!spacing) return;
+    const offset = (road.w * ROAD_SCALE) / 2 + 1.8;
+    let toNext = spacing / 2;
+    let side = 1;
+    for (let i = 0; i < road.p.length - 1; i++) {
+      const [ax, az] = road.p[i];
+      const [bx, bz] = road.p[i + 1];
+      const length = Math.hypot(bx - ax, bz - az);
+      if (length < 0.01) continue;
+      const ux = (bx - ax) / length;
+      const uz = (bz - az) / length;
+      let t = toNext;
+      for (; t < length; t += spacing) {
+        // Out from the centre line to the kerb; the arm then points back over the road. If that
+        // side is blocked (a building, another road), try the other side before giving up.
+        for (const s of [side, -side]) {
+          const nx = -uz * s;
+          const nz = ux * s;
+          const x = ax + ux * t + nx * offset;
+          const z = az + uz * t + nz * offset;
+          if (!onCampus(x, z) || !isClear(x, z) || tooClose(x, z)) continue;
+          lamps.push({ x, z, dx: -nx, dz: -nz });
+          const key = bucketKey(Math.floor(x / LAMP_GAP), Math.floor(z / LAMP_GAP));
+          nearby.set(key, [...(nearby.get(key) || []), [x, z]]);
+          break;
+        }
+        // Service lanes are lit from one side; streets alternate sides
+        if (road.c !== 'service') side = -side;
+      }
+      toNext = t - length;
+    }
+  });
+  return lamps;
+}
+
+// A soft round spot, white in the middle; tinted by each material's colour
+let glowTexture;
+function getGlowTexture() {
+  if (glowTexture !== undefined) return glowTexture;
+  if (typeof document === 'undefined') return (glowTexture = null);
+  const size = 128;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const gradient = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  gradient.addColorStop(0, 'rgba(255,255,255,1)');
+  gradient.addColorStop(0.25, 'rgba(255,255,255,0.62)');
+  gradient.addColorStop(0.6, 'rgba(255,255,255,0.18)');
+  gradient.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+  glowTexture = new THREE.CanvasTexture(canvas);
+  glowTexture.colorSpace = THREE.SRGBColorSpace;
+  return glowTexture;
+}
+
+// Moonlight on the Bay of Bengal: a path of glitter on the water running out from the shore towards
+// the moon. Two glitter layers cross-fade slowly so the water seems to shimmer.
+const SHEEN_LENGTH = 1500;
+const SHEEN_WIDTH = 520;
+
+function glitterTexture(seed) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 1024;
+  const ctx = canvas.getContext('2d');
+  const random = seededRandom(seed);
+  for (let i = 0; i < 1800; i++) {
+    const v = random(); // 0 at the shore, 1 far out
+    const spread = 8 + v * 80; // the path widens with distance
+    const x = 128 + (random() + random() + random() - 1.5) * spread;
+    const w = 2 + random() * 7;
+    ctx.fillStyle = `rgba(255,255,255,${(0.12 + random() * 0.5) * (1 - v * 0.65)})`;
+    ctx.fillRect(x - w / 2, (1 - v) * 1024, w, 1 + random());
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
+function buildMoonSheen(scene) {
+  const coast = GEOMETRY.coast;
+  if (coast.length < 2 || typeof document === 'undefined') return { set() {}, tick() {} };
+  // The shore opposite the middle of campus
+  const midZ = (CAMPUS_BOUNDS.minZ + CAMPUS_BOUNDS.maxZ) / 2;
+  const shore = coast.reduce((best, p) => (Math.abs(p[1] - midZ) < Math.abs(best[1] - midZ) ? p : best), coast[0]);
+  const layer = (seed) => {
+    const material = new THREE.MeshBasicMaterial({
+      map: glitterTexture(seed),
+      color: '#dfe8ff',
+      transparent: true,
+      opacity: 0,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    // Lies on the water; its texture runs from the shore (bottom) out to sea (top)
+    const mesh = new THREE.Mesh(new THREE.PlaneGeometry(SHEEN_WIDTH, SHEEN_LENGTH).rotateX(-Math.PI / 2), material);
+    mesh.renderOrder = 1;
+    mesh.visible = false;
+    scene.add(mesh);
+    return mesh;
+  };
+  const layers = [layer(5), layer(17)];
+  // A soft silver wash under the glitter
+  const wash = new THREE.Mesh(
+    new THREE.PlaneGeometry(SHEEN_WIDTH, SHEEN_LENGTH).rotateX(-Math.PI / 2),
+    new THREE.MeshBasicMaterial({ map: getGlowTexture(), color: '#b8c8ee', transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })
+  );
+  wash.visible = false;
+  scene.add(wash);
+  let strength = 0;
+  return {
+    // Point the path at the moon; the sea is east of campus, so a moon over the land leaves it dark
+    set(visible, azimuth, lit) {
+      const facesSea = azimuth > 25 && azimuth < 165;
+      const az = THREE.MathUtils.degToRad(azimuth);
+      const dx = Math.sin(az);
+      const dz = -Math.cos(az);
+      strength = visible && facesSea ? 0.22 + 0.33 * lit : 0;
+      wash.material.opacity = strength * 0.35;
+      [...layers, wash].forEach((mesh) => {
+        mesh.visible = strength > 0;
+        mesh.rotation.y = -az;
+        mesh.position.set(shore[0] + dx * (SHEEN_LENGTH / 2 + 30), LAYER.water + 0.04, shore[1] + dz * (SHEEN_LENGTH / 2 + 30));
+      });
+    },
+    tick(seconds) {
+      if (!strength) return;
+      const swing = 0.5 + 0.5 * Math.sin(seconds * 0.9);
+      layers[0].material.opacity = strength * (0.3 + 0.7 * swing);
+      layers[1].material.opacity = strength * (1 - 0.7 * swing);
+    },
+  };
+}
+
+function buildStreetLights(scene, registry) {
+  const lamps = lampPositions();
+  const count = Math.max(1, lamps.length);
+
+  // Post and arm in one mesh, recoloured with the map style like everything else
+  const post = mergeGeometries([
+    new THREE.CylinderGeometry(0.1, 0.15, LAMP_HEIGHT, 6).translate(0, LAMP_HEIGHT / 2, 0),
+    new THREE.BoxGeometry(LAMP_REACH + 0.3, 0.12, 0.12).translate(LAMP_REACH / 2, LAMP_HEIGHT - 0.2, 0),
+  ]);
+  const posts = new THREE.InstancedMesh(post, registry.lambert('#8d9196', '#3b3f45'), count);
+  posts.castShadow = true;
+  // The lamp head: grey by day, glowing warm white at night
+  const headMaterial = new THREE.MeshBasicMaterial({ color: '#c3c6ca' });
+  const heads = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(1.1, 0.24, 0.48).translate(LAMP_REACH, LAMP_HEIGHT - 0.38, 0),
+    headMaterial,
+    count
+  );
+  // Warm pools on the road under each lamp
+  const texture = getGlowTexture();
+  const poolMaterial = new THREE.MeshBasicMaterial({
+    map: texture,
+    color: '#ffa94d',
+    transparent: true,
+    opacity: 0.55,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  const pools = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), poolMaterial, count);
+  pools.renderOrder = 2;
+
+  const matrix = new THREE.Matrix4();
+  const turn = new THREE.Quaternion();
+  const up = new THREE.Vector3(0, 1, 0);
+  const one = new THREE.Vector3(1, 1, 1);
+  const flat = new THREE.Quaternion();
+  const halo = new Float32Array(lamps.length * 3);
+  lamps.forEach(({ x, z, dx, dz }, i) => {
+    // Turn the post so its arm (+X) reaches over the road
+    turn.setFromAxisAngle(up, Math.atan2(-dz, dx));
+    matrix.compose(new THREE.Vector3(x, 0, z), turn, one);
+    posts.setMatrixAt(i, matrix);
+    heads.setMatrixAt(i, matrix);
+    const hx = x + dx * LAMP_REACH;
+    const hz = z + dz * LAMP_REACH;
+    matrix.compose(new THREE.Vector3(hx + dx * 1.5, LAYER.fill.trunk + 0.16, hz + dz * 1.5), flat, new THREE.Vector3(LAMP_POOL, 1, LAMP_POOL));
+    pools.setMatrixAt(i, matrix);
+    halo.set([hx, LAMP_HEIGHT - 0.5, hz], i * 3);
+  });
+  posts.count = heads.count = pools.count = lamps.length;
+
+  // Glow round each lamp head: camera-facing points, never smaller than a few pixels, so the lit
+  // streets still read as strings of lights when the whole campus is in view
+  const haloGeometry = new THREE.BufferGeometry();
+  haloGeometry.setAttribute('position', new THREE.BufferAttribute(halo, 3));
+  const haloMaterial = new THREE.PointsMaterial({
+    map: texture,
+    color: '#ffd29a',
+    size: 6,
+    transparent: true,
+    opacity: 0.85,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  });
+  haloMaterial.onBeforeCompile = (shader) => {
+    shader.vertexShader = shader.vertexShader.replace(
+      '#include <logdepthbuf_vertex>',
+      'gl_PointSize = clamp(gl_PointSize, 2.0, 28.0);\n#include <logdepthbuf_vertex>'
+    );
+  };
+  const halos = new THREE.Points(haloGeometry, haloMaterial);
+  halos.renderOrder = 3;
+
+  scene.add(posts, heads, pools, halos);
+  const setOn = (on) => {
+    headMaterial.color.set(on ? '#fff3d6' : '#c3c6ca');
+    pools.visible = on && Boolean(texture);
+    halos.visible = on && Boolean(texture);
+  };
+  setOn(false);
+  // Posts are hidden with the trees when the whole campus is in view
+  return { count: lamps.length, posts: [posts, heads], setOn };
+}
+
 export function buildWorld(scene, registry) {
   const batch = createBatcher();
   const random = seededRandom(1957);
@@ -978,8 +1298,10 @@ export function buildWorld(scene, registry) {
   scene.add(trunkMesh);
 
   const trees = { groups, meshes: [...groups.map((g) => g.mesh), trunkMesh] };
+  const streetLights = buildStreetLights(scene, registry);
+  const moonSheen = buildMoonSheen(scene);
 
-  return { places, trees };
+  return { places, trees, streetLights, moonSheen };
 }
 
 // ---------------------------------------------------------------------------
@@ -995,7 +1317,7 @@ function buildPlace(scene, registry, place, edge, random) {
   // Gate pillars are solid; everything else gets windows
   const wall = GATE_IDS.has(place.id)
     ? registry.lambert(wallColor, PALETTE.dark.building_wall)
-    : registry.facade(wallColor, PALETTE.dark.building_wall);
+    : registry.facade(wallColor, PALETTE.dark.building_wall, /hostel/.test(place.kind) ? 'hostel' : 'few');
   const parapetWall = registry.lambert(wallColor, PALETTE.dark.building_wall, THREE.DoubleSide);
   const plainWall = registry.lambert(wallColor, PALETTE.dark.building_wall);
   const tankMaterial = registry.lambert('#3d4148', '#151619');

@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { AppContext } from './useApp';
+
+const MAP_STYLE_KEY = 'unigo_map_style';
+const MAP_STYLE_VALUES = ['auto', 'sunrise', 'day', 'sunset', 'night'];
 import { RENTAL_FLEET } from '../data/campusData';
 import { supabase, isUniversityEmail, friendlyAuthError, friendlyDbError, urlAuthError, RETURN_TAB_KEY } from '../lib/supabase';
 
@@ -76,7 +79,23 @@ export const AppProvider = ({ children }) => {
   const [rideTarget, setRideTarget] = useState(null);
   const pickForRide = (field, name) => setRideTarget((prev) => ({ field, name, seq: (prev?.seq ?? 0) + 1 }));
   const clearRideTarget = () => setRideTarget(null);
-  const [mapDayNightMode, setMapDayNightMode] = useState('day'); // 'day' | 'sunset' | 'night'
+  // 'auto' follows the real sun and moon over campus; the others fix the look. Remembered on this device.
+  const [mapDayNightMode, setMapDayNightModeState] = useState(() => {
+    try {
+      const saved = localStorage.getItem(MAP_STYLE_KEY);
+      return MAP_STYLE_VALUES.includes(saved) ? saved : 'auto';
+    } catch {
+      return 'auto';
+    }
+  });
+  const setMapDayNightMode = (mode) => {
+    setMapDayNightModeState(mode);
+    try {
+      localStorage.setItem(MAP_STYLE_KEY, mode);
+    } catch {
+      // Private mode or blocked storage: the choice just lasts until the page closes
+    }
+  };
 
   // ---- Accounts ----
   const [session, setSession] = useState(null);
