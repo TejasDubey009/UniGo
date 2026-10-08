@@ -1,0 +1,7799 @@
+{
+  "metadata": {
+    "title": "Pondicherry University (PU) Campus - Detailed Apple Maps 3D Reference Specification",
+    "version": "1.0.0",
+    "apple_maps_frame_url": "https://maps.apple.com/frame?center=12.026728%2C79.855588&span=0.014879%2C0.022142",
+    "coordinate_reference_system": {
+      "center": {
+        "latitude": 12.026728,
+        "longitude": 79.855588,
+        "altitude_m": 22.0
+      },
+      "span": {
+        "latitude_delta": 0.014879,
+        "longitude_delta": 0.022142
+      },
+      "bounding_box": {
+        "north_latitude": 12.034168,
+        "south_latitude": 12.019289,
+        "east_longitude": 79.866659,
+        "west_longitude": 79.844517
+      },
+      "local_cartesian_projection": {
+        "system": "Right-Handed 3D Cartesian (Three.js / WebGL / Apple SceneKit)",
+        "origin_gps": {
+          "lat": 12.026728,
+          "lng": 79.855588
+        },
+        "origin_local_m": {
+          "x": 0.0,
+          "y": 0.0,
+          "z": 0.0
+        },
+        "axis_definition": {
+          "+X": "East (meters)",
+          "-X": "West (meters)",
+          "+Y": "Elevation / Upwards (meters)",
+          "+Z": "South (meters)",
+          "-Z": "North (meters)"
+        },
+        "constants": {
+          "lat_to_meters": 110574.0,
+          "lng_to_meters": 108876.58224442932
+        },
+        "conversion_formula": {
+          "x": "(lng - 79.855588) * 108876.6",
+          "z": "-(lat - 12.026728) * 110574.0",
+          "y": "altitude_above_ground_m"
+        }
+      }
+    }
+  },
+  "apple_maps_design_system": {
+    "typography": {
+      "primary_font": "-apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', sans-serif",
+      "weights": {
+        "landmark": 600,
+        "building": 500,
+        "road": 400,
+        "badge": 600
+      },
+      "sizes_px": {
+        "landmark_title": 13,
+        "badge_pill": 11,
+        "road_label": 10,
+        "secondary": 9
+      },
+      "label_halo": {
+        "color_light": "rgba(255, 255, 255, 0.95)",
+        "color_dark": "rgba(28, 28, 30, 0.95)",
+        "blur_radius_px": 3
+      }
+    },
+    "color_tokens": {
+      "light_mode": {
+        "canvas_background": "#F8F7F2",
+        "terrain_fill": "#F4F3ED",
+        "park_green": "#E2F5DF",
+        "lush_forest_groves": "#D2ECCF",
+        "campus_lawn": "#E7F8E4",
+        "ocean_water": "#A5D7F7",
+        "ocean_shoreline": "#88C5EE",
+        "coastal_beach_sand": "#F7EFC8",
+        "highway_fill": "#FFFFFF",
+        "highway_casing": "#C8C6BE",
+        "arterial_road_fill": "#FFFFFF",
+        "arterial_road_casing": "#D8D6CF",
+        "service_road_fill": "#FFFFFF",
+        "service_road_casing": "#E2E0D9",
+        "pedestrian_walkway": "#EFECE6",
+        "building_wall": "#FFFFFF",
+        "building_roof": "#F1EEE6",
+        "building_edge": "#E5E2DA",
+        "drop_shadow": "rgba(0, 0, 0, 0.08)",
+        "stadium_synthetic_track": "#E57A60",
+        "stadium_turf_grass": "#A0D893",
+        "tennis_court_blue": "#65AEE6"
+      },
+      "dark_mode": {
+        "canvas_background": "#1C1C1E",
+        "terrain_fill": "#242426",
+        "park_green": "#1D3222",
+        "lush_forest_groves": "#16271A",
+        "campus_lawn": "#203726",
+        "ocean_water": "#102C48",
+        "ocean_shoreline": "#0A1D30",
+        "coastal_beach_sand": "#332D20",
+        "highway_fill": "#38383A",
+        "highway_casing": "#202022",
+        "arterial_road_fill": "#2C2C2E",
+        "arterial_road_casing": "#1E1E20",
+        "service_road_fill": "#242426",
+        "service_road_casing": "#1A1A1C",
+        "pedestrian_walkway": "#252528",
+        "building_wall": "#2C2C2E",
+        "building_roof": "#3A3A3C",
+        "building_edge": "#48484A",
+        "drop_shadow": "rgba(0, 0, 0, 0.45)",
+        "stadium_synthetic_track": "#8B3E2D",
+        "stadium_turf_grass": "#234720",
+        "tennis_court_blue": "#1F4E75"
+      }
+    },
+    "badge_pill_style": {
+      "border_radius": "14px",
+      "padding": "4px 8px",
+      "box_shadow": "0 2px 8px rgba(0, 0, 0, 0.12)",
+      "backdrop_filter": "blur(12px)",
+      "icon_size_px": 12
+    },
+    "lighting_and_atmosphere": {
+      "sun_light": {
+        "color": "#FFF8EE",
+        "intensity": 1.45,
+        "azimuth_deg": 220,
+        "elevation_deg": 45,
+        "cast_shadows": true
+      },
+      "ambient_light": {
+        "color": "#E6EEF8",
+        "intensity": 0.65
+      },
+      "hemisphere_light": {
+        "sky_color": "#DCEEFF",
+        "ground_color": "#D6DCD4",
+        "intensity": 0.4
+      },
+      "ambient_occlusion": {
+        "enabled": true,
+        "radius": 3.2,
+        "intensity": 0.85
+      }
+    },
+    "camera_view_presets": {
+      "apple_maps_default_frame": {
+        "name": "Apple Maps Centered Overview (Official Link View)",
+        "target_local_m": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "altitude_m": 1400.0,
+        "pitch_deg": 52.0,
+        "heading_deg": 35.0,
+        "fov_deg": 45.0
+      },
+      "silver_jubilee_campus": {
+        "name": "Silver Jubilee Campus Quadrangle",
+        "target_local_m": [
+          261.85,
+          0.0,
+          -655.92
+        ],
+        "altitude_m": 600.0,
+        "pitch_deg": 48.0,
+        "heading_deg": 25.0,
+        "fov_deg": 45.0
+      },
+      "central_library_and_admin": {
+        "name": "Central Library Rotunda & Administrative Core",
+        "target_local_m": [
+          30.92,
+          0.0,
+          727.13
+        ],
+        "altitude_m": 650.0,
+        "pitch_deg": 55.0,
+        "heading_deg": 45.0,
+        "fov_deg": 45.0
+      },
+      "north_boys_hostels": {
+        "name": "North Boys Hostel Village & Mega Mess",
+        "target_local_m": [
+          -520.0,
+          0.0,
+          -320.0
+        ],
+        "altitude_m": 580.0,
+        "pitch_deg": 48.0,
+        "heading_deg": 325.0,
+        "fov_deg": 45.0
+      },
+      "girls_hostel_sanctuary": {
+        "name": "Girls Hostel Sanctuary & Health Centre",
+        "target_local_m": [
+          -640.0,
+          0.0,
+          480.0
+        ],
+        "altitude_m": 520.0,
+        "pitch_deg": 45.0,
+        "heading_deg": 85.0,
+        "fov_deg": 45.0
+      },
+      "sports_stadium_arena": {
+        "name": "Rajiv Gandhi Sports Stadium & 400m Track",
+        "target_local_m": [
+          -515.0,
+          0.0,
+          28.0
+        ],
+        "altitude_m": 480.0,
+        "pitch_deg": 52.0,
+        "heading_deg": 65.0,
+        "fov_deg": 45.0
+      },
+      "gate_1_entrance": {
+        "name": "Gate 1 (Main Entrance on ECR Highway)",
+        "target_local_m": [
+          174.0,
+          0.0,
+          1385.0
+        ],
+        "altitude_m": 500.0,
+        "pitch_deg": 58.0,
+        "heading_deg": 15.0,
+        "fov_deg": 45.0
+      }
+    }
+  },
+  "campus_sectors": [
+    {
+      "id": "silver_jubilee_campus",
+      "name": "Silver Jubilee Campus (SJC)",
+      "center_gps": {
+        "lat": 12.03266,
+        "lng": 79.857993
+      },
+      "center_local_m": {
+        "x": 261.85,
+        "z": -655.92
+      },
+      "primary_function": "Advanced Postgraduate Studies, Humanities, Social Sciences, Media, and Management",
+      "character": "Modern academic quadrangles, tree-lined avenues, landscaped parking plazas"
+    },
+    {
+      "id": "central_academic_core",
+      "name": "Central Academic Core & Boulevard",
+      "center_gps": {
+        "lat": 12.020152,
+        "lng": 79.855872
+      },
+      "center_local_m": {
+        "x": 30.92,
+        "z": 727.13
+      },
+      "primary_function": "Central Library, University Secretariat, Senate Hall, Examination Wing, and Central Canteens",
+      "character": "Monumental circular library rotunda, sprawling lawns, clock tower, convocation auditoriums"
+    },
+    {
+      "id": "science_research_complex",
+      "name": "Science & Technology Research Complex",
+      "center_gps": {
+        "lat": 12.016839,
+        "lng": 79.853761
+      },
+      "center_local_m": {
+        "x": -198.8,
+        "z": 1093.4
+      },
+      "primary_function": "Physical, Chemical, Biological, Earth Sciences, and Nanotechnology Research",
+      "character": "Intensive laboratory blocks, high-tech cleanrooms, electron microscopy bunkers, solar testbeds"
+    },
+    {
+      "id": "north_boys_hostel_village",
+      "name": "North Boys Hostel Village",
+      "center_gps": {
+        "lat": 12.029465,
+        "lng": 79.851
+      },
+      "center_local_m": {
+        "x": -499.2,
+        "z": -302.7
+      },
+      "primary_function": "Student Residential Quadrangles, Central Messes, Gymnasium, and Indoor Arena",
+      "character": "Dense quadrangle residential blocks surrounding huge dining mess halls and active student plazas"
+    },
+    {
+      "id": "girls_hostel_sanctuary",
+      "name": "Girls Hostel Sanctuary & Health Enclave",
+      "center_gps": {
+        "lat": 12.02214,
+        "lng": 79.8485
+      },
+      "center_local_m": {
+        "x": -771.2,
+        "z": 507.3
+      },
+      "primary_function": "Female Scholar Residences, 24/7 University Health Clinic, Temple, and Botanical Nursery",
+      "character": "Serene green residential parkway, 24/7 security perimeter, shaded palm groves"
+    },
+    {
+      "id": "sports_and_athletics_grounds",
+      "name": "Rajiv Gandhi Sports & Athletics Grounds",
+      "center_gps": {
+        "lat": 12.026472,
+        "lng": 79.850852
+      },
+      "center_local_m": {
+        "x": -515.3,
+        "z": 28.3
+      },
+      "primary_function": "Track & Field, Cricket, Football, Tennis, Basketball, and Mass Tournaments",
+      "character": "Expansive terracotta 400m running track, emerald turf fields, spectator pavilions"
+    },
+    {
+      "id": "perimeter_and_highway_corridor",
+      "name": "Perimeter & East Coast Road Highway Corridor",
+      "center_gps": {
+        "lat": 12.02,
+        "lng": 79.859
+      },
+      "center_local_m": {
+        "x": 371.1,
+        "z": 743.9
+      },
+      "primary_function": "Access Control, Ceremonial Gates, Transit Termini, and Coastal Buffer",
+      "character": "Four-lane highway arterial, monumental archways, bus stations, coastal coconut palms"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "sjc-main-complex",
+      "name": "Silver Jubilee Campus (SJC) Main Complex",
+      "formal_name": "Pondicherry University Silver Jubilee Academic Building",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.03266,
+        "lng": 79.857993,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 261.85,
+        "y": 9.0,
+        "z": -655.92
+      },
+      "dimensions_m": {
+        "width": 85.0,
+        "depth": 60.0,
+        "height": 18.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          219.35,
+          -685.92
+        ],
+        [
+          304.35,
+          -685.92
+        ],
+        [
+          304.35,
+          -625.92
+        ],
+        [
+          219.35,
+          -625.92
+        ],
+        [
+          219.35,
+          -685.92
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.032931,
+          "lng": 79.857603
+        },
+        {
+          "lat": 12.032931,
+          "lng": 79.858383
+        },
+        {
+          "lat": 12.032389,
+          "lng": 79.858383
+        },
+        {
+          "lat": 12.032389,
+          "lng": 79.857603
+        },
+        {
+          "lat": 12.032931,
+          "lng": 79.857603
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "white_stucco_terracotta",
+        "special_feature": "grand_portico_entrance"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Primary academic hub of the Silver Jubilee Campus housing multiple departments and conference facilities.",
+      "amenities_inside": [
+        "Dean's Office",
+        "Lecture Theatres",
+        "Computer Labs",
+        "Faculty Cabins",
+        "Seminar Halls"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "SJC UniGo Rental & Drop Hub"
+      }
+    },
+    {
+      "id": "dept-mass-comm",
+      "name": "Department of Electronic Media & Mass Communication",
+      "formal_name": "Department of Electronic Media & Mass Communication (DEMMC)",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.032618,
+        "lng": 79.856579,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 107.9,
+        "y": 7.25,
+        "z": -651.28
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 36.0,
+        "height": 14.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          83.9,
+          -669.28
+        ],
+        [
+          131.9,
+          -669.28
+        ],
+        [
+          131.9,
+          -633.28
+        ],
+        [
+          83.9,
+          -633.28
+        ],
+        [
+          83.9,
+          -669.28
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.032781,
+          "lng": 79.856359
+        },
+        {
+          "lat": 12.032781,
+          "lng": 79.856799
+        },
+        {
+          "lat": 12.032455,
+          "lng": 79.856799
+        },
+        {
+          "lat": 12.032455,
+          "lng": 79.856359
+        },
+        {
+          "lat": 12.032781,
+          "lng": 79.856359
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "modernist_brick_glass",
+        "special_feature": "broadcast_antenna_tower"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Houses professional television studios, audio mixing labs, editing suites, and campus radio transmitter.",
+      "amenities_inside": [
+        "TV Production Studio",
+        "Audio Recording Suite",
+        "Multimedia Lab",
+        "Screening Theatre"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "school-social-sciences",
+      "name": "School of Social Sciences & International Studies",
+      "formal_name": "School of Social Sciences & International Studies (Silver Jubilee Wing)",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.033581,
+        "lng": 79.858162,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 280.25,
+        "y": 8.75,
+        "z": -757.76
+      },
+      "dimensions_m": {
+        "width": 65.0,
+        "depth": 45.0,
+        "height": 17.5,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          247.75,
+          -780.26
+        ],
+        [
+          312.75,
+          -780.26
+        ],
+        [
+          312.75,
+          -735.26
+        ],
+        [
+          247.75,
+          -735.26
+        ],
+        [
+          247.75,
+          -780.26
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.033784,
+          "lng": 79.857864
+        },
+        {
+          "lat": 12.033784,
+          "lng": 79.858461
+        },
+        {
+          "lat": 12.033377,
+          "lng": 79.858461
+        },
+        {
+          "lat": 12.033377,
+          "lng": 79.857864
+        },
+        {
+          "lat": 12.033784,
+          "lng": 79.857864
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "terracotta_accent",
+        "special_feature": "quadrangle_central_atrium"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Departments of Politics & International Studies, History, Sociology, Social Work, and Anthropology.",
+      "amenities_inside": [
+        "Dean's Office",
+        "Department of Politics",
+        "Department of History",
+        "Department of Sociology",
+        "Department of Social Work",
+        "Anthropology Lab"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "library-social-sciences",
+      "name": "Library, School of Social Sciences",
+      "formal_name": "Departmental Research Library for Social Sciences & International Studies",
+      "category": "library",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.033654,
+        "lng": 79.858023,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 265.11,
+        "y": 5.0,
+        "z": -765.84
+      },
+      "dimensions_m": {
+        "width": 35.0,
+        "depth": 28.0,
+        "height": 10.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          247.61,
+          -779.84
+        ],
+        [
+          282.61,
+          -779.84
+        ],
+        [
+          282.61,
+          -751.84
+        ],
+        [
+          247.61,
+          -751.84
+        ],
+        [
+          247.61,
+          -779.84
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.033781,
+          "lng": 79.857862
+        },
+        {
+          "lat": 12.033781,
+          "lng": 79.858184
+        },
+        {
+          "lat": 12.033527,
+          "lng": 79.858184
+        },
+        {
+          "lat": 12.033527,
+          "lng": 79.857862
+        },
+        {
+          "lat": 12.033781,
+          "lng": 79.857862
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "glass_facade",
+        "special_feature": "high_ceiling_reading_hall"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#0A84FF",
+        "badge_background": "#E8F4FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EBF5FF",
+        "icon": "book.closed.fill"
+      },
+      "description": "Specialized departmental repository for humanities and social sciences research journals.",
+      "amenities_inside": [
+        "Journal Reading Hall",
+        "Digital Catalogue",
+        "Research Scholar Workstations"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "school-humanities",
+      "name": "School of Humanities Complex",
+      "formal_name": "School of Humanities Dean's Office & Departments",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.033569,
+        "lng": 79.858257,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 290.59,
+        "y": 7.5,
+        "z": -756.44
+      },
+      "dimensions_m": {
+        "width": 55.0,
+        "depth": 40.0,
+        "height": 15.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          263.09,
+          -776.44
+        ],
+        [
+          318.09,
+          -776.44
+        ],
+        [
+          318.09,
+          -736.44
+        ],
+        [
+          263.09,
+          -736.44
+        ],
+        [
+          263.09,
+          -776.44
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.03375,
+          "lng": 79.858004
+        },
+        {
+          "lat": 12.03375,
+          "lng": 79.85851
+        },
+        {
+          "lat": 12.033388,
+          "lng": 79.85851
+        },
+        {
+          "lat": 12.033388,
+          "lng": 79.858004
+        },
+        {
+          "lat": 12.03375,
+          "lng": 79.858004
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "warm_concrete",
+        "special_feature": "colonnade_walkway"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Houses Departments of English, French, Sanskrit, Hindi, and Philosophy.",
+      "amenities_inside": [
+        "Dean's Secretariat",
+        "Language Labs",
+        "Department of French",
+        "Department of Sanskrit",
+        "Department of Hindi",
+        "Department of English"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "library-humanities",
+      "name": "Library, School of Humanities",
+      "formal_name": "Humanities Departmental Library",
+      "category": "library",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.033544,
+        "lng": 79.858392,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 305.29,
+        "y": 4.75,
+        "z": -753.67
+      },
+      "dimensions_m": {
+        "width": 30.0,
+        "depth": 25.0,
+        "height": 9.5,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          290.29,
+          -766.17
+        ],
+        [
+          320.29,
+          -766.17
+        ],
+        [
+          320.29,
+          -741.17
+        ],
+        [
+          290.29,
+          -741.17
+        ],
+        [
+          290.29,
+          -766.17
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.033657,
+          "lng": 79.858254
+        },
+        {
+          "lat": 12.033657,
+          "lng": 79.85853
+        },
+        {
+          "lat": 12.033431,
+          "lng": 79.85853
+        },
+        {
+          "lat": 12.033431,
+          "lng": 79.858254
+        },
+        {
+          "lat": 12.033657,
+          "lng": 79.858254
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "glass_tinted",
+        "special_feature": "quiet_study_lounge"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#0A84FF",
+        "badge_background": "#E8F4FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EBF5FF",
+        "icon": "book.closed.fill"
+      },
+      "description": "Dedicated literature and foreign language resource center.",
+      "amenities_inside": [
+        "French & European Literature Archives",
+        "Sanskrit Manuscripts Section"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "dept-applied-psychology",
+      "name": "Department of Applied Psychology",
+      "formal_name": "Department of Applied Psychology (SJC Wing)",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.033611,
+        "lng": 79.859079,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 380.09,
+        "y": 6.75,
+        "z": -761.08
+      },
+      "dimensions_m": {
+        "width": 40.0,
+        "depth": 30.0,
+        "height": 13.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          360.09,
+          -776.08
+        ],
+        [
+          400.09,
+          -776.08
+        ],
+        [
+          400.09,
+          -746.08
+        ],
+        [
+          360.09,
+          -746.08
+        ],
+        [
+          360.09,
+          -776.08
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.033747,
+          "lng": 79.858895
+        },
+        {
+          "lat": 12.033747,
+          "lng": 79.859263
+        },
+        {
+          "lat": 12.033475,
+          "lng": 79.859263
+        },
+        {
+          "lat": 12.033475,
+          "lng": 79.858895
+        },
+        {
+          "lat": 12.033747,
+          "lng": 79.858895
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "warm_concrete",
+        "special_feature": "clinical_testing_labs"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Psychology observation rooms, counseling centre, and experimental psychology lab.",
+      "amenities_inside": [
+        "Counseling Booths",
+        "Cognitive Assessment Lab",
+        "Classrooms"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "dept-food-science",
+      "name": "Department of Food Science & Technology",
+      "formal_name": "Department of Food Science & Technology Building",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.027804,
+        "lng": 79.855763,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 19.05,
+        "y": 7.0,
+        "z": -118.98
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 35.0,
+        "height": 14.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -5.95,
+          -136.48
+        ],
+        [
+          44.05,
+          -136.48
+        ],
+        [
+          44.05,
+          -101.48
+        ],
+        [
+          -5.95,
+          -101.48
+        ],
+        [
+          -5.95,
+          -136.48
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.027962,
+          "lng": 79.855533
+        },
+        {
+          "lat": 12.027962,
+          "lng": 79.855993
+        },
+        {
+          "lat": 12.027646,
+          "lng": 79.855993
+        },
+        {
+          "lat": 12.027646,
+          "lng": 79.855533
+        },
+        {
+          "lat": 12.027962,
+          "lng": 79.855533
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "terracotta_brick",
+        "special_feature": "pilot_processing_plant"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Specialized food processing engineering laboratories, sensory testing bays, and food microbiology facility.",
+      "amenities_inside": [
+        "Food Quality Testing Lab",
+        "Pilot Processing Hall",
+        "Thermal Processing Lab"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "school-tamil-literature",
+      "name": "Subramania Bharathiar School of Tamil",
+      "formal_name": "Subramania Bharathiar School of Tamil Language & Literature",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.034208,
+        "lng": 79.856751,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 126.62,
+        "y": 6.5,
+        "z": -827.09
+      },
+      "dimensions_m": {
+        "width": 42.0,
+        "depth": 32.0,
+        "height": 13.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          105.62,
+          -843.09
+        ],
+        [
+          147.62,
+          -843.09
+        ],
+        [
+          147.62,
+          -811.09
+        ],
+        [
+          105.62,
+          -811.09
+        ],
+        [
+          105.62,
+          -843.09
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.034353,
+          "lng": 79.856558
+        },
+        {
+          "lat": 12.034353,
+          "lng": 79.856944
+        },
+        {
+          "lat": 12.034063,
+          "lng": 79.856944
+        },
+        {
+          "lat": 12.034063,
+          "lng": 79.856558
+        },
+        {
+          "lat": 12.034353,
+          "lng": 79.856558
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "classical_tamil_arches",
+        "special_feature": "traditional_portico_arches"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Premier centre for classical Tamil literature, epigraphy, and comparative Dravidian studies.",
+      "amenities_inside": [
+        "Bharathiar Memorial Hall",
+        "Epigraphy Archives",
+        "Tamil Research Wing"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "unesco-south-asia",
+      "name": "UNESCO Madanjeet Singh Institute (UMISARC)",
+      "formal_name": "UNESCO Madanjeet Singh Institute of South Asia Regional Co-operation",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.031061,
+        "lng": 79.858734,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 342.53,
+        "y": 7.5,
+        "z": -479.12
+      },
+      "dimensions_m": {
+        "width": 52.0,
+        "depth": 38.0,
+        "height": 15.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          316.53,
+          -498.12
+        ],
+        [
+          368.53,
+          -498.12
+        ],
+        [
+          368.53,
+          -460.12
+        ],
+        [
+          316.53,
+          -460.12
+        ],
+        [
+          316.53,
+          -498.12
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.031233,
+          "lng": 79.858495
+        },
+        {
+          "lat": 12.031233,
+          "lng": 79.858973
+        },
+        {
+          "lat": 12.030889,
+          "lng": 79.858973
+        },
+        {
+          "lat": 12.030889,
+          "lng": 79.858495
+        },
+        {
+          "lat": 12.031233,
+          "lng": 79.858495
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "tiered_flat",
+        "facade_type": "white_stucco_blue_accent",
+        "special_feature": "unesco_peace_plaza"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "South Asian regional cooperation studies, international diplomacy lectures, and research scholars exchange.",
+      "amenities_inside": [
+        "International Conference Chamber",
+        "Diplomatic Archives",
+        "SAF Scholars Lounge"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "ugc-hrdc-centre",
+      "name": "UGC - Human Resource Development Centre (HRDC)",
+      "formal_name": "UGC - HRDC / Academic Staff College",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.03245,
+        "lng": 79.859388,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 413.73,
+        "y": 6.75,
+        "z": -632.7
+      },
+      "dimensions_m": {
+        "width": 44.0,
+        "depth": 32.0,
+        "height": 13.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          391.73,
+          -648.7
+        ],
+        [
+          435.73,
+          -648.7
+        ],
+        [
+          435.73,
+          -616.7
+        ],
+        [
+          391.73,
+          -616.7
+        ],
+        [
+          391.73,
+          -648.7
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.032595,
+          "lng": 79.859186
+        },
+        {
+          "lat": 12.032595,
+          "lng": 79.85959
+        },
+        {
+          "lat": 12.032305,
+          "lng": 79.85959
+        },
+        {
+          "lat": 12.032305,
+          "lng": 79.859186
+        },
+        {
+          "lat": 12.032595,
+          "lng": 79.859186
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "warm_concrete",
+        "special_feature": "faculty_training_halls"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Faculty development programs, national workshops, and administrative training sessions.",
+      "amenities_inside": [
+        "Smart Classrooms",
+        "Faculty Seminar Hall",
+        "Admin Annex"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "sjc-canteen-cultural",
+      "name": "SJC Canteen & Cultural Centre",
+      "formal_name": "Silver Jubilee Campus Canteen & Cultural Activity Hall",
+      "category": "dining",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.033979,
+        "lng": 79.858317,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 297.12,
+        "y": 5.25,
+        "z": -801.77
+      },
+      "dimensions_m": {
+        "width": 42.0,
+        "depth": 34.0,
+        "height": 10.5,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          276.12,
+          -818.77
+        ],
+        [
+          318.12,
+          -818.77
+        ],
+        [
+          318.12,
+          -784.77
+        ],
+        [
+          276.12,
+          -784.77
+        ],
+        [
+          276.12,
+          -818.77
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.034133,
+          "lng": 79.858124
+        },
+        {
+          "lat": 12.034133,
+          "lng": 79.85851
+        },
+        {
+          "lat": 12.033825,
+          "lng": 79.85851
+        },
+        {
+          "lat": 12.033825,
+          "lng": 79.858124
+        },
+        {
+          "lat": 12.034133,
+          "lng": 79.858124
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "curved_roof",
+        "facade_type": "glass_and_concrete",
+        "special_feature": "open_terrace_cafeteria"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF9500",
+        "badge_background": "#FFF4E5",
+        "wall_color": "#FFFDF9",
+        "roof_color": "#FFF0DE",
+        "icon": "fork.knife"
+      },
+      "description": "Ground floor student cafeteria serving breakfast, meals, snacks; First floor cultural activity auditorium.",
+      "amenities_inside": [
+        "Cafeteria Dining Hall",
+        "Snacks Counter",
+        "Cultural Rehearsal Stage"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "SJC UniGo Express Drop Point"
+      }
+    },
+    {
+      "id": "kendriya-vidyalaya-2",
+      "name": "Kendriya Vidyalaya No. 2 (KV 2)",
+      "formal_name": "Kendriya Vidyalaya Pondicherry University Campus",
+      "category": "academic",
+      "sector": "silver_jubilee_campus",
+      "gps": {
+        "lat": 12.027712,
+        "lng": 79.857512,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 209.48,
+        "y": 4.75,
+        "z": -108.8
+      },
+      "dimensions_m": {
+        "width": 60.0,
+        "depth": 40.0,
+        "height": 9.5,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          179.48,
+          -128.8
+        ],
+        [
+          239.48,
+          -128.8
+        ],
+        [
+          239.48,
+          -88.8
+        ],
+        [
+          179.48,
+          -88.8
+        ],
+        [
+          179.48,
+          -128.8
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.027893,
+          "lng": 79.857236
+        },
+        {
+          "lat": 12.027893,
+          "lng": 79.857788
+        },
+        {
+          "lat": 12.027531,
+          "lng": 79.857788
+        },
+        {
+          "lat": 12.027531,
+          "lng": 79.857236
+        },
+        {
+          "lat": 12.027893,
+          "lng": 79.857236
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "sloped_tin_tiles",
+        "facade_type": "brick_stucco",
+        "special_feature": "school_courtyard_ground"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Central school campus for children of university faculty and staff with independent sports grounds.",
+      "amenities_inside": [
+        "Classrooms",
+        "Playground",
+        "Assembly Hall",
+        "Science Labs"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "central-library",
+      "name": "Ananda Rangapillai Central Library",
+      "formal_name": "Ananda Rangapillai Central Library & Information Centre",
+      "category": "library",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.020152,
+        "lng": 79.855872,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 30.92,
+        "y": 11.0,
+        "z": 727.13
+      },
+      "dimensions_m": {
+        "width": 72.0,
+        "depth": 72.0,
+        "height": 22.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -5.08,
+          691.13
+        ],
+        [
+          66.92,
+          691.13
+        ],
+        [
+          66.92,
+          763.13
+        ],
+        [
+          -5.08,
+          763.13
+        ],
+        [
+          -5.08,
+          691.13
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.020478,
+          "lng": 79.855541
+        },
+        {
+          "lat": 12.020478,
+          "lng": 79.856203
+        },
+        {
+          "lat": 12.019826,
+          "lng": 79.856203
+        },
+        {
+          "lat": 12.019826,
+          "lng": 79.855541
+        },
+        {
+          "lat": 12.020478,
+          "lng": 79.855541
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "circular_tiered_dome",
+        "facade_type": "curved_architectural_concrete",
+        "special_feature": "circular_three_tier_rotunda"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#0A84FF",
+        "badge_background": "#E8F4FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EBF5FF",
+        "icon": "book.closed.fill"
+      },
+      "description": "The architectural crown of Pondicherry University. Circular 3-tier building with over 500,000 volumes.",
+      "amenities_inside": [
+        "24/7 Digital Reading Room",
+        "RFID Circulation Desk",
+        "Microfilm Archive",
+        "Rare Manuscripts Wing",
+        "Wi-Fi Cyber Commons"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "Central Library UniGo Mobility Hub"
+      }
+    },
+    {
+      "id": "digital-reading-hall",
+      "name": "24/7 Digital Reading Hall",
+      "formal_name": "University 24/7 Digital Reading Annex",
+      "category": "library",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.020498,
+        "lng": 79.855265,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -35.17,
+        "y": 5.0,
+        "z": 688.88
+      },
+      "dimensions_m": {
+        "width": 42.0,
+        "depth": 30.0,
+        "height": 10.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -56.17,
+          673.88
+        ],
+        [
+          -14.17,
+          673.88
+        ],
+        [
+          -14.17,
+          703.88
+        ],
+        [
+          -56.17,
+          703.88
+        ],
+        [
+          -56.17,
+          673.88
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.020634,
+          "lng": 79.855072
+        },
+        {
+          "lat": 12.020634,
+          "lng": 79.855458
+        },
+        {
+          "lat": 12.020362,
+          "lng": 79.855458
+        },
+        {
+          "lat": 12.020362,
+          "lng": 79.855072
+        },
+        {
+          "lat": 12.020634,
+          "lng": 79.855072
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "glass_curtain_wall",
+        "special_feature": "illuminated_glass_facade"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#0A84FF",
+        "badge_background": "#E8F4FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EBF5FF",
+        "icon": "book.closed.fill"
+      },
+      "description": "Round-the-clock air-conditioned reading facility for competitive exam aspirants and research scholars.",
+      "amenities_inside": [
+        "Individual Power Desks",
+        "High-speed Ethernet",
+        "Night Security Desk"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "admin-office-complex",
+      "name": "Administrative Office Complex & Senate",
+      "formal_name": "Pondicherry University Secretariat & Administrative Office Complex",
+      "category": "admin",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.022025,
+        "lng": 79.857315,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 188.03,
+        "y": 10.0,
+        "z": 520.03
+      },
+      "dimensions_m": {
+        "width": 88.0,
+        "depth": 58.0,
+        "height": 20.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          144.03,
+          491.03
+        ],
+        [
+          232.03,
+          491.03
+        ],
+        [
+          232.03,
+          549.03
+        ],
+        [
+          144.03,
+          549.03
+        ],
+        [
+          144.03,
+          491.03
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022287,
+          "lng": 79.856911
+        },
+        {
+          "lat": 12.022287,
+          "lng": 79.857719
+        },
+        {
+          "lat": 12.021763,
+          "lng": 79.857719
+        },
+        {
+          "lat": 12.021763,
+          "lng": 79.856911
+        },
+        {
+          "lat": 12.022287,
+          "lng": 79.856911
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "stepped_parapet",
+        "facade_type": "granite_plinth_white_concrete",
+        "special_feature": "university_clock_tower"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#8E8E93",
+        "badge_background": "#F2F2F7",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F4F4F6",
+        "icon": "building.columns.fill"
+      },
+      "description": "Houses Vice Chancellor's Secretariat, Registrar Office, Senate Hall, Council Hall, and Finance Branch.",
+      "amenities_inside": [
+        "VC Secretariat",
+        "Senate Hall",
+        "Registrar's Office",
+        "Finance Wing",
+        "Establishment Section"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "jn-auditorium",
+      "name": "Jawaharlal Nehru Auditorium",
+      "formal_name": "Jawaharlal Nehru Convocation Auditorium",
+      "category": "auditorium",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.022113,
+        "lng": 79.85701,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 154.82,
+        "y": 9.75,
+        "z": 510.3
+      },
+      "dimensions_m": {
+        "width": 68.0,
+        "depth": 52.0,
+        "height": 19.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          120.82,
+          484.3
+        ],
+        [
+          188.82,
+          484.3
+        ],
+        [
+          188.82,
+          536.3
+        ],
+        [
+          120.82,
+          536.3
+        ],
+        [
+          120.82,
+          484.3
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022348,
+          "lng": 79.856698
+        },
+        {
+          "lat": 12.022348,
+          "lng": 79.857322
+        },
+        {
+          "lat": 12.021878,
+          "lng": 79.857322
+        },
+        {
+          "lat": 12.021878,
+          "lng": 79.856698
+        },
+        {
+          "lat": 12.022348,
+          "lng": 79.856698
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "curved_acoustical_dome",
+        "facade_type": "acoustic_clad_brick",
+        "special_feature": "grand_amphitheatre_steps"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#AF52DE",
+        "badge_background": "#F7ECFD",
+        "wall_color": "#FAF8FC",
+        "roof_color": "#F3E8FC",
+        "icon": "theatermasks.fill"
+      },
+      "description": "Grand 1500-seat university auditorium hosting national convocations, cultural festivals, and keynote symposia.",
+      "amenities_inside": [
+        "1500-Seat Hall",
+        "VIP Green Rooms",
+        "Acoustic Stage",
+        "Audio Control Booth"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "examination-building",
+      "name": "Examination Building",
+      "formal_name": "Office of the Controller of Examinations",
+      "category": "admin",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.022447,
+        "lng": 79.856336,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 81.44,
+        "y": 9.0,
+        "z": 473.37
+      },
+      "dimensions_m": {
+        "width": 55.0,
+        "depth": 42.0,
+        "height": 18.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          53.94,
+          452.37
+        ],
+        [
+          108.94,
+          452.37
+        ],
+        [
+          108.94,
+          494.37
+        ],
+        [
+          53.94,
+          494.37
+        ],
+        [
+          53.94,
+          452.37
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022637,
+          "lng": 79.856083
+        },
+        {
+          "lat": 12.022637,
+          "lng": 79.856589
+        },
+        {
+          "lat": 12.022257,
+          "lng": 79.856589
+        },
+        {
+          "lat": 12.022257,
+          "lng": 79.856083
+        },
+        {
+          "lat": 12.022637,
+          "lng": 79.856083
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "security_reinforced_concrete",
+        "special_feature": "high_security_wing"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#8E8E93",
+        "badge_background": "#F2F2F7",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F4F4F6",
+        "icon": "building.columns.fill"
+      },
+      "description": "University confidential examination processing, certificate printing, evaluation, and degrees wing.",
+      "amenities_inside": [
+        "Controller of Examinations Office",
+        "Certificate Dispatch Counter",
+        "Confidential Section"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "students-welfare-centre",
+      "name": "Students Welfare Centre",
+      "formal_name": "Dean of Students Welfare (DSW) Complex",
+      "category": "admin",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.021196,
+        "lng": 79.856687,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 119.66,
+        "y": 5.0,
+        "z": 611.7
+      },
+      "dimensions_m": {
+        "width": 38.0,
+        "depth": 28.0,
+        "height": 10.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          100.66,
+          597.7
+        ],
+        [
+          138.66,
+          597.7
+        ],
+        [
+          138.66,
+          625.7
+        ],
+        [
+          100.66,
+          625.7
+        ],
+        [
+          100.66,
+          597.7
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.021323,
+          "lng": 79.856513
+        },
+        {
+          "lat": 12.021323,
+          "lng": 79.856862
+        },
+        {
+          "lat": 12.021069,
+          "lng": 79.856862
+        },
+        {
+          "lat": 12.021069,
+          "lng": 79.856513
+        },
+        {
+          "lat": 12.021323,
+          "lng": 79.856513
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "white_stucco",
+        "special_feature": "student_plaza"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#8E8E93",
+        "badge_background": "#F2F2F7",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F4F4F6",
+        "icon": "building.columns.fill"
+      },
+      "description": "Office for student grievances, scholarships, cultural council, and student union activities.",
+      "amenities_inside": [
+        "Dean Student Welfare Office",
+        "Scholarship Desk",
+        "Student Union Chamber"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "canteen-1-central",
+      "name": "Pondicherry University Central Canteen-1",
+      "formal_name": "Central Campus Cafeteria & Food Court 1",
+      "category": "dining",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.021872,
+        "lng": 79.856053,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 50.63,
+        "y": 4.75,
+        "z": 536.95
+      },
+      "dimensions_m": {
+        "width": 45.0,
+        "depth": 35.0,
+        "height": 9.5,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          28.13,
+          519.45
+        ],
+        [
+          73.13,
+          519.45
+        ],
+        [
+          73.13,
+          554.45
+        ],
+        [
+          28.13,
+          554.45
+        ],
+        [
+          28.13,
+          519.45
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.02203,
+          "lng": 79.855846
+        },
+        {
+          "lat": 12.02203,
+          "lng": 79.85626
+        },
+        {
+          "lat": 12.021714,
+          "lng": 79.85626
+        },
+        {
+          "lat": 12.021714,
+          "lng": 79.855846
+        },
+        {
+          "lat": 12.02203,
+          "lng": 79.855846
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "pitched_metal_overhang",
+        "facade_type": "brick_and_glass",
+        "special_feature": "outdoor_shaded_dining"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF9500",
+        "badge_background": "#FFF4E5",
+        "wall_color": "#FFFDF9",
+        "roof_color": "#FFF0DE",
+        "icon": "fork.knife"
+      },
+      "description": "The beating culinary heart of the campus. South Indian breakfast, north Indian thalis, fresh juices, and snacks.",
+      "amenities_inside": [
+        "Student Mess Counter",
+        "Faculty Dining Room",
+        "Juice & Tea Bar",
+        "Outdoor Garden Seating"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "Canteen 1 UniGo Express Delivery Point"
+      }
+    },
+    {
+      "id": "shopping-complex-central",
+      "name": "Campus Shopping Complex & Post Office",
+      "formal_name": "University Cooperative Stores & Commercial Plaza",
+      "category": "amenity",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.017833,
+        "lng": 79.853607,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -215.68,
+        "y": 4.5,
+        "z": 983.56
+      },
+      "dimensions_m": {
+        "width": 58.0,
+        "depth": 36.0,
+        "height": 9.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -244.68,
+          965.56
+        ],
+        [
+          -186.68,
+          965.56
+        ],
+        [
+          -186.68,
+          1001.56
+        ],
+        [
+          -244.68,
+          1001.56
+        ],
+        [
+          -244.68,
+          965.56
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.017996,
+          "lng": 79.853341
+        },
+        {
+          "lat": 12.017996,
+          "lng": 79.853873
+        },
+        {
+          "lat": 12.01767,
+          "lng": 79.853873
+        },
+        {
+          "lat": 12.01767,
+          "lng": 79.853341
+        },
+        {
+          "lat": 12.017996,
+          "lng": 79.853341
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "retail_brick_glass",
+        "special_feature": "colonnaded_storefronts"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF9F0A",
+        "badge_background": "#FFF5E6",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FFF3E3",
+        "icon": "storefront.fill"
+      },
+      "description": "Commercial hub with general provision store, stationery, xerox/printing centre, hair salon, and post office.",
+      "amenities_inside": [
+        "University Co-op Supermarket",
+        "Book & Stationery Emporium",
+        "Digital Print Shop",
+        "India Post Counter",
+        "Courier Hub"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "UniGo Laundry Center & Drop Lockers"
+      }
+    },
+    {
+      "id": "indian-bank-central",
+      "name": "Indian Bank Campus Branch & ATMs",
+      "formal_name": "Indian Bank Pondicherry University Branch",
+      "category": "bank_service",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.021829,
+        "lng": 79.856419,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 90.48,
+        "y": 4.75,
+        "z": 541.7
+      },
+      "dimensions_m": {
+        "width": 32.0,
+        "depth": 24.0,
+        "height": 9.5,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          74.48,
+          529.7
+        ],
+        [
+          106.48,
+          529.7
+        ],
+        [
+          106.48,
+          553.7
+        ],
+        [
+          74.48,
+          553.7
+        ],
+        [
+          74.48,
+          529.7
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.021938,
+          "lng": 79.856272
+        },
+        {
+          "lat": 12.021938,
+          "lng": 79.856566
+        },
+        {
+          "lat": 12.02172,
+          "lng": 79.856566
+        },
+        {
+          "lat": 12.02172,
+          "lng": 79.856272
+        },
+        {
+          "lat": 12.021938,
+          "lng": 79.856272
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "bank_blue_corporate_concrete",
+        "special_feature": "dual_atm_lobby"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#30B0C7",
+        "badge_background": "#E9F8FB",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EBF8FA",
+        "icon": "banknote.fill"
+      },
+      "description": "Full-service commercial bank branch with currency deposit kiosks, foreign exchange desk, and 24/7 ATM lobby.",
+      "amenities_inside": [
+        "Bank Teller Counters",
+        "24/7 ATM Lobby",
+        "Passbook Kiosk",
+        "Forex Desk"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "coop-credit-society",
+      "name": "PU Co-operative Credit Society",
+      "formal_name": "Pondicherry University Staff Cooperative Credit Society",
+      "category": "bank_service",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.021671,
+        "lng": 79.857118,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 166.58,
+        "y": 4.25,
+        "z": 559.17
+      },
+      "dimensions_m": {
+        "width": 28.0,
+        "depth": 20.0,
+        "height": 8.5,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          152.58,
+          549.17
+        ],
+        [
+          180.58,
+          549.17
+        ],
+        [
+          180.58,
+          569.17
+        ],
+        [
+          152.58,
+          569.17
+        ],
+        [
+          152.58,
+          549.17
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.021761,
+          "lng": 79.856989
+        },
+        {
+          "lat": 12.021761,
+          "lng": 79.857247
+        },
+        {
+          "lat": 12.021581,
+          "lng": 79.857247
+        },
+        {
+          "lat": 12.021581,
+          "lng": 79.856989
+        },
+        {
+          "lat": 12.021761,
+          "lng": 79.856989
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "white_stucco",
+        "special_feature": "credit_society_counter"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#30B0C7",
+        "badge_background": "#E9F8FB",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EBF8FA",
+        "icon": "banknote.fill"
+      },
+      "description": "Employee financial society and campus credit union.",
+      "amenities_inside": [
+        "Credit Society Office",
+        "Member Services"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "dept-management-studies",
+      "name": "Department of Management Studies (DMS)",
+      "formal_name": "Department of Management Studies / School of Management (Main Block)",
+      "category": "academic",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.02211,
+        "lng": 79.855492,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -10.45,
+        "y": 7.5,
+        "z": 510.63
+      },
+      "dimensions_m": {
+        "width": 60.0,
+        "depth": 44.0,
+        "height": 15.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -40.45,
+          488.63
+        ],
+        [
+          19.55,
+          488.63
+        ],
+        [
+          19.55,
+          532.63
+        ],
+        [
+          -40.45,
+          532.63
+        ],
+        [
+          -40.45,
+          488.63
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022309,
+          "lng": 79.855216
+        },
+        {
+          "lat": 12.022309,
+          "lng": 79.855768
+        },
+        {
+          "lat": 12.021911,
+          "lng": 79.855768
+        },
+        {
+          "lat": 12.021911,
+          "lng": 79.855216
+        },
+        {
+          "lat": 12.022309,
+          "lng": 79.855216
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "terracotta_trim_concrete",
+        "special_feature": "executive_boardroom_tower"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Premier business school block for MBA, Finance, International Business, and Executive Management.",
+      "amenities_inside": [
+        "Management Computer Lab",
+        "Case Study Amphitheatres",
+        "Executive Classrooms",
+        "Faculty Suites"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "lecture-hall-complex-2",
+      "name": "Lecture Hall Complex - 2 (LHC-2)",
+      "formal_name": "Lecture Hall Complex - II",
+      "category": "academic",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.02209,
+        "lng": 79.854848,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -80.57,
+        "y": 7.25,
+        "z": 512.84
+      },
+      "dimensions_m": {
+        "width": 58.0,
+        "depth": 42.0,
+        "height": 14.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -109.57,
+          491.84
+        ],
+        [
+          -51.57,
+          491.84
+        ],
+        [
+          -51.57,
+          533.84
+        ],
+        [
+          -109.57,
+          533.84
+        ],
+        [
+          -109.57,
+          491.84
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.02228,
+          "lng": 79.854582
+        },
+        {
+          "lat": 12.02228,
+          "lng": 79.855114
+        },
+        {
+          "lat": 12.0219,
+          "lng": 79.855114
+        },
+        {
+          "lat": 12.0219,
+          "lng": 79.854582
+        },
+        {
+          "lat": 12.02228,
+          "lng": 79.854582
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "concrete_louvers",
+        "special_feature": "stepped_theatre_auditoria"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Modern lecture theatres equipped with interactive smart boards and high-capacity tier seating.",
+      "amenities_inside": [
+        "6 Tiered Auditoria (120 seats each)",
+        "Central AV Hub",
+        "Faculty Rooms"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "mba-canteen-3",
+      "name": "MBA Canteen III",
+      "formal_name": "School of Management Cafeteria (Canteen 3)",
+      "category": "dining",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.022282,
+        "lng": 79.853685,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -207.19,
+        "y": 3.25,
+        "z": 491.61
+      },
+      "dimensions_m": {
+        "width": 32.0,
+        "depth": 24.0,
+        "height": 6.5,
+        "floors": 1
+      },
+      "footprint_polygon_local_m": [
+        [
+          -223.19,
+          479.61
+        ],
+        [
+          -191.19,
+          479.61
+        ],
+        [
+          -191.19,
+          503.61
+        ],
+        [
+          -223.19,
+          503.61
+        ],
+        [
+          -223.19,
+          479.61
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022391,
+          "lng": 79.853538
+        },
+        {
+          "lat": 12.022391,
+          "lng": 79.853832
+        },
+        {
+          "lat": 12.022173,
+          "lng": 79.853832
+        },
+        {
+          "lat": 12.022173,
+          "lng": 79.853538
+        },
+        {
+          "lat": 12.022391,
+          "lng": 79.853538
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "metal_canopy",
+        "facade_type": "open_breeze_brick",
+        "special_feature": "alfresco_coffee_terrace"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF9500",
+        "badge_background": "#FFF4E5",
+        "wall_color": "#FFFDF9",
+        "roof_color": "#FFF0DE",
+        "icon": "fork.knife"
+      },
+      "description": "Bustling cafe famous for south indian filter coffee, samosas, and short-order snacks.",
+      "amenities_inside": [
+        "Espresso & Tea Bar",
+        "Bakery Snack Counter",
+        "Garden Patio"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "distance-education-block",
+      "name": "Directorate of Distance Education",
+      "formal_name": "Directorate of Distance Education (DDE) Building",
+      "category": "academic",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.018384,
+        "lng": 79.853002,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -281.55,
+        "y": 6.75,
+        "z": 922.63
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 35.0,
+        "height": 13.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -306.55,
+          905.13
+        ],
+        [
+          -256.55,
+          905.13
+        ],
+        [
+          -256.55,
+          940.13
+        ],
+        [
+          -306.55,
+          940.13
+        ],
+        [
+          -306.55,
+          905.13
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.018542,
+          "lng": 79.852772
+        },
+        {
+          "lat": 12.018542,
+          "lng": 79.853232
+        },
+        {
+          "lat": 12.018226,
+          "lng": 79.853232
+        },
+        {
+          "lat": 12.018226,
+          "lng": 79.852772
+        },
+        {
+          "lat": 12.018542,
+          "lng": 79.852772
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "white_stucco",
+        "special_feature": "dispatch_logistics_wing"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Administrative and examination headquarters for over 30,000 distance learners across India and abroad.",
+      "amenities_inside": [
+        "Admissions Hall",
+        "Study Material Warehouse",
+        "Faculty Recording Studio"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "dept-computer-science",
+      "name": "Department of Computer Science",
+      "formal_name": "Department of Computer Science (Main Campus Block)",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.015359,
+        "lng": 79.854754,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -90.8,
+        "y": 7.25,
+        "z": 1257.12
+      },
+      "dimensions_m": {
+        "width": 62.0,
+        "depth": 44.0,
+        "height": 14.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -121.8,
+          1235.12
+        ],
+        [
+          -59.8,
+          1235.12
+        ],
+        [
+          -59.8,
+          1279.12
+        ],
+        [
+          -121.8,
+          1279.12
+        ],
+        [
+          -121.8,
+          1235.12
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.015558,
+          "lng": 79.854469
+        },
+        {
+          "lat": 12.015558,
+          "lng": 79.855039
+        },
+        {
+          "lat": 12.01516,
+          "lng": 79.855039
+        },
+        {
+          "lat": 12.01516,
+          "lng": 79.854469
+        },
+        {
+          "lat": 12.015558,
+          "lng": 79.854469
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "modernist_concrete_blue",
+        "special_feature": "server_room_annex"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "AI, Cloud Computing, High Performance Computing labs, MCA and M.Tech research centres.",
+      "amenities_inside": [
+        "HPC Cluster Lab",
+        "AI & Robotics Lab",
+        "Networking Lab",
+        "Software Engineering Studio"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "CS Department UniGo Pickup Station"
+      }
+    },
+    {
+      "id": "dept-chemistry",
+      "name": "Department of Chemistry",
+      "formal_name": "School of Chemical Sciences Building",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.0175,
+        "lng": 79.855691,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 11.21,
+        "y": 7.5,
+        "z": 1020.38
+      },
+      "dimensions_m": {
+        "width": 65.0,
+        "depth": 46.0,
+        "height": 15.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -21.29,
+          997.38
+        ],
+        [
+          43.71,
+          997.38
+        ],
+        [
+          43.71,
+          1043.38
+        ],
+        [
+          -21.29,
+          1043.38
+        ],
+        [
+          -21.29,
+          997.38
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.017708,
+          "lng": 79.855392
+        },
+        {
+          "lat": 12.017708,
+          "lng": 79.855989
+        },
+        {
+          "lat": 12.017292,
+          "lng": 79.855989
+        },
+        {
+          "lat": 12.017292,
+          "lng": 79.855392
+        },
+        {
+          "lat": 12.017708,
+          "lng": 79.855392
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "concrete_ventilated",
+        "special_feature": "fume_hood_exhaust_stacks"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Organic, Inorganic, Physical, and Analytical chemistry research wings with state-of-the-art wet labs.",
+      "amenities_inside": [
+        "NMR Facility",
+        "Mass Spectrometry Lab",
+        "Organic Synthesis Wing",
+        "Inorganic Materials Lab"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "dept-physics",
+      "name": "Department of Physics",
+      "formal_name": "School of Physical, Chemical & Applied Sciences (Physics Block)",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.016402,
+        "lng": 79.853481,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -229.4,
+        "y": 7.5,
+        "z": 1141.79
+      },
+      "dimensions_m": {
+        "width": 64.0,
+        "depth": 45.0,
+        "height": 15.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -261.4,
+          1119.29
+        ],
+        [
+          -197.4,
+          1119.29
+        ],
+        [
+          -197.4,
+          1164.29
+        ],
+        [
+          -261.4,
+          1164.29
+        ],
+        [
+          -261.4,
+          1119.29
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.016605,
+          "lng": 79.853187
+        },
+        {
+          "lat": 12.016605,
+          "lng": 79.853775
+        },
+        {
+          "lat": 12.016198,
+          "lng": 79.853775
+        },
+        {
+          "lat": 12.016198,
+          "lng": 79.853187
+        },
+        {
+          "lat": 12.016605,
+          "lng": 79.853187
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "terracotta_trim_concrete",
+        "special_feature": "optics_darkroom_basement"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Condensed matter physics, laser optics, astrophysics, nanomaterials research facility.",
+      "amenities_inside": [
+        "Laser & Photonics Lab",
+        "Thin Film Synthesis Lab",
+        "Cryogenics Facility",
+        "X-Ray Diffraction Lab"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "dept-biotechnology",
+      "name": "Department of Biotechnology",
+      "formal_name": "Department of Biotechnology & Genetic Engineering",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.017046,
+        "lng": 79.853761,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -198.92,
+        "y": 7.25,
+        "z": 1070.58
+      },
+      "dimensions_m": {
+        "width": 58.0,
+        "depth": 42.0,
+        "height": 14.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -227.92,
+          1049.58
+        ],
+        [
+          -169.92,
+          1049.58
+        ],
+        [
+          -169.92,
+          1091.58
+        ],
+        [
+          -227.92,
+          1091.58
+        ],
+        [
+          -227.92,
+          1049.58
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.017236,
+          "lng": 79.853495
+        },
+        {
+          "lat": 12.017236,
+          "lng": 79.854027
+        },
+        {
+          "lat": 12.016856,
+          "lng": 79.854027
+        },
+        {
+          "lat": 12.016856,
+          "lng": 79.853495
+        },
+        {
+          "lat": 12.017236,
+          "lng": 79.853495
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "modernist_white_green",
+        "special_feature": "greenhouse_rooftop_bays"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Molecular biology, plant tissue culture, recombinant DNA labs, and fermentation engineering.",
+      "amenities_inside": [
+        "Clean Room Facility",
+        "Fermentation Bio-reactor Lab",
+        "Cell Culture Lab"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "dept-bioinformatics",
+      "name": "Department of Bioinformatics",
+      "formal_name": "Centre for Bioinformatics / Sub-DIC",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.016839,
+        "lng": 79.852999,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -281.88,
+        "y": 7.0,
+        "z": 1093.47
+      },
+      "dimensions_m": {
+        "width": 52.0,
+        "depth": 38.0,
+        "height": 14.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -307.88,
+          1074.47
+        ],
+        [
+          -255.88,
+          1074.47
+        ],
+        [
+          -255.88,
+          1112.47
+        ],
+        [
+          -307.88,
+          1112.47
+        ],
+        [
+          -307.88,
+          1074.47
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.017011,
+          "lng": 79.85276
+        },
+        {
+          "lat": 12.017011,
+          "lng": 79.853238
+        },
+        {
+          "lat": 12.016667,
+          "lng": 79.853238
+        },
+        {
+          "lat": 12.016667,
+          "lng": 79.85276
+        },
+        {
+          "lat": 12.017011,
+          "lng": 79.85276
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "glass_concrete",
+        "special_feature": "supercomputing_datacenter"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Structural biology simulations, drug discovery supercomputer, genomic analytics.",
+      "amenities_inside": [
+        "Drug Design Server Lab",
+        "Genomics Workstations",
+        "Molecular Graphics Lab"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "dept-earth-sciences",
+      "name": "Department of Earth Sciences",
+      "formal_name": "Department of Earth Sciences & Geophysics",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.01729,
+        "lng": 79.852644,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -320.53,
+        "y": 7.0,
+        "z": 1043.6
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 36.0,
+        "height": 14.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -345.53,
+          1025.6
+        ],
+        [
+          -295.53,
+          1025.6
+        ],
+        [
+          -295.53,
+          1061.6
+        ],
+        [
+          -345.53,
+          1061.6
+        ],
+        [
+          -345.53,
+          1025.6
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.017453,
+          "lng": 79.852414
+        },
+        {
+          "lat": 12.017453,
+          "lng": 79.852874
+        },
+        {
+          "lat": 12.017127,
+          "lng": 79.852874
+        },
+        {
+          "lat": 12.017127,
+          "lng": 79.852414
+        },
+        {
+          "lat": 12.017453,
+          "lng": 79.852414
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "stone_clad_brick",
+        "special_feature": "geological_rock_museum"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Geology, mineralogy, coastal geomorphology, remote sensing, and GIS spatial labs.",
+      "amenities_inside": [
+        "Rock & Mineral Museum",
+        "GIS Remote Sensing Lab",
+        "Geochemical Lab"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "ramanujan-math-school",
+      "name": "Ramanujan School of Mathematical Sciences",
+      "formal_name": "Ramanujan School of Mathematical Sciences (Maths & Statistics)",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.016268,
+        "lng": 79.854351,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -134.68,
+        "y": 7.0,
+        "z": 1156.6
+      },
+      "dimensions_m": {
+        "width": 54.0,
+        "depth": 38.0,
+        "height": 14.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -161.68,
+          1137.6
+        ],
+        [
+          -107.68,
+          1137.6
+        ],
+        [
+          -107.68,
+          1175.6
+        ],
+        [
+          -161.68,
+          1175.6
+        ],
+        [
+          -161.68,
+          1137.6
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.01644,
+          "lng": 79.854103
+        },
+        {
+          "lat": 12.01644,
+          "lng": 79.854599
+        },
+        {
+          "lat": 12.016096,
+          "lng": 79.854599
+        },
+        {
+          "lat": 12.016096,
+          "lng": 79.854103
+        },
+        {
+          "lat": 12.01644,
+          "lng": 79.854103
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "warm_concrete",
+        "special_feature": "srinivasa_ramanujan_memorial_bust"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Departments of Pure Mathematics, Applied Mathematics, and Statistics.",
+      "amenities_inside": [
+        "Statistical Computing Lab",
+        "Mathematical Research Library",
+        "Seminar Hall"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "umsget-green-energy",
+      "name": "School of Green Energy Technology (UMSGET)",
+      "formal_name": "UNESCO Madanjeet Singh School of Green Energy Technology",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.015803,
+        "lng": 79.852521,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -333.92,
+        "y": 7.0,
+        "z": 1208.02
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 34.0,
+        "height": 14.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -357.92,
+          1191.02
+        ],
+        [
+          -309.92,
+          1191.02
+        ],
+        [
+          -309.92,
+          1225.02
+        ],
+        [
+          -357.92,
+          1225.02
+        ],
+        [
+          -357.92,
+          1191.02
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.015957,
+          "lng": 79.852301
+        },
+        {
+          "lat": 12.015957,
+          "lng": 79.852741
+        },
+        {
+          "lat": 12.015649,
+          "lng": 79.852741
+        },
+        {
+          "lat": 12.015649,
+          "lng": 79.852301
+        },
+        {
+          "lat": 12.015957,
+          "lng": 79.852301
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "solar_panel_array_roof",
+        "facade_type": "eco_brick_green_fins",
+        "special_feature": "solar_photovoltaic_test_canopy"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Solar energy research, hydrogen fuel cells, biofuels, and advanced battery energy storage systems.",
+      "amenities_inside": [
+        "Solar Cell Characterization Lab",
+        "Biofuel Testing Facility",
+        "Fuel Cell Lab"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "hrtem-centre",
+      "name": "HRTEM Centre",
+      "formal_name": "High Resolution Transmission Electron Microscopy Facility",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.02206,
+        "lng": 79.852389,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -348.3,
+        "y": 4.75,
+        "z": 516.16
+      },
+      "dimensions_m": {
+        "width": 35.0,
+        "depth": 25.0,
+        "height": 9.5,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -365.8,
+          503.66
+        ],
+        [
+          -330.8,
+          503.66
+        ],
+        [
+          -330.8,
+          528.66
+        ],
+        [
+          -365.8,
+          528.66
+        ],
+        [
+          -365.8,
+          503.66
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022173,
+          "lng": 79.852228
+        },
+        {
+          "lat": 12.022173,
+          "lng": 79.85255
+        },
+        {
+          "lat": 12.021947,
+          "lng": 79.85255
+        },
+        {
+          "lat": 12.021947,
+          "lng": 79.852228
+        },
+        {
+          "lat": 12.022173,
+          "lng": 79.852228
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "vibration_isolated_concrete",
+        "special_feature": "vibration_free_bunker"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "National nanotech facility housing 200kV HRTEM for atomic-scale imaging of novel materials.",
+      "amenities_inside": [
+        "HRTEM Imaging Suite",
+        "Sample Preparation Lab",
+        "Analysis Workstation"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "lecture-hall-complex-1",
+      "name": "Lecture Hall Complex - I (LHC-I)",
+      "formal_name": "Science Lecture Hall Complex - I",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.016522,
+        "lng": 79.854862,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -79.04,
+        "y": 7.0,
+        "z": 1128.52
+      },
+      "dimensions_m": {
+        "width": 56.0,
+        "depth": 40.0,
+        "height": 14.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -107.04,
+          1108.52
+        ],
+        [
+          -51.04,
+          1108.52
+        ],
+        [
+          -51.04,
+          1148.52
+        ],
+        [
+          -107.04,
+          1148.52
+        ],
+        [
+          -107.04,
+          1108.52
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.016703,
+          "lng": 79.854605
+        },
+        {
+          "lat": 12.016703,
+          "lng": 79.855119
+        },
+        {
+          "lat": 12.016341,
+          "lng": 79.855119
+        },
+        {
+          "lat": 12.016341,
+          "lng": 79.854605
+        },
+        {
+          "lat": 12.016703,
+          "lng": 79.854605
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "concrete_louvers",
+        "special_feature": "stepped_theatres"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Central classrooms for integrated science students and foundation courses.",
+      "amenities_inside": [
+        "4 Large Lecture Theatres",
+        "Audio-Visual Booths"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "canteen-2-science",
+      "name": "Canteen 2 (Science Complex)",
+      "formal_name": "Science Block Canteen & Snack Bar",
+      "category": "dining",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.015438,
+        "lng": 79.85421,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -150.03,
+        "y": 3.25,
+        "z": 1248.38
+      },
+      "dimensions_m": {
+        "width": 30.0,
+        "depth": 22.0,
+        "height": 6.5,
+        "floors": 1
+      },
+      "footprint_polygon_local_m": [
+        [
+          -165.03,
+          1237.38
+        ],
+        [
+          -135.03,
+          1237.38
+        ],
+        [
+          -135.03,
+          1259.38
+        ],
+        [
+          -165.03,
+          1259.38
+        ],
+        [
+          -165.03,
+          1237.38
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.015537,
+          "lng": 79.854072
+        },
+        {
+          "lat": 12.015537,
+          "lng": 79.854348
+        },
+        {
+          "lat": 12.015339,
+          "lng": 79.854348
+        },
+        {
+          "lat": 12.015339,
+          "lng": 79.854072
+        },
+        {
+          "lat": 12.015537,
+          "lng": 79.854072
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "pitched_sheet",
+        "facade_type": "brick_mesh",
+        "special_feature": "tree_shaded_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF9500",
+        "badge_background": "#FFF4E5",
+        "wall_color": "#FFFDF9",
+        "roof_color": "#FFF0DE",
+        "icon": "fork.knife"
+      },
+      "description": "Popular refreshment spot for physics, chemistry, and biotech students during lab breaks.",
+      "amenities_inside": [
+        "Tea Stall",
+        "Snack Counters",
+        "Shaded Benches"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "performing-arts-complex",
+      "name": "Department of Performing Arts & Studio Theatres",
+      "formal_name": "Department of Drama & Performing Arts Studio Theatres 1, 2, 3",
+      "category": "academic",
+      "sector": "science_research_complex",
+      "gps": {
+        "lat": 12.020525,
+        "lng": 79.859012,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 372.79,
+        "y": 5.5,
+        "z": 685.89
+      },
+      "dimensions_m": {
+        "width": 54.0,
+        "depth": 38.0,
+        "height": 11.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          345.79,
+          666.89
+        ],
+        [
+          399.79,
+          666.89
+        ],
+        [
+          399.79,
+          704.89
+        ],
+        [
+          345.79,
+          704.89
+        ],
+        [
+          345.79,
+          666.89
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.020697,
+          "lng": 79.858764
+        },
+        {
+          "lat": 12.020697,
+          "lng": 79.85926
+        },
+        {
+          "lat": 12.020353,
+          "lng": 79.85926
+        },
+        {
+          "lat": 12.020353,
+          "lng": 79.858764
+        },
+        {
+          "lat": 12.020697,
+          "lng": 79.858764
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "curved_theatre_barrel",
+        "facade_type": "blackbox_acoustic_exterior",
+        "special_feature": "three_studio_theatres"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5856D6",
+        "badge_background": "#ECEBFA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#F0EEF8",
+        "icon": "graduationcap.fill"
+      },
+      "description": "Houses Sri Sankaradass Swamigal Lab (Theatre 1), Pammal Samandha Mudhaliar Lab (Theatre 2), and TKS Brothers Lab (Theatre 3).",
+      "amenities_inside": [
+        "Blackbox Theatre 1",
+        "Studio Theatre 2",
+        "Studio Theatre 3",
+        "Costume & Makeup Rooms"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-tagore",
+      "name": "Tagore Boys Hostel",
+      "formal_name": "Rabindranath Tagore Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.030188,
+        "lng": 79.850771,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -524.46,
+        "y": 8.0,
+        "z": -382.59
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 42.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -549.46,
+          -403.59
+        ],
+        [
+          -499.46,
+          -403.59
+        ],
+        [
+          -499.46,
+          -361.59
+        ],
+        [
+          -549.46,
+          -361.59
+        ],
+        [
+          -549.46,
+          -403.59
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.030378,
+          "lng": 79.850541
+        },
+        {
+          "lat": 12.030378,
+          "lng": 79.851001
+        },
+        {
+          "lat": 12.029998,
+          "lng": 79.851001
+        },
+        {
+          "lat": 12.029998,
+          "lng": 79.850541
+        },
+        {
+          "lat": 12.030378,
+          "lng": 79.850541
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_terracotta",
+        "special_feature": "quadrangle_central_lawn"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Postgraduate boys hostel with four floors, high-speed Wi-Fi, badminton courtyard, and common recreation room.",
+      "amenities_inside": [
+        "230 Rooms",
+        "Common Room with TV",
+        "Badminton Court",
+        "Laundry Drying Terrace"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-kalidas",
+      "name": "Kalidas Boys Hostel",
+      "formal_name": "Mahakavi Kalidas Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.030283,
+        "lng": 79.849501,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -662.73,
+        "y": 8.0,
+        "z": -393.09
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -686.73,
+          -413.09
+        ],
+        [
+          -638.73,
+          -413.09
+        ],
+        [
+          -638.73,
+          -373.09
+        ],
+        [
+          -686.73,
+          -373.09
+        ],
+        [
+          -686.73,
+          -413.09
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.030464,
+          "lng": 79.849281
+        },
+        {
+          "lat": 12.030464,
+          "lng": 79.849721
+        },
+        {
+          "lat": 12.030102,
+          "lng": 79.849721
+        },
+        {
+          "lat": 12.030102,
+          "lng": 79.849281
+        },
+        {
+          "lat": 12.030464,
+          "lng": 79.849281
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_white",
+        "special_feature": "quadrangle_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Postgraduate and research scholars boys hostel.",
+      "amenities_inside": [
+        "200 Rooms",
+        "Table Tennis Table",
+        "Study Room"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-kamban",
+      "name": "Kamban Boys Hostel",
+      "formal_name": "Kavi Chakravarty Kamban Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.029773,
+        "lng": 79.851897,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -401.86,
+        "y": 8.0,
+        "z": -336.7
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 42.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -426.86,
+          -357.7
+        ],
+        [
+          -376.86,
+          -357.7
+        ],
+        [
+          -376.86,
+          -315.7
+        ],
+        [
+          -426.86,
+          -315.7
+        ],
+        [
+          -426.86,
+          -357.7
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.029963,
+          "lng": 79.851667
+        },
+        {
+          "lat": 12.029963,
+          "lng": 79.852127
+        },
+        {
+          "lat": 12.029583,
+          "lng": 79.852127
+        },
+        {
+          "lat": 12.029583,
+          "lng": 79.851667
+        },
+        {
+          "lat": 12.029963,
+          "lng": 79.851667
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_terracotta",
+        "special_feature": "quadrangle_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Modern boys residence equipped with elevator and solar water heaters.",
+      "amenities_inside": [
+        "210 Rooms",
+        "Wi-Fi Hub",
+        "Solar Water Heating"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-maka",
+      "name": "Maulana Abul Kalam Azad Boys Hostel (MAKA)",
+      "formal_name": "Maulana Abul Kalam Azad Research Scholars Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.029731,
+        "lng": 79.848715,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -748.31,
+        "y": 8.0,
+        "z": -332.05
+      },
+      "dimensions_m": {
+        "width": 52.0,
+        "depth": 42.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -774.31,
+          -353.05
+        ],
+        [
+          -722.31,
+          -353.05
+        ],
+        [
+          -722.31,
+          -311.05
+        ],
+        [
+          -774.31,
+          -311.05
+        ],
+        [
+          -774.31,
+          -353.05
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.029921,
+          "lng": 79.848476
+        },
+        {
+          "lat": 12.029921,
+          "lng": 79.848954
+        },
+        {
+          "lat": 12.029541,
+          "lng": 79.848954
+        },
+        {
+          "lat": 12.029541,
+          "lng": 79.848476
+        },
+        {
+          "lat": 12.029921,
+          "lng": 79.848476
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_terracotta",
+        "special_feature": "phd_scholars_wing"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Dedicated residence for Ph.D. research scholars with single occupancy rooms.",
+      "amenities_inside": [
+        "180 Single Rooms",
+        "Reading Room",
+        "Gym Corner"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-kabir-das",
+      "name": "Kabir Das Boys Hostel",
+      "formal_name": "Saint Kabir Das Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.029236,
+        "lng": 79.849187,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -696.92,
+        "y": 8.0,
+        "z": -277.32
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -720.92,
+          -297.32
+        ],
+        [
+          -672.92,
+          -297.32
+        ],
+        [
+          -672.92,
+          -257.32
+        ],
+        [
+          -720.92,
+          -257.32
+        ],
+        [
+          -720.92,
+          -297.32
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.029417,
+          "lng": 79.848967
+        },
+        {
+          "lat": 12.029417,
+          "lng": 79.849407
+        },
+        {
+          "lat": 12.029055,
+          "lng": 79.849407
+        },
+        {
+          "lat": 12.029055,
+          "lng": 79.848967
+        },
+        {
+          "lat": 12.029417,
+          "lng": 79.848967
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_white",
+        "special_feature": "quadrangle_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Postgraduate boys residence with vibrant community garden.",
+      "amenities_inside": [
+        "190 Rooms",
+        "Indoor Games",
+        "Purified Water RO"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-kannadasan",
+      "name": "Kannadasan Boys Hostel",
+      "formal_name": "Kaviarasu Kannadasan Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.02941,
+        "lng": 79.850154,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -591.64,
+        "y": 8.0,
+        "z": -296.56
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -615.64,
+          -316.56
+        ],
+        [
+          -567.64,
+          -316.56
+        ],
+        [
+          -567.64,
+          -276.56
+        ],
+        [
+          -615.64,
+          -276.56
+        ],
+        [
+          -615.64,
+          -316.56
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.029591,
+          "lng": 79.849934
+        },
+        {
+          "lat": 12.029591,
+          "lng": 79.850374
+        },
+        {
+          "lat": 12.029229,
+          "lng": 79.850374
+        },
+        {
+          "lat": 12.029229,
+          "lng": 79.849934
+        },
+        {
+          "lat": 12.029591,
+          "lng": 79.849934
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_terracotta",
+        "special_feature": "quadrangle_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Senior boys hostel located immediately adjacent to Amudham Mess.",
+      "amenities_inside": [
+        "200 Rooms",
+        "TV Room",
+        "Bicycle Stand"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-valmiki",
+      "name": "Valmiki Boys Hostel",
+      "formal_name": "Maharishi Valmiki Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.028967,
+        "lng": 79.851404,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -455.54,
+        "y": 8.0,
+        "z": -247.58
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -480.54,
+          -267.58
+        ],
+        [
+          -430.54,
+          -267.58
+        ],
+        [
+          -430.54,
+          -227.58
+        ],
+        [
+          -480.54,
+          -227.58
+        ],
+        [
+          -480.54,
+          -267.58
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.029148,
+          "lng": 79.851174
+        },
+        {
+          "lat": 12.029148,
+          "lng": 79.851634
+        },
+        {
+          "lat": 12.028786,
+          "lng": 79.851634
+        },
+        {
+          "lat": 12.028786,
+          "lng": 79.851174
+        },
+        {
+          "lat": 12.029148,
+          "lng": 79.851174
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_white",
+        "special_feature": "quadrangle_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Undergraduate and postgraduate boys residence.",
+      "amenities_inside": [
+        "210 Rooms",
+        "Study Lounge",
+        "Water Dispensers"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-srk",
+      "name": "Sarvepalli Radhakrishnan Boys Hostel (SRK)",
+      "formal_name": "Dr. Sarvepalli Radhakrishnan Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.028761,
+        "lng": 79.847858,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -841.62,
+        "y": 8.0,
+        "z": -224.8
+      },
+      "dimensions_m": {
+        "width": 52.0,
+        "depth": 42.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -867.62,
+          -245.8
+        ],
+        [
+          -815.62,
+          -245.8
+        ],
+        [
+          -815.62,
+          -203.8
+        ],
+        [
+          -867.62,
+          -203.8
+        ],
+        [
+          -867.62,
+          -245.8
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.028951,
+          "lng": 79.847619
+        },
+        {
+          "lat": 12.028951,
+          "lng": 79.848097
+        },
+        {
+          "lat": 12.028571,
+          "lng": 79.848097
+        },
+        {
+          "lat": 12.028571,
+          "lng": 79.847619
+        },
+        {
+          "lat": 12.028951,
+          "lng": 79.847619
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_terracotta",
+        "special_feature": "western_perimeter_wing"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Spacious hostel block on the west wing near faculty quarters.",
+      "amenities_inside": [
+        "220 Rooms",
+        "Open Green Courtyard",
+        "Visitor Lounge"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-cv-raman",
+      "name": "C.V. Raman Boys Hostel",
+      "formal_name": "Sir C.V. Raman Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.026794,
+        "lng": 79.853096,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -271.32,
+        "y": 8.0,
+        "z": -7.3
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -296.32,
+          -27.3
+        ],
+        [
+          -246.32,
+          -27.3
+        ],
+        [
+          -246.32,
+          12.7
+        ],
+        [
+          -296.32,
+          12.7
+        ],
+        [
+          -296.32,
+          -27.3
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.026975,
+          "lng": 79.852866
+        },
+        {
+          "lat": 12.026975,
+          "lng": 79.853326
+        },
+        {
+          "lat": 12.026613,
+          "lng": 79.853326
+        },
+        {
+          "lat": 12.026613,
+          "lng": 79.852866
+        },
+        {
+          "lat": 12.026975,
+          "lng": 79.852866
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_white",
+        "special_feature": "spacious_car_parking"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Situated right on the main university boulevard connecting to the sports complex.",
+      "amenities_inside": [
+        "200 Rooms",
+        "Ample Parking Plaza",
+        "Wi-Fi Hub"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "CV Raman UniGo Rental Point"
+      }
+    },
+    {
+      "id": "bh-subramania-bharathi",
+      "name": "Subramania Bharathiar Boys Hostel",
+      "formal_name": "Mahakavi Subramania Bharathiar Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.028707,
+        "lng": 79.853228,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -256.95,
+        "y": 8.0,
+        "z": -218.83
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -280.95,
+          -238.83
+        ],
+        [
+          -232.95,
+          -238.83
+        ],
+        [
+          -232.95,
+          -198.83
+        ],
+        [
+          -280.95,
+          -198.83
+        ],
+        [
+          -280.95,
+          -238.83
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.028888,
+          "lng": 79.853008
+        },
+        {
+          "lat": 12.028888,
+          "lng": 79.853448
+        },
+        {
+          "lat": 12.028526,
+          "lng": 79.853448
+        },
+        {
+          "lat": 12.028526,
+          "lng": 79.853008
+        },
+        {
+          "lat": 12.028888,
+          "lng": 79.853008
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_terracotta",
+        "special_feature": "quadrangle_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Central hostel block situated close to the dining mess corridors.",
+      "amenities_inside": [
+        "190 Rooms",
+        "Common Room",
+        "Gym Corner"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-ilango-adigal",
+      "name": "Ilango Adigal Boys Hostel",
+      "formal_name": "Ilango Adigal Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.028324,
+        "lng": 79.852756,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -308.34,
+        "y": 8.0,
+        "z": -176.48
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -332.34,
+          -196.48
+        ],
+        [
+          -284.34,
+          -196.48
+        ],
+        [
+          -284.34,
+          -156.48
+        ],
+        [
+          -332.34,
+          -156.48
+        ],
+        [
+          -332.34,
+          -196.48
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.028505,
+          "lng": 79.852536
+        },
+        {
+          "lat": 12.028505,
+          "lng": 79.852976
+        },
+        {
+          "lat": 12.028143,
+          "lng": 79.852976
+        },
+        {
+          "lat": 12.028143,
+          "lng": 79.852536
+        },
+        {
+          "lat": 12.028505,
+          "lng": 79.852536
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_white",
+        "special_feature": "quadrangle_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Undergraduate boys residence.",
+      "amenities_inside": [
+        "180 Rooms",
+        "Recreation Room",
+        "Solar Water"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-pavendar",
+      "name": "Pavendar Bharathidasan Boys Hostel",
+      "formal_name": "Pavendar Bharathidasan Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.028216,
+        "lng": 79.853481,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -229.4,
+        "y": 8.0,
+        "z": -164.53
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -253.4,
+          -184.53
+        ],
+        [
+          -205.4,
+          -184.53
+        ],
+        [
+          -205.4,
+          -144.53
+        ],
+        [
+          -253.4,
+          -144.53
+        ],
+        [
+          -253.4,
+          -184.53
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.028397,
+          "lng": 79.853261
+        },
+        {
+          "lat": 12.028397,
+          "lng": 79.853701
+        },
+        {
+          "lat": 12.028035,
+          "lng": 79.853701
+        },
+        {
+          "lat": 12.028035,
+          "lng": 79.853261
+        },
+        {
+          "lat": 12.028397,
+          "lng": 79.853261
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_terracotta",
+        "special_feature": "quadrangle_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Postgraduate boys residence.",
+      "amenities_inside": [
+        "190 Rooms",
+        "Reading Area",
+        "Table Tennis"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "bh-sri-aurobindo",
+      "name": "Sri Aurobindo Boys Hostel",
+      "formal_name": "Sri Aurobindo Boys Residence",
+      "category": "boys_hostel",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.029358,
+        "lng": 79.853457,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -232.02,
+        "y": 8.0,
+        "z": -290.81
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 42.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -257.02,
+          -311.81
+        ],
+        [
+          -207.02,
+          -311.81
+        ],
+        [
+          -207.02,
+          -269.81
+        ],
+        [
+          -257.02,
+          -269.81
+        ],
+        [
+          -257.02,
+          -311.81
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.029548,
+          "lng": 79.853227
+        },
+        {
+          "lat": 12.029548,
+          "lng": 79.853687
+        },
+        {
+          "lat": 12.029168,
+          "lng": 79.853687
+        },
+        {
+          "lat": 12.029168,
+          "lng": 79.853227
+        },
+        {
+          "lat": 12.029548,
+          "lng": 79.853227
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_brick_white",
+        "special_feature": "eastern_hostel_wing"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#007AFF",
+        "badge_background": "#E5F2FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EDF5FC",
+        "icon": "bed.double.fill"
+      },
+      "description": "Large boys hostel bordering the east university green space.",
+      "amenities_inside": [
+        "220 Rooms",
+        "Wi-Fi Commons",
+        "Garden Lawn"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "amudham-mess",
+      "name": "Amudham Mess for Boys",
+      "formal_name": "Amudham Central Dining Hall (Boys Hostel Mess)",
+      "category": "dining",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.029009,
+        "lng": 79.850709,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -531.21,
+        "y": 5.0,
+        "z": -252.22
+      },
+      "dimensions_m": {
+        "width": 55.0,
+        "depth": 45.0,
+        "height": 10.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -558.71,
+          -274.72
+        ],
+        [
+          -503.71,
+          -274.72
+        ],
+        [
+          -503.71,
+          -229.72
+        ],
+        [
+          -558.71,
+          -229.72
+        ],
+        [
+          -558.71,
+          -274.72
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.029212,
+          "lng": 79.850456
+        },
+        {
+          "lat": 12.029212,
+          "lng": 79.850962
+        },
+        {
+          "lat": 12.028806,
+          "lng": 79.850962
+        },
+        {
+          "lat": 12.028806,
+          "lng": 79.850456
+        },
+        {
+          "lat": 12.029212,
+          "lng": 79.850456
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "pitched_industrial_truss",
+        "facade_type": "high_ventilation_brick",
+        "special_feature": "dual_dining_halls"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF9500",
+        "badge_background": "#FFF4E5",
+        "wall_color": "#FFFDF9",
+        "roof_color": "#FFF0DE",
+        "icon": "fork.knife"
+      },
+      "description": "Massive central boys hostel dining hall serving over 1,800 students per meal with mechanized kitchen.",
+      "amenities_inside": [
+        "North & South Indian Counters",
+        "Steam Kitchen",
+        "Handwash Gallery",
+        "Filtered RO Station"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "Amudham Mess UniGo Night Delivery Hub"
+      }
+    },
+    {
+      "id": "new-mega-mess",
+      "name": "NEW MEGA MESS",
+      "formal_name": "University Mega Dining Facility & Food Plaza",
+      "category": "dining",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.029465,
+        "lng": 79.852456,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -341.0,
+        "y": 6.75,
+        "z": -302.64
+      },
+      "dimensions_m": {
+        "width": 60.0,
+        "depth": 48.0,
+        "height": 13.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -371.0,
+          -326.64
+        ],
+        [
+          -311.0,
+          -326.64
+        ],
+        [
+          -311.0,
+          -278.64
+        ],
+        [
+          -371.0,
+          -278.64
+        ],
+        [
+          -371.0,
+          -326.64
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.029682,
+          "lng": 79.85218
+        },
+        {
+          "lat": 12.029682,
+          "lng": 79.852732
+        },
+        {
+          "lat": 12.029248,
+          "lng": 79.852732
+        },
+        {
+          "lat": 12.029248,
+          "lng": 79.85218
+        },
+        {
+          "lat": 12.029682,
+          "lng": 79.85218
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "curved_metal_truss",
+        "facade_type": "modern_glass_steel",
+        "special_feature": "multi_level_dining"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF9500",
+        "badge_background": "#FFF4E5",
+        "wall_color": "#FFFDF9",
+        "roof_color": "#FFF0DE",
+        "icon": "fork.knife"
+      },
+      "description": "Modern multi-storey dining facility with vegetarian and non-vegetarian automated kitchen lines.",
+      "amenities_inside": [
+        "3 Dining Floors",
+        "Special Diet Counter",
+        "Evening Snack Bar"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "Mega Mess UniGo Central Bike Hub"
+      }
+    },
+    {
+      "id": "gents-gym",
+      "name": "Gents Central Gym",
+      "formal_name": "Hostel Village Gents Gymnasium & Fitness Centre",
+      "category": "sports",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.030148,
+        "lng": 79.850174,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -589.46,
+        "y": 4.5,
+        "z": -378.16
+      },
+      "dimensions_m": {
+        "width": 35.0,
+        "depth": 25.0,
+        "height": 9.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -606.96,
+          -390.66
+        ],
+        [
+          -571.96,
+          -390.66
+        ],
+        [
+          -571.96,
+          -365.66
+        ],
+        [
+          -606.96,
+          -365.66
+        ],
+        [
+          -606.96,
+          -390.66
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.030261,
+          "lng": 79.850013
+        },
+        {
+          "lat": 12.030261,
+          "lng": 79.850335
+        },
+        {
+          "lat": 12.030035,
+          "lng": 79.850335
+        },
+        {
+          "lat": 12.030035,
+          "lng": 79.850013
+        },
+        {
+          "lat": 12.030261,
+          "lng": 79.850013
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "industrial_brick_mesh",
+        "special_feature": "weight_training_hall"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#34C759",
+        "badge_background": "#EBF9EE",
+        "wall_color": "#F8FCF8",
+        "roof_color": "#EBF9EE",
+        "icon": "sportscourt.fill"
+      },
+      "description": "Free weights, cable crossovers, treadmills, power racks for resident boys.",
+      "amenities_inside": [
+        "Free Weights Section",
+        "Cardio Zone",
+        "Locker Rooms"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "vivekananda-hall",
+      "name": "Swami Vivekananda Multi Purpose Hall",
+      "formal_name": "Swami Vivekananda Indoor Sports & Recreation Centre",
+      "category": "sports",
+      "sector": "north_boys_hostel_village",
+      "gps": {
+        "lat": 12.028722,
+        "lng": 79.850916,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -508.67,
+        "y": 5.75,
+        "z": -220.48
+      },
+      "dimensions_m": {
+        "width": 45.0,
+        "depth": 35.0,
+        "height": 11.5,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -531.17,
+          -237.98
+        ],
+        [
+          -486.17,
+          -237.98
+        ],
+        [
+          -486.17,
+          -202.98
+        ],
+        [
+          -531.17,
+          -202.98
+        ],
+        [
+          -531.17,
+          -237.98
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.02888,
+          "lng": 79.850709
+        },
+        {
+          "lat": 12.02888,
+          "lng": 79.851123
+        },
+        {
+          "lat": 12.028564,
+          "lng": 79.851123
+        },
+        {
+          "lat": 12.028564,
+          "lng": 79.850709
+        },
+        {
+          "lat": 12.02888,
+          "lng": 79.850709
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "curved_barrel_vault",
+        "facade_type": "high_ceiling_brick",
+        "special_feature": "indoor_badminton_courts"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#34C759",
+        "badge_background": "#EBF9EE",
+        "wall_color": "#F8FCF8",
+        "roof_color": "#EBF9EE",
+        "icon": "sportscourt.fill"
+      },
+      "description": "Indoor wooden badminton courts, table tennis arena, and student assembly hall.",
+      "amenities_inside": [
+        "3 Indoor Wooden Badminton Courts",
+        "4 TT Tables",
+        "Yoga Hall"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "gh-mother-teresa",
+      "name": "Mother Teresa Hostel",
+      "formal_name": "Mother Teresa Girls Residence",
+      "category": "girls_hostel",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.0215,
+        "lng": 79.8568,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 131.96,
+        "y": 8.0,
+        "z": 578.08
+      },
+      "dimensions_m": {
+        "width": 52.0,
+        "depth": 42.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          105.96,
+          557.08
+        ],
+        [
+          157.96,
+          557.08
+        ],
+        [
+          157.96,
+          599.08
+        ],
+        [
+          105.96,
+          599.08
+        ],
+        [
+          105.96,
+          557.08
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.02169,
+          "lng": 79.856561
+        },
+        {
+          "lat": 12.02169,
+          "lng": 79.857039
+        },
+        {
+          "lat": 12.02131,
+          "lng": 79.857039
+        },
+        {
+          "lat": 12.02131,
+          "lng": 79.856561
+        },
+        {
+          "lat": 12.02169,
+          "lng": 79.856561
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_rose_terracotta",
+        "special_feature": "secure_gated_courtyard"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF2D55",
+        "badge_background": "#FFEBF0",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FCEEF2",
+        "icon": "bed.double.fill"
+      },
+      "description": "One of the largest girls hostels with 180 rooms, dedicated security kiosk, and recreation lawn.",
+      "amenities_inside": [
+        "180 Rooms",
+        "Security Gate",
+        "Reading Lounge",
+        "Washing Machine Bays"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "Mother Teresa UniGo Express Drop"
+      }
+    },
+    {
+      "id": "gh-madame-curie",
+      "name": "Madame Curie Hostel",
+      "formal_name": "Madame Curie Science Research Girls Residence",
+      "category": "girls_hostel",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.023188,
+        "lng": 79.848237,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -800.35,
+        "y": 6.75,
+        "z": 391.43
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 38.0,
+        "height": 13.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -824.35,
+          372.43
+        ],
+        [
+          -776.35,
+          372.43
+        ],
+        [
+          -776.35,
+          410.43
+        ],
+        [
+          -824.35,
+          410.43
+        ],
+        [
+          -824.35,
+          372.43
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.02336,
+          "lng": 79.848017
+        },
+        {
+          "lat": 12.02336,
+          "lng": 79.848457
+        },
+        {
+          "lat": 12.023016,
+          "lng": 79.848457
+        },
+        {
+          "lat": 12.023016,
+          "lng": 79.848017
+        },
+        {
+          "lat": 12.02336,
+          "lng": 79.848017
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_rose_terracotta",
+        "special_feature": "peaceful_garden_quadrangle"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF2D55",
+        "badge_background": "#FFEBF0",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FCEEF2",
+        "icon": "bed.double.fill"
+      },
+      "description": "Research scholars and postgraduate girls residence located near the medical centre.",
+      "amenities_inside": [
+        "160 Rooms",
+        "Wi-Fi Hub",
+        "Solar Geysers",
+        "Study Hall"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "gh-kalpana-chawla",
+      "name": "Kalpana Chawla Hostel",
+      "formal_name": "Kalpana Chawla Girls Residence",
+      "category": "girls_hostel",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.023298,
+        "lng": 79.847414,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -889.96,
+        "y": 6.75,
+        "z": 379.27
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 38.0,
+        "height": 13.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -913.96,
+          360.27
+        ],
+        [
+          -865.96,
+          360.27
+        ],
+        [
+          -865.96,
+          398.27
+        ],
+        [
+          -913.96,
+          398.27
+        ],
+        [
+          -913.96,
+          360.27
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.02347,
+          "lng": 79.847194
+        },
+        {
+          "lat": 12.02347,
+          "lng": 79.847634
+        },
+        {
+          "lat": 12.023126,
+          "lng": 79.847634
+        },
+        {
+          "lat": 12.023126,
+          "lng": 79.847194
+        },
+        {
+          "lat": 12.02347,
+          "lng": 79.847194
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_rose_white",
+        "special_feature": "courtyard_palm_garden"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF2D55",
+        "badge_background": "#FFEBF0",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FCEEF2",
+        "icon": "bed.double.fill"
+      },
+      "description": "Girls residence with peaceful landscaped lawns.",
+      "amenities_inside": [
+        "150 Rooms",
+        "Visitor Parlour",
+        "TV Room"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "gh-ganga",
+      "name": "Ganga Ladies Hostel",
+      "formal_name": "Ganga Girls Residence",
+      "category": "girls_hostel",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.02214,
+        "lng": 79.849375,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -676.45,
+        "y": 8.0,
+        "z": 507.31
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -701.45,
+          487.31
+        ],
+        [
+          -651.45,
+          487.31
+        ],
+        [
+          -651.45,
+          527.31
+        ],
+        [
+          -701.45,
+          527.31
+        ],
+        [
+          -701.45,
+          487.31
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022321,
+          "lng": 79.849145
+        },
+        {
+          "lat": 12.022321,
+          "lng": 79.849605
+        },
+        {
+          "lat": 12.021959,
+          "lng": 79.849605
+        },
+        {
+          "lat": 12.021959,
+          "lng": 79.849145
+        },
+        {
+          "lat": 12.022321,
+          "lng": 79.849145
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_rose_terracotta",
+        "special_feature": "quadrangle_garden"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF2D55",
+        "badge_background": "#FFEBF0",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FCEEF2",
+        "icon": "bed.double.fill"
+      },
+      "description": "Four-storey girls residence close to the university health centre.",
+      "amenities_inside": [
+        "190 Rooms",
+        "Elevator",
+        "Common Room"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "gh-yamuna",
+      "name": "Yamuna Ladies Hostel",
+      "formal_name": "Yamuna Girls Residence",
+      "category": "girls_hostel",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.022701,
+        "lng": 79.848646,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -755.82,
+        "y": 8.0,
+        "z": 445.28
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -780.82,
+          425.28
+        ],
+        [
+          -730.82,
+          425.28
+        ],
+        [
+          -730.82,
+          465.28
+        ],
+        [
+          -780.82,
+          465.28
+        ],
+        [
+          -780.82,
+          425.28
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022882,
+          "lng": 79.848416
+        },
+        {
+          "lat": 12.022882,
+          "lng": 79.848876
+        },
+        {
+          "lat": 12.02252,
+          "lng": 79.848876
+        },
+        {
+          "lat": 12.02252,
+          "lng": 79.848416
+        },
+        {
+          "lat": 12.022882,
+          "lng": 79.848416
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_rose_white",
+        "special_feature": "quadrangle_garden"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF2D55",
+        "badge_background": "#FFEBF0",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FCEEF2",
+        "icon": "bed.double.fill"
+      },
+      "description": "Modern girls residence with 190 rooms and comprehensive surveillance security.",
+      "amenities_inside": [
+        "190 Rooms",
+        "Wi-Fi Hub",
+        "Indoor Games Room"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "gh-cauveri",
+      "name": "Cauveri Ladies Hostel",
+      "formal_name": "Cauveri Girls Residence",
+      "category": "girls_hostel",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.020366,
+        "lng": 79.850288,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -577.05,
+        "y": 8.0,
+        "z": 703.47
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -602.05,
+          683.47
+        ],
+        [
+          -552.05,
+          683.47
+        ],
+        [
+          -552.05,
+          723.47
+        ],
+        [
+          -602.05,
+          723.47
+        ],
+        [
+          -602.05,
+          683.47
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.020547,
+          "lng": 79.850058
+        },
+        {
+          "lat": 12.020547,
+          "lng": 79.850518
+        },
+        {
+          "lat": 12.020185,
+          "lng": 79.850518
+        },
+        {
+          "lat": 12.020185,
+          "lng": 79.850058
+        },
+        {
+          "lat": 12.020547,
+          "lng": 79.850058
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_rose_terracotta",
+        "special_feature": "southern_girls_wing"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF2D55",
+        "badge_background": "#FFEBF0",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FCEEF2",
+        "icon": "bed.double.fill"
+      },
+      "description": "Girls residence adjacent to the central sports grounds and ladies gym.",
+      "amenities_inside": [
+        "200 Rooms",
+        "Quiet Study Zone",
+        "Solar Hot Water"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "gh-saraswati",
+      "name": "Saraswati Ladies Hostel",
+      "formal_name": "Saraswati Girls Residence",
+      "category": "girls_hostel",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.021525,
+        "lng": 79.849757,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -634.86,
+        "y": 8.0,
+        "z": 575.32
+      },
+      "dimensions_m": {
+        "width": 48.0,
+        "depth": 40.0,
+        "height": 16.0,
+        "floors": 4
+      },
+      "footprint_polygon_local_m": [
+        [
+          -658.86,
+          555.32
+        ],
+        [
+          -610.86,
+          555.32
+        ],
+        [
+          -610.86,
+          595.32
+        ],
+        [
+          -658.86,
+          595.32
+        ],
+        [
+          -658.86,
+          555.32
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.021706,
+          "lng": 79.849537
+        },
+        {
+          "lat": 12.021706,
+          "lng": 79.849977
+        },
+        {
+          "lat": 12.021344,
+          "lng": 79.849977
+        },
+        {
+          "lat": 12.021344,
+          "lng": 79.849537
+        },
+        {
+          "lat": 12.021706,
+          "lng": 79.849537
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_rose_white",
+        "special_feature": "quadrangle_garden"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF2D55",
+        "badge_background": "#FFEBF0",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FCEEF2",
+        "icon": "bed.double.fill"
+      },
+      "description": "Undergraduate and postgraduate girls residence.",
+      "amenities_inside": [
+        "180 Rooms",
+        "Visitor Lounge",
+        "Laundry Dry Courtyard"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "gh-narmatha",
+      "name": "Narmatha Ladies Hostel",
+      "formal_name": "Narmatha Girls Residence",
+      "category": "girls_hostel",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.022609,
+        "lng": 79.84678,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -958.98,
+        "y": 6.75,
+        "z": 455.45
+      },
+      "dimensions_m": {
+        "width": 46.0,
+        "depth": 36.0,
+        "height": 13.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          -981.98,
+          437.45
+        ],
+        [
+          -935.98,
+          437.45
+        ],
+        [
+          -935.98,
+          473.45
+        ],
+        [
+          -981.98,
+          473.45
+        ],
+        [
+          -981.98,
+          437.45
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022772,
+          "lng": 79.846569
+        },
+        {
+          "lat": 12.022772,
+          "lng": 79.846991
+        },
+        {
+          "lat": 12.022446,
+          "lng": 79.846991
+        },
+        {
+          "lat": 12.022446,
+          "lng": 79.846569
+        },
+        {
+          "lat": 12.022772,
+          "lng": 79.846569
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "hostel_rose_terracotta",
+        "special_feature": "tranquil_western_edge"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF2D55",
+        "badge_background": "#FFEBF0",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FCEEF2",
+        "icon": "bed.double.fill"
+      },
+      "description": "Tranquil residential hostel situated on the western campus border.",
+      "amenities_inside": [
+        "150 Rooms",
+        "Reading Room",
+        "Power Backup"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "mother-teresa-mess",
+      "name": "Mother Teresa Mess (Girls Dining)",
+      "formal_name": "Mother Teresa Central Dining Hall for Girls",
+      "category": "dining",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.021976,
+        "lng": 79.847922,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -834.65,
+        "y": 5.0,
+        "z": 525.45
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 40.0,
+        "height": 10.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -859.65,
+          505.45
+        ],
+        [
+          -809.65,
+          505.45
+        ],
+        [
+          -809.65,
+          545.45
+        ],
+        [
+          -859.65,
+          545.45
+        ],
+        [
+          -859.65,
+          505.45
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.022157,
+          "lng": 79.847692
+        },
+        {
+          "lat": 12.022157,
+          "lng": 79.848152
+        },
+        {
+          "lat": 12.021795,
+          "lng": 79.848152
+        },
+        {
+          "lat": 12.021795,
+          "lng": 79.847692
+        },
+        {
+          "lat": 12.022157,
+          "lng": 79.847692
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "pitched_truss",
+        "facade_type": "rose_brick_stucco",
+        "special_feature": "dedicated_secure_dining"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF9500",
+        "badge_background": "#FFF4E5",
+        "wall_color": "#FFFDF9",
+        "roof_color": "#FFF0DE",
+        "icon": "fork.knife"
+      },
+      "description": "Central dining facility for resident female scholars with nutritious multi-cuisine meal plans.",
+      "amenities_inside": [
+        "Multi-line Dining Hall",
+        "Diet Counter",
+        "Hygienic Steam Kitchen"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "Girls Mess UniGo Delivery Node"
+      }
+    },
+    {
+      "id": "ladies-gym",
+      "name": "Ladies Central Gym",
+      "formal_name": "University Ladies Fitness & Wellness Centre",
+      "category": "sports",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.020957,
+        "lng": 79.84979,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -631.27,
+        "y": 4.5,
+        "z": 638.12
+      },
+      "dimensions_m": {
+        "width": 32.0,
+        "depth": 24.0,
+        "height": 9.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -647.27,
+          626.12
+        ],
+        [
+          -615.27,
+          626.12
+        ],
+        [
+          -615.27,
+          650.12
+        ],
+        [
+          -647.27,
+          650.12
+        ],
+        [
+          -647.27,
+          626.12
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.021066,
+          "lng": 79.849643
+        },
+        {
+          "lat": 12.021066,
+          "lng": 79.849937
+        },
+        {
+          "lat": 12.020848,
+          "lng": 79.849937
+        },
+        {
+          "lat": 12.020848,
+          "lng": 79.849643
+        },
+        {
+          "lat": 12.021066,
+          "lng": 79.849643
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "stucco_and_glass",
+        "special_feature": "women_wellness_studio"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#34C759",
+        "badge_background": "#EBF9EE",
+        "wall_color": "#F8FCF8",
+        "roof_color": "#EBF9EE",
+        "icon": "sportscourt.fill"
+      },
+      "description": "Cardio trainers, yoga studio, pilates equipment, and female fitness instructor support.",
+      "amenities_inside": [
+        "Cardio Equipment",
+        "Aerobics & Yoga Floor",
+        "Lockers"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "health-centre",
+      "name": "University Health Centre",
+      "formal_name": "Pondicherry University 24/7 Health Centre & Emergency Clinic",
+      "category": "health",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.019605,
+        "lng": 79.850688,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -533.5,
+        "y": 5.0,
+        "z": 787.62
+      },
+      "dimensions_m": {
+        "width": 45.0,
+        "depth": 32.0,
+        "height": 10.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -556.0,
+          771.62
+        ],
+        [
+          -511.0,
+          771.62
+        ],
+        [
+          -511.0,
+          803.62
+        ],
+        [
+          -556.0,
+          803.62
+        ],
+        [
+          -556.0,
+          771.62
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.01975,
+          "lng": 79.850481
+        },
+        {
+          "lat": 12.01975,
+          "lng": 79.850895
+        },
+        {
+          "lat": 12.01946,
+          "lng": 79.850895
+        },
+        {
+          "lat": 12.01946,
+          "lng": 79.850481
+        },
+        {
+          "lat": 12.01975,
+          "lng": 79.850481
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "medical_white_red_cross",
+        "special_feature": "ambulance_bay_and_pharmacy"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF3B30",
+        "badge_background": "#FFEBEA",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FEECEB",
+        "icon": "cross.case.fill"
+      },
+      "description": "24/7 emergency medical centre with resident doctors, nursing staff, observation ward, pharmacy, and ambulance.",
+      "amenities_inside": [
+        "Emergency Triage Ward",
+        "Consulting Rooms",
+        "In-house Pharmacy",
+        "Pathology Lab",
+        "24/7 Ambulance Bay"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "UniGo Emergency Helpline & Health Bay"
+      }
+    },
+    {
+      "id": "campus-temple",
+      "name": "Shree Valampuri Vinayagar Temple",
+      "formal_name": "Shree Valampuri Vidyalaya Vinayagar Temple",
+      "category": "amenity",
+      "sector": "girls_hostel_sanctuary",
+      "gps": {
+        "lat": 12.021628,
+        "lng": 79.8527,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -314.44,
+        "y": 4.25,
+        "z": 563.93
+      },
+      "dimensions_m": {
+        "width": 22.0,
+        "depth": 18.0,
+        "height": 8.5,
+        "floors": 1
+      },
+      "footprint_polygon_local_m": [
+        [
+          -325.44,
+          554.93
+        ],
+        [
+          -303.44,
+          554.93
+        ],
+        [
+          -303.44,
+          572.93
+        ],
+        [
+          -325.44,
+          572.93
+        ],
+        [
+          -325.44,
+          554.93
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.021709,
+          "lng": 79.852599
+        },
+        {
+          "lat": 12.021709,
+          "lng": 79.852801
+        },
+        {
+          "lat": 12.021547,
+          "lng": 79.852801
+        },
+        {
+          "lat": 12.021547,
+          "lng": 79.852599
+        },
+        {
+          "lat": 12.021709,
+          "lng": 79.852599
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "traditional_dravidian_gopuram",
+        "facade_type": "sculpted_stone",
+        "special_feature": "dravidian_temple_gopuram"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#FF9F0A",
+        "badge_background": "#FFF5E6",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#FFF3E3",
+        "icon": "storefront.fill"
+      },
+      "description": "Campus shrine located amidst sacred neem and peepal groves.",
+      "amenities_inside": [
+        "Sanctum Sanctorum",
+        "Meditation Courtyard",
+        "Pradakshina Path"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "rajiv-gandhi-stadium",
+      "name": "Rajiv Gandhi Sports Stadium",
+      "formal_name": "Rajiv Gandhi Stadium & 400m Synthetic Athletic Track",
+      "category": "sports",
+      "sector": "sports_and_athletics_grounds",
+      "gps": {
+        "lat": 12.026472,
+        "lng": 79.850852,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -515.64,
+        "y": 6.0,
+        "z": 28.31
+      },
+      "dimensions_m": {
+        "width": 160.0,
+        "depth": 110.0,
+        "height": 12.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -595.64,
+          -26.69
+        ],
+        [
+          -435.64,
+          -26.69
+        ],
+        [
+          -435.64,
+          83.31
+        ],
+        [
+          -595.64,
+          83.31
+        ],
+        [
+          -595.64,
+          -26.69
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.026969,
+          "lng": 79.850117
+        },
+        {
+          "lat": 12.026969,
+          "lng": 79.851587
+        },
+        {
+          "lat": 12.025975,
+          "lng": 79.851587
+        },
+        {
+          "lat": 12.025975,
+          "lng": 79.850117
+        },
+        {
+          "lat": 12.026969,
+          "lng": 79.850117
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "stadium_grandstand_canopy",
+        "facade_type": "cantilever_steel_terracotta",
+        "special_feature": "synthetic_400m_running_track"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#34C759",
+        "badge_background": "#EBF9EE",
+        "wall_color": "#F8FCF8",
+        "roof_color": "#EBF9EE",
+        "icon": "sportscourt.fill"
+      },
+      "description": "Premier athletic stadium featuring Olympic-spec 400m running track, football pitch, cricket wicket, and spectator pavilion.",
+      "amenities_inside": [
+        "400m 8-Lane Running Track",
+        "FIFA Turf Football Field",
+        "Cricket Pitch",
+        "Grandstand Seating (3000 seats)"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "Stadium UniGo Pickup Hub"
+      }
+    },
+    {
+      "id": "central-gymnasium-complex",
+      "name": "University Sports Pavilion & Courts",
+      "formal_name": "Directorate of Physical Education & Sports Complex",
+      "category": "sports",
+      "sector": "sports_and_athletics_grounds",
+      "gps": {
+        "lat": 12.027162,
+        "lng": 79.849971,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -611.56,
+        "y": 5.25,
+        "z": -47.99
+      },
+      "dimensions_m": {
+        "width": 50.0,
+        "depth": 35.0,
+        "height": 10.5,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          -636.56,
+          -65.49
+        ],
+        [
+          -586.56,
+          -65.49
+        ],
+        [
+          -586.56,
+          -30.49
+        ],
+        [
+          -636.56,
+          -30.49
+        ],
+        [
+          -636.56,
+          -65.49
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.02732,
+          "lng": 79.849741
+        },
+        {
+          "lat": 12.02732,
+          "lng": 79.850201
+        },
+        {
+          "lat": 12.027004,
+          "lng": 79.850201
+        },
+        {
+          "lat": 12.027004,
+          "lng": 79.849741
+        },
+        {
+          "lat": 12.02732,
+          "lng": 79.849741
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "sports_concrete_brick",
+        "special_feature": "floodlit_basketball_courts"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#34C759",
+        "badge_background": "#EBF9EE",
+        "wall_color": "#F8FCF8",
+        "roof_color": "#EBF9EE",
+        "icon": "sportscourt.fill"
+      },
+      "description": "Headquarters of physical education with basketball courts, volleyball courts, and equipment store.",
+      "amenities_inside": [
+        "2 Synthetic Basketball Courts",
+        "2 Volleyball Courts",
+        "Equipment Dispensary"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "gate-1-main",
+      "name": "Gate 1 (Main Entrance - ECR)",
+      "formal_name": "Pondicherry University Gate No. 1 & Archway",
+      "category": "gate_security",
+      "sector": "perimeter_and_highway_corridor",
+      "gps": {
+        "lat": 12.019818,
+        "lng": 79.858469,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 313.67,
+        "y": 6.0,
+        "z": 764.07
+      },
+      "dimensions_m": {
+        "width": 35.0,
+        "depth": 15.0,
+        "height": 12.0,
+        "floors": 2
+      },
+      "footprint_polygon_local_m": [
+        [
+          296.17,
+          756.57
+        ],
+        [
+          331.17,
+          756.57
+        ],
+        [
+          331.17,
+          771.57
+        ],
+        [
+          296.17,
+          771.57
+        ],
+        [
+          296.17,
+          756.57
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.019886,
+          "lng": 79.858308
+        },
+        {
+          "lat": 12.019886,
+          "lng": 79.85863
+        },
+        {
+          "lat": 12.01975,
+          "lng": 79.85863
+        },
+        {
+          "lat": 12.01975,
+          "lng": 79.858308
+        },
+        {
+          "lat": 12.019886,
+          "lng": 79.858308
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "monumental_archway",
+        "facade_type": "granite_colonnade_arch",
+        "special_feature": "ceremonial_university_arch"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#8E8E93",
+        "badge_background": "#F2F2F7",
+        "wall_color": "#F2F2F7",
+        "roof_color": "#E5E5EA",
+        "icon": "shield.fill"
+      },
+      "description": "Iconic ceremonial entrance on the East Coast Road with 24/7 security booth, visitor check-in, and primary UniGo hub.",
+      "amenities_inside": [
+        "24/7 Security Cabin",
+        "Visitor Registration Window",
+        "Boom Barriers",
+        "Bus Shelter"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "UniGo Main Base Hub 1 (Fleet Dispatch & Rentals)"
+      }
+    },
+    {
+      "id": "gate-2-kalapet",
+      "name": "Gate 2 (Kalapet Town Entrance)",
+      "formal_name": "Pondicherry University Gate No. 2 (Northern Entrance)",
+      "category": "gate_security",
+      "sector": "perimeter_and_highway_corridor",
+      "gps": {
+        "lat": 12.016672,
+        "lng": 79.856177,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 64.13,
+        "y": 3.75,
+        "z": 1111.93
+      },
+      "dimensions_m": {
+        "width": 25.0,
+        "depth": 10.0,
+        "height": 7.5,
+        "floors": 1
+      },
+      "footprint_polygon_local_m": [
+        [
+          51.63,
+          1106.93
+        ],
+        [
+          76.63,
+          1106.93
+        ],
+        [
+          76.63,
+          1116.93
+        ],
+        [
+          51.63,
+          1116.93
+        ],
+        [
+          51.63,
+          1106.93
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.016717,
+          "lng": 79.856062
+        },
+        {
+          "lat": 12.016717,
+          "lng": 79.856292
+        },
+        {
+          "lat": 12.016627,
+          "lng": 79.856292
+        },
+        {
+          "lat": 12.016627,
+          "lng": 79.856062
+        },
+        {
+          "lat": 12.016717,
+          "lng": 79.856062
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "archway",
+        "facade_type": "concrete_arch",
+        "special_feature": "vehicular_checkpost"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#8E8E93",
+        "badge_background": "#F2F2F7",
+        "wall_color": "#F2F2F7",
+        "roof_color": "#E5E5EA",
+        "icon": "shield.fill"
+      },
+      "description": "Secondary vehicular and pedestrian gateway providing direct connectivity to Kalapet town and beach access.",
+      "amenities_inside": [
+        "Security Checkpoint",
+        "CCTV Surveillance Post"
+      ],
+      "unigo": {
+        "is_hub": true,
+        "service_detail": "Gate 2 UniGo Rapid Pickup Point"
+      }
+    },
+    {
+      "id": "gender-gate",
+      "name": "Gender Gate Checkpoint",
+      "formal_name": "Internal Security Division Gate (Gender Gate)",
+      "category": "gate_security",
+      "sector": "perimeter_and_highway_corridor",
+      "gps": {
+        "lat": 12.025798,
+        "lng": 79.849509,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": -661.86,
+        "y": 2.5,
+        "z": 102.83
+      },
+      "dimensions_m": {
+        "width": 15.0,
+        "depth": 8.0,
+        "height": 5.0,
+        "floors": 1
+      },
+      "footprint_polygon_local_m": [
+        [
+          -669.36,
+          98.83
+        ],
+        [
+          -654.36,
+          98.83
+        ],
+        [
+          -654.36,
+          106.83
+        ],
+        [
+          -669.36,
+          106.83
+        ],
+        [
+          -669.36,
+          98.83
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.025834,
+          "lng": 79.84944
+        },
+        {
+          "lat": 12.025834,
+          "lng": 79.849578
+        },
+        {
+          "lat": 12.025762,
+          "lng": 79.849578
+        },
+        {
+          "lat": 12.025762,
+          "lng": 79.84944
+        },
+        {
+          "lat": 12.025834,
+          "lng": 79.84944
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "flat",
+        "facade_type": "security_cabin",
+        "special_feature": "security_boom_barrier"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#8E8E93",
+        "badge_background": "#F2F2F7",
+        "wall_color": "#F2F2F7",
+        "roof_color": "#E5E5EA",
+        "icon": "shield.fill"
+      },
+      "description": "Internal security checkpoint regulating vehicular flow between the hostel village and the sports complex.",
+      "amenities_inside": [
+        "Security Guard Cabin",
+        "LED Floodlights"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "foreign-students-hostel",
+      "name": "Foreign Students Hostel",
+      "formal_name": "International Students Residence",
+      "category": "hostel_international",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.020952,
+        "lng": 79.859135,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 386.19,
+        "y": 6.75,
+        "z": 638.68
+      },
+      "dimensions_m": {
+        "width": 45.0,
+        "depth": 32.0,
+        "height": 13.5,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          363.69,
+          622.68
+        ],
+        [
+          408.69,
+          622.68
+        ],
+        [
+          408.69,
+          654.68
+        ],
+        [
+          363.69,
+          654.68
+        ],
+        [
+          363.69,
+          622.68
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.021097,
+          "lng": 79.858928
+        },
+        {
+          "lat": 12.021097,
+          "lng": 79.859342
+        },
+        {
+          "lat": 12.020807,
+          "lng": 79.859342
+        },
+        {
+          "lat": 12.020807,
+          "lng": 79.858928
+        },
+        {
+          "lat": 12.021097,
+          "lng": 79.858928
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "contemporary_white_slate",
+        "special_feature": "air_conditioned_suites"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5AC8FA",
+        "badge_background": "#E8F8FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EEF9FE",
+        "icon": "globe.americas.fill"
+      },
+      "description": "Premium self-contained accommodation for international exchange students and ICCR scholars.",
+      "amenities_inside": [
+        "Self-cooking Kitchens",
+        "AC Rooms",
+        "Recreation Lounge"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    },
+    {
+      "id": "transit-hostel",
+      "name": "Transit Hostel & Guest Annex",
+      "formal_name": "University Faculty Transit Residence",
+      "category": "hostel_international",
+      "sector": "central_academic_core",
+      "gps": {
+        "lat": 12.020375,
+        "lng": 79.859564,
+        "altitude_m": 22.0
+      },
+      "local_position_m": {
+        "x": 432.89,
+        "y": 6.5,
+        "z": 702.48
+      },
+      "dimensions_m": {
+        "width": 42.0,
+        "depth": 30.0,
+        "height": 13.0,
+        "floors": 3
+      },
+      "footprint_polygon_local_m": [
+        [
+          411.89,
+          687.48
+        ],
+        [
+          453.89,
+          687.48
+        ],
+        [
+          453.89,
+          717.48
+        ],
+        [
+          411.89,
+          717.48
+        ],
+        [
+          411.89,
+          687.48
+        ]
+      ],
+      "footprint_polygon_gps": [
+        {
+          "lat": 12.020511,
+          "lng": 79.859371
+        },
+        {
+          "lat": 12.020511,
+          "lng": 79.859757
+        },
+        {
+          "lat": 12.020239,
+          "lng": 79.859757
+        },
+        {
+          "lat": 12.020239,
+          "lng": 79.859371
+        },
+        {
+          "lat": 12.020511,
+          "lng": 79.859371
+        }
+      ],
+      "architectural_attributes": {
+        "roof_style": "parapet_flat",
+        "facade_type": "warm_concrete",
+        "special_feature": "visiting_faculty_suites"
+      },
+      "apple_maps_visuals": {
+        "pin_color": "#5AC8FA",
+        "badge_background": "#E8F8FF",
+        "wall_color": "#FFFFFF",
+        "roof_color": "#EEF9FE",
+        "icon": "globe.americas.fill"
+      },
+      "description": "Short-stay furnished suites for visiting professors, examiners, and project researchers.",
+      "amenities_inside": [
+        "Furnished Suites",
+        "Dining Room",
+        "Caretaker Desk"
+      ],
+      "unigo": {
+        "is_hub": false,
+        "service_detail": null
+      }
+    }
+  ],
+  "bus_stops": [
+    {
+      "id": "stop-sj",
+      "name": "SJ (Silver Jubilee) Bus Stop",
+      "gps": {
+        "lat": 12.03312,
+        "lng": 79.857599
+      },
+      "local_position_m": {
+        "x": 218.95,
+        "y": 0.0,
+        "z": -706.79
+      },
+      "description": "Terminal stop for Silver Jubilee campus shuttles.",
+      "apple_maps_pin": {
+        "color": "#FF9F0A",
+        "icon": "bus.fill"
+      }
+    },
+    {
+      "id": "stop-mass-media",
+      "name": "Mass Media Bus Stop",
+      "gps": {
+        "lat": 12.032293,
+        "lng": 79.856901
+      },
+      "local_position_m": {
+        "x": 142.95,
+        "y": 0.0,
+        "z": -615.34
+      },
+      "description": "Serving DEMMC and electronic media building.",
+      "apple_maps_pin": {
+        "color": "#FF9F0A",
+        "icon": "bus.fill"
+      }
+    },
+    {
+      "id": "stop-unesco",
+      "name": "UNESCO Complex Bus Stop",
+      "gps": {
+        "lat": 12.031386,
+        "lng": 79.858047
+      },
+      "local_position_m": {
+        "x": 267.73,
+        "y": 0.0,
+        "z": -515.05
+      },
+      "description": "Serving UMISARC and South Asia Institute.",
+      "apple_maps_pin": {
+        "color": "#FF9F0A",
+        "icon": "bus.fill"
+      }
+    },
+    {
+      "id": "stop-food-science",
+      "name": "Food Science Bus Stop",
+      "gps": {
+        "lat": 12.028369,
+        "lng": 79.855642
+      },
+      "local_position_m": {
+        "x": 5.88,
+        "y": 0.0,
+        "z": -181.45
+      },
+      "description": "Junction between Food Science and central sports boulevard.",
+      "apple_maps_pin": {
+        "color": "#FF9F0A",
+        "icon": "bus.fill"
+      }
+    },
+    {
+      "id": "stop-boys-teatime",
+      "name": "Boys Tea Time Bus Stop",
+      "gps": {
+        "lat": 12.027693,
+        "lng": 79.853434
+      },
+      "local_position_m": {
+        "x": -234.52,
+        "y": 0.0,
+        "z": -106.7
+      },
+      "description": "Popular student hangout & hostel access road stop.",
+      "apple_maps_pin": {
+        "color": "#FF9F0A",
+        "icon": "bus.fill"
+      }
+    },
+    {
+      "id": "stop-mega-mess",
+      "name": "Mega Mess Bus Stop",
+      "gps": {
+        "lat": 12.029144,
+        "lng": 79.852297
+      },
+      "local_position_m": {
+        "x": -358.31,
+        "y": 0.0,
+        "z": -267.15
+      },
+      "description": "Serving New Mega Mess and central boys hostels.",
+      "apple_maps_pin": {
+        "color": "#FF9F0A",
+        "icon": "bus.fill"
+      }
+    },
+    {
+      "id": "stop-amudham-mess",
+      "name": "Amudham Mess Bus Stop",
+      "gps": {
+        "lat": 12.02967,
+        "lng": 79.85084
+      },
+      "local_position_m": {
+        "x": -516.95,
+        "y": 0.0,
+        "z": -325.31
+      },
+      "description": "Serving Amudham dining hall and west hostels.",
+      "apple_maps_pin": {
+        "color": "#FF9F0A",
+        "icon": "bus.fill"
+      }
+    },
+    {
+      "id": "stop-central-library",
+      "name": "Central Library Shuttle Stop",
+      "gps": {
+        "lat": 12.020152,
+        "lng": 79.855872
+      },
+      "local_position_m": {
+        "x": 30.92,
+        "y": 0.0,
+        "z": 727.13
+      },
+      "description": "Serving Ananda Rangapillai Library rotunda.",
+      "apple_maps_pin": {
+        "color": "#FF9F0A",
+        "icon": "bus.fill"
+      }
+    },
+    {
+      "id": "stop-gate-1-ecr",
+      "name": "Gate 1 Main Gate Bus Shelter",
+      "gps": {
+        "lat": 12.019818,
+        "lng": 79.858469
+      },
+      "local_position_m": {
+        "x": 313.67,
+        "y": 0.0,
+        "z": 764.07
+      },
+      "description": "ECR highway bus terminus for Puducherry-Chennai buses.",
+      "apple_maps_pin": {
+        "color": "#FF9F0A",
+        "icon": "bus.fill"
+      }
+    }
+  ],
+  "road_network": [
+    {
+      "id": "road-ecr-highway",
+      "name": "East Coast Road (ECR / NH 332)",
+      "type": "trunk_highway",
+      "width_m": 14.0,
+      "speed_limit_kmh": 60,
+      "apple_maps_style": {
+        "fill_light": "#FFFFFF",
+        "casing_light": "#C8C6BE",
+        "fill_dark": "#38383A",
+        "casing_dark": "#202022"
+      },
+      "waypoints": [
+        {
+          "lat": 12.034301,
+          "lng": 79.865394
+        },
+        {
+          "lat": 12.031911,
+          "lng": 79.864797
+        },
+        {
+          "lat": 12.029584,
+          "lng": 79.863382
+        },
+        {
+          "lat": 12.025457,
+          "lng": 79.861707
+        },
+        {
+          "lat": 12.023404,
+          "lng": 79.860929
+        },
+        {
+          "lat": 12.021027,
+          "lng": 79.860178
+        },
+        {
+          "lat": 12.01937,
+          "lng": 79.859737
+        },
+        {
+          "lat": 12.018833,
+          "lng": 79.859547
+        },
+        {
+          "lat": 12.017308,
+          "lng": 79.859064
+        },
+        {
+          "lat": 12.015824,
+          "lng": 79.85863
+        },
+        {
+          "lat": 12.013649,
+          "lng": 79.857879
+        }
+      ],
+      "waypoints_local_m": [
+        {
+          "x": 1067.64,
+          "y": 0.0,
+          "z": -837.38
+        },
+        {
+          "x": 1002.64,
+          "y": 0.0,
+          "z": -573.11
+        },
+        {
+          "x": 848.58,
+          "y": 0.0,
+          "z": -315.8
+        },
+        {
+          "x": 666.22,
+          "y": 0.0,
+          "z": 140.54
+        },
+        {
+          "x": 581.51,
+          "y": 0.0,
+          "z": 367.55
+        },
+        {
+          "x": 499.74,
+          "y": 0.0,
+          "z": 630.38
+        },
+        {
+          "x": 451.73,
+          "y": 0.0,
+          "z": 813.6
+        },
+        {
+          "x": 431.04,
+          "y": 0.0,
+          "z": 872.98
+        },
+        {
+          "x": 378.45,
+          "y": 0.0,
+          "z": 1041.61
+        },
+        {
+          "x": 331.2,
+          "y": 0.0,
+          "z": 1205.7
+        },
+        {
+          "x": 249.44,
+          "y": 0.0,
+          "z": 1446.2
+        }
+      ]
+    },
+    {
+      "id": "road-central-boulevard",
+      "name": "Pondicherry University Central Boulevard",
+      "type": "primary_campus_avenue",
+      "width_m": 10.0,
+      "speed_limit_kmh": 30,
+      "apple_maps_style": {
+        "fill_light": "#FFFFFF",
+        "casing_light": "#D8D6CF",
+        "fill_dark": "#2C2C2E",
+        "casing_dark": "#1E1E20"
+      },
+      "waypoints": [
+        {
+          "lat": 12.019818,
+          "lng": 79.858469
+        },
+        {
+          "lat": 12.020612,
+          "lng": 79.856171
+        },
+        {
+          "lat": 12.021492,
+          "lng": 79.857104
+        },
+        {
+          "lat": 12.023048,
+          "lng": 79.853313
+        },
+        {
+          "lat": 12.026305,
+          "lng": 79.852531
+        },
+        {
+          "lat": 12.028379,
+          "lng": 79.850541
+        },
+        {
+          "lat": 12.029021,
+          "lng": 79.855197
+        }
+      ],
+      "waypoints_local_m": [
+        {
+          "x": 313.67,
+          "y": 0.0,
+          "z": 764.07
+        },
+        {
+          "x": 63.48,
+          "y": 0.0,
+          "z": 676.27
+        },
+        {
+          "x": 165.06,
+          "y": 0.0,
+          "z": 578.97
+        },
+        {
+          "x": -247.69,
+          "y": 0.0,
+          "z": 406.91
+        },
+        {
+          "x": -332.84,
+          "y": 0.0,
+          "z": 46.77
+        },
+        {
+          "x": -549.5,
+          "y": 0.0,
+          "z": -182.56
+        },
+        {
+          "x": -42.57,
+          "y": 0.0,
+          "z": -253.55
+        }
+      ]
+    },
+    {
+      "id": "road-sjc-avenue",
+      "name": "Silver Jubilee Campus Arterial Road",
+      "type": "secondary_campus_avenue",
+      "width_m": 8.0,
+      "speed_limit_kmh": 25,
+      "apple_maps_style": {
+        "fill_light": "#FFFFFF",
+        "casing_light": "#D8D6CF",
+        "fill_dark": "#2C2C2E",
+        "casing_dark": "#1E1E20"
+      },
+      "waypoints": [
+        {
+          "lat": 12.028369,
+          "lng": 79.855642
+        },
+        {
+          "lat": 12.031418,
+          "lng": 79.857577
+        },
+        {
+          "lat": 12.032251,
+          "lng": 79.85826
+        },
+        {
+          "lat": 12.032315,
+          "lng": 79.857344
+        },
+        {
+          "lat": 12.033571,
+          "lng": 79.857305
+        },
+        {
+          "lat": 12.034208,
+          "lng": 79.856751
+        }
+      ],
+      "waypoints_local_m": [
+        {
+          "x": 5.88,
+          "y": 0.0,
+          "z": -181.45
+        },
+        {
+          "x": 216.56,
+          "y": 0.0,
+          "z": -518.59
+        },
+        {
+          "x": 290.92,
+          "y": 0.0,
+          "z": -610.7
+        },
+        {
+          "x": 191.19,
+          "y": 0.0,
+          "z": -617.78
+        },
+        {
+          "x": 186.94,
+          "y": 0.0,
+          "z": -756.66
+        },
+        {
+          "x": 126.62,
+          "y": 0.0,
+          "z": -827.09
+        }
+      ]
+    },
+    {
+      "id": "road-gate-link",
+      "name": "Gate 1 - Gate 2 Link Road",
+      "type": "secondary_campus_avenue",
+      "width_m": 7.5,
+      "speed_limit_kmh": 25,
+      "apple_maps_style": {
+        "fill_light": "#FFFFFF",
+        "casing_light": "#D8D6CF",
+        "fill_dark": "#2C2C2E",
+        "casing_dark": "#1E1E20"
+      },
+      "waypoints": [
+        {
+          "lat": 12.019818,
+          "lng": 79.858469
+        },
+        {
+          "lat": 12.019285,
+          "lng": 79.854455
+        },
+        {
+          "lat": 12.017555,
+          "lng": 79.853784
+        },
+        {
+          "lat": 12.016672,
+          "lng": 79.856177
+        }
+      ],
+      "waypoints_local_m": [
+        {
+          "x": 313.67,
+          "y": 0.0,
+          "z": 764.07
+        },
+        {
+          "x": -123.36,
+          "y": 0.0,
+          "z": 823.0
+        },
+        {
+          "x": -196.41,
+          "y": 0.0,
+          "z": 1014.3
+        },
+        {
+          "x": 64.13,
+          "y": 0.0,
+          "z": 1111.93
+        }
+      ]
+    },
+    {
+      "id": "road-north-hostel-loop",
+      "name": "North Boys Hostel Loop Road",
+      "type": "residential_hostel_road",
+      "width_m": 6.5,
+      "speed_limit_kmh": 20,
+      "apple_maps_style": {
+        "fill_light": "#FFFFFF",
+        "casing_light": "#E0DED7",
+        "fill_dark": "#28282A",
+        "casing_dark": "#1A1A1C"
+      },
+      "waypoints": [
+        {
+          "lat": 12.028379,
+          "lng": 79.850541
+        },
+        {
+          "lat": 12.029009,
+          "lng": 79.850709
+        },
+        {
+          "lat": 12.02941,
+          "lng": 79.850154
+        },
+        {
+          "lat": 12.030148,
+          "lng": 79.850174
+        },
+        {
+          "lat": 12.030188,
+          "lng": 79.850771
+        },
+        {
+          "lat": 12.029773,
+          "lng": 79.851897
+        },
+        {
+          "lat": 12.029465,
+          "lng": 79.852456
+        },
+        {
+          "lat": 12.028707,
+          "lng": 79.853228
+        },
+        {
+          "lat": 12.026794,
+          "lng": 79.853096
+        }
+      ],
+      "waypoints_local_m": [
+        {
+          "x": -549.5,
+          "y": 0.0,
+          "z": -182.56
+        },
+        {
+          "x": -531.21,
+          "y": 0.0,
+          "z": -252.22
+        },
+        {
+          "x": -591.64,
+          "y": 0.0,
+          "z": -296.56
+        },
+        {
+          "x": -589.46,
+          "y": 0.0,
+          "z": -378.16
+        },
+        {
+          "x": -524.46,
+          "y": 0.0,
+          "z": -382.59
+        },
+        {
+          "x": -401.86,
+          "y": 0.0,
+          "z": -336.7
+        },
+        {
+          "x": -341.0,
+          "y": 0.0,
+          "z": -302.64
+        },
+        {
+          "x": -256.95,
+          "y": 0.0,
+          "z": -218.83
+        },
+        {
+          "x": -271.32,
+          "y": 0.0,
+          "z": -7.3
+        }
+      ]
+    },
+    {
+      "id": "road-girls-hostel-lane",
+      "name": "Girls Hostel Sanctuary Avenue",
+      "type": "residential_hostel_road",
+      "width_m": 6.0,
+      "speed_limit_kmh": 20,
+      "apple_maps_style": {
+        "fill_light": "#FFFFFF",
+        "casing_light": "#E0DED7",
+        "fill_dark": "#28282A",
+        "casing_dark": "#1A1A1C"
+      },
+      "waypoints": [
+        {
+          "lat": 12.023048,
+          "lng": 79.853313
+        },
+        {
+          "lat": 12.022255,
+          "lng": 79.84996
+        },
+        {
+          "lat": 12.021976,
+          "lng": 79.847922
+        },
+        {
+          "lat": 12.022701,
+          "lng": 79.848646
+        },
+        {
+          "lat": 12.023188,
+          "lng": 79.848237
+        },
+        {
+          "lat": 12.023298,
+          "lng": 79.847414
+        }
+      ],
+      "waypoints_local_m": [
+        {
+          "x": -247.69,
+          "y": 0.0,
+          "z": 406.91
+        },
+        {
+          "x": -612.76,
+          "y": 0.0,
+          "z": 494.6
+        },
+        {
+          "x": -834.65,
+          "y": 0.0,
+          "z": 525.45
+        },
+        {
+          "x": -755.82,
+          "y": 0.0,
+          "z": 445.28
+        },
+        {
+          "x": -800.35,
+          "y": 0.0,
+          "z": 391.43
+        },
+        {
+          "x": -889.96,
+          "y": 0.0,
+          "z": 379.27
+        }
+      ]
+    }
+  ],
+  "unigo_mobility_network": {
+    "hubs": [
+      {
+        "id": "unigo-hub-gate-1",
+        "name": "Gate 1 Main Hub",
+        "type": "Primary Fleet Depot & Rental Bay",
+        "gps": {
+          "lat": 12.019818,
+          "lng": 79.858469
+        },
+        "local_m": {
+          "x": 313.4,
+          "z": 764.0
+        },
+        "available_vehicles": 18,
+        "services": [
+          "Scooter Rental Pickup/Drop",
+          "Bike Taxi Stand",
+          "Helmet Sanitization Station",
+          "Fast EV Charging Dock"
+        ]
+      },
+      {
+        "id": "unigo-hub-library",
+        "name": "Central Library Hub",
+        "type": "Academic Commuter Hub",
+        "gps": {
+          "lat": 12.020152,
+          "lng": 79.855872
+        },
+        "local_m": {
+          "x": 30.9,
+          "z": 727.1
+        },
+        "available_vehicles": 12,
+        "services": [
+          "Express Short-Trip Rentals",
+          "Digital Key Drop",
+          "Mobile Charging Bay"
+        ]
+      },
+      {
+        "id": "unigo-hub-shopping-complex",
+        "name": "Shopping Complex Laundry & Service Hub",
+        "type": "Central Logistics & Laundry Dispatch",
+        "gps": {
+          "lat": 12.017833,
+          "lng": 79.853607
+        },
+        "local_m": {
+          "x": -215.5,
+          "z": 983.5
+        },
+        "available_vehicles": 6,
+        "services": [
+          "UniGo Express Laundry Pickup/Drop",
+          "Wash & Fold Lockers",
+          "Bicycle Maintenance Depot"
+        ]
+      },
+      {
+        "id": "unigo-hub-sjc",
+        "name": "Silver Jubilee Campus Hub",
+        "type": "Northern Academic Hub",
+        "gps": {
+          "lat": 12.03266,
+          "lng": 79.857993
+        },
+        "local_m": {
+          "x": 261.9,
+          "z": -655.9
+        },
+        "available_vehicles": 14,
+        "services": [
+          "SJC-Main Campus Express Shuttles",
+          "Scooter Parking",
+          "Helmet Lockers"
+        ]
+      },
+      {
+        "id": "unigo-hub-mega-mess",
+        "name": "Mega Mess / Hostel Hub",
+        "type": "Hostel Village Night Hub",
+        "gps": {
+          "lat": 12.029465,
+          "lng": 79.852456
+        },
+        "local_m": {
+          "x": -340.8,
+          "z": -302.7
+        },
+        "available_vehicles": 15,
+        "services": [
+          "Late-Night Meal Run Pickup",
+          "Hostel Delivery Staging",
+          "Battery Swap Locker"
+        ]
+      }
+    ]
+  }
+}
