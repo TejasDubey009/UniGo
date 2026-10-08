@@ -5,7 +5,7 @@ import { CAMPUS_LOCATIONS_LIST, OFF_CAMPUS_DESTINATIONS, OUTSIDE_LOCATIONS_LIST 
 import PlaceSearch from './PlaceSearch';
 import { celebrate } from '../lib/celebrate';
 import { shortRef, formatWhen } from '../lib/format';
-import { baseRideFare, rideFare, CAMPUS_FARE, FIRST_RIDE_DISCOUNT, OFF_CAMPUS_PER_KM } from '../lib/pricing';
+import { baseRideFare, rideFare, CAMPUS_FARE, FIRST_RIDE_DISCOUNT } from '../lib/pricing';
 import { supabase } from '../lib/supabase';
 import { placeByName, distanceMeters, formatDistance, minutesAway, CAMPUS_PLACES, OFF_CAMPUS_PLACES } from '../lib/geo';
 import CampusMap3D from './LazyCampusMap3D';
@@ -269,7 +269,6 @@ export default function RidesView() {
       <PageHeader
         eyebrow="Campus rides"
         title="Rides across campus"
-        description={`A student captain takes you anywhere on campus for ₹${CAMPUS_FARE} (₹${TWO_RIDER_FARE} for two), or off campus to Kalapet, Auroville, White Town and Rock Beach at ₹${OFF_CAMPUS_PER_KM} a km. Your first ride is ${FIRST_RIDE_PERCENT}% off.`}
       />
 
       <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
