@@ -129,6 +129,7 @@ The database enforces the rules above on its own, but a few settings live outsid
 - `src/context/AppContext.jsx`: `AppProvider` with navigation (URL hash: `#rides`, `#laundry`, …), the Supabase session and profile, roles (captain, application, admin), the student's bookings (kept live), and fleet availability
 - `src/lib/supabase.js`: the Supabase client, the university-email check and friendly error messages
 - `src/components/AuthModal.jsx`: sign in, sign up, Google, and password reset
+- `src/components/TabBar.jsx`: the bottom tab bar and More sheet on phones and tablets (the desktop menu is `Navbar.jsx`)
 - `src/components/CaptainView.jsx`: the captain console (requests, pickup code, navigation, live location) and the application to drive
 - `src/components/AdminView.jsx`: the admin page (rides, laundry, rentals, captains), loaded only for admins
 - `src/components/ErrorBoundary.jsx`: keeps a failed page or map download from blanking the app; `src/hooks/useDialog.js`: focus, Escape and scroll lock for pop-ups

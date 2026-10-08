@@ -297,7 +297,7 @@ function CaptainConsole({ user, captain, setCaptainOnDuty, ownRides, resyncTick 
   );
 
   return (
-    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
+    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader
         eyebrow="UniGo captain"
         title={<span className="block truncate">{`Hi, ${firstName(captain.display_name)}`}</span>}
@@ -305,7 +305,7 @@ function CaptainConsole({ user, captain, setCaptainOnDuty, ownRides, resyncTick 
         aside={<DutySwitch onDuty={captain.on_duty} busy={busy === 'duty'} onToggle={toggleDuty} />}
       />
 
-      <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
+      <div className="mt-6 sm:mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
         <div className="lg:col-span-5 min-w-0 flex flex-col gap-6">
           {notice && (
             <p role="status" className="rounded-[18px] bg-paper px-5 py-4 text-[15px] text-ink font-medium animate-pop-in">
@@ -519,7 +519,7 @@ function CaptainConsole({ user, captain, setCaptainOnDuty, ownRides, resyncTick 
 
         {/* The campus, focused on where to go next */}
         <div className="lg:col-span-7 lg:sticky lg:top-24 min-w-0">
-          <div className="media-frame h-[420px] sm:h-[540px] lg:h-[640px]">
+          <div className="media-frame map-bleed h-[min(56svh,480px)] min-h-[360px] sm:h-[540px] lg:h-[640px]">
             <CampusMap3D highlightedId={targetPlace?.id ?? null} />
           </div>
           {target && !targetPlace && (
@@ -676,7 +676,7 @@ export default function CaptainView() {
   const suspended = captainPaused;
 
   return (
-    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
+    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader
         eyebrow="UniGo captain"
         title="Drive with UniGo"

@@ -65,6 +65,34 @@
 @layer base {
   html {
     background: var(--color-canvas);
+    -webkit-tap-highlight-color: transparent;
+    /* Height of the phone tab bar; pages and sticky bars sit above it */
+    --tabbar-h: 0px;
+  }
+  @media (max-width: 1023px) {
+    html {
+      --tabbar-h: calc(64px + env(safe-area-inset-bottom));
+    }
+  }
+
+  /* No double-tap zoom delay on controls */
+  button,
+  a,
+  label,
+  input,
+  select,
+  textarea,
+  [role='button'] {
+    touch-action: manipulation;
+  }
+
+  /* A full-screen map covers the app: the page behind it stops scrolling and the bars hide */
+  html[data-map-fullscreen] {
+    overflow: hidden;
+  }
+  html[data-map-fullscreen] .app-header,
+  html[data-map-fullscreen] .app-tabbar {
+    visibility: hidden;
   }
 
   body {
@@ -447,6 +475,50 @@
     background: var(--color-ink);
     isolation: isolate;
   }
+  /* A full-screen map must rise above the rest of the page, so its frame stops isolating it */
+  html[data-map-fullscreen] .media-frame {
+    isolation: auto;
+  }
+
+  /* Phone-width maps run edge to edge, like a map app */
+  @media (max-width: 639px) {
+    .map-bleed {
+      margin-inline: -20px;
+      border-radius: 0;
+    }
+  }
+  /* On phones and tablets the card below overlaps the map's bottom edge; the map lifts its controls */
+  @media (max-width: 1023px) {
+    .map-under-sheet .campus-map {
+      --map-inset-bottom: 24px;
+    }
+  }
+  /* Full screen (positioned by utilities in CampusMap3D): keep controls clear of the notch and home bar */
+  .campus-map.is-fullscreen {
+    --map-inset-top: env(safe-area-inset-top);
+    --map-inset-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Price and main action stay on screen while a long form scrolls on phones and tablets */
+  @media (max-width: 1023px) {
+    .sticky-cta {
+      position: sticky;
+      bottom: var(--tabbar-h);
+      z-index: 20;
+      margin-inline: -24px;
+      padding: 12px 24px;
+      background: color-mix(in srgb, var(--color-paper) 94%, transparent);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 -1px 0 rgb(14 15 12 / 0.08);
+    }
+  }
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .sticky-cta {
+      margin-inline: -32px;
+      padding-inline: 32px;
+    }
+  }
 
   /* ---------- Campus map (Apple Maps style) ----------
      The only place frosted glass is allowed: map controls float over a live map. */
@@ -510,6 +582,17 @@
   }
   .map-chip:active {
     transform: scale(0.96);
+  }
+  /* Finger-sized map controls on touch screens */
+  @media (pointer: coarse) {
+    .map-btn {
+      width: 44px;
+      height: 44px;
+    }
+    .map-chip {
+      height: 36px;
+      padding: 0 14px;
+    }
   }
   .map-chip.is-active {
     background: var(--map-ink);

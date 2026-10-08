@@ -291,16 +291,16 @@ export default function LaundryView() {
   const quickPicks = HOSTELS_BY_CATEGORY[mainCategory];
 
   return (
-    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
+    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader
         eyebrow="Hostel laundry · Wednesday and Sunday pickups"
         title="Laundry, back in two days"
         description="Pick your hostel on the map, choose wash or wash + iron, and we collect it on Wednesday or Sunday. It is weighed at pickup and back at your hostel two days later."
       />
 
-      <div className="mt-12 sm:mt-14 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
+      <div className="mt-6 sm:mt-14 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-start">
         {/* Booking form */}
-        <div className="lg:col-span-5 surface p-5 sm:p-8">
+        <div className="lg:col-span-5 surface p-6 sm:p-8">
           <div className="flex flex-wrap items-start justify-between gap-3 mb-7">
             <div>
               <h2 className="heading text-[26px] sm:text-[30px]">Book a pickup</h2>
@@ -521,9 +521,10 @@ export default function LaundryView() {
               />
             </div>
 
-            {/* Live cost summary */}
-            <div className="border-t border-hairline pt-6">
-              <div className="flex items-end justify-between gap-4">
+            {/* Live cost summary: a bar pinned above the tab bar on phones (a direct child of the form, so it
+                stays pinned while the form scrolls) */}
+            <div className="sticky-cta lg:border-t lg:border-hairline lg:pt-6">
+              <div className="flex items-end justify-between gap-4 max-lg:hidden">
                 <div>
                   <p className="eyebrow">Estimated total</p>
                   <p className="mt-2 font-display font-black text-[40px] leading-none text-ink num [font-stretch:112%]">
@@ -538,26 +539,34 @@ export default function LaundryView() {
               </div>
 
               {submitError && (
-                <p role="alert" className="mt-5 rounded-[10px] bg-alert-wash px-4 py-3 text-[14px] text-alert">
+                <p role="alert" className="mt-5 max-lg:mt-0 max-lg:mb-3 rounded-[10px] bg-alert-wash px-4 py-3 text-[14px] text-alert">
                   {submitError}
                 </p>
               )}
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                aria-busy={isSubmitting}
-                className="btn btn-primary btn-lg w-full mt-6"
-              >
-                {isSubmitting ? (
-                  'Booking your pickup…'
-                ) : (
-                  <>
-                    Confirm pickup
-                    <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
-                  </>
-                )}
-              </button>
+              <div className="mt-6 max-lg:mt-0 flex items-center gap-4">
+                <div className="lg:hidden shrink-0">
+                  <p className="text-[12px] text-muted leading-none num">
+                    {weightKg.toFixed(1)} kg × ₹{ratePerKg}
+                  </p>
+                  <p className="mt-1 font-display font-black text-[28px] leading-none text-ink num [font-stretch:112%]">₹{shownTotal}</p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  aria-busy={isSubmitting}
+                  className="btn btn-primary btn-lg w-full min-w-0 max-lg:flex-1 max-lg:!px-5"
+                >
+                  {isSubmitting ? (
+                    'Booking your pickup…'
+                  ) : (
+                    <>
+                      Confirm pickup
+                      <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -580,7 +589,7 @@ export default function LaundryView() {
             />
           </div>
 
-          <div className="media-frame h-[420px] sm:h-[520px] lg:h-[600px]">
+          <div className="media-frame map-bleed h-[min(62svh,520px)] min-h-[380px] sm:h-[520px] lg:h-[600px]">
             {laundryMapMode === 'satellite' ? (
               <GoogleCampusMap highlightedId={activeHostelObject?.id} />
             ) : (
@@ -635,7 +644,7 @@ export default function LaundryView() {
       </div>
 
       {/* Order tracking */}
-      <section className="mt-24 sm:mt-32" aria-labelledby="laundry-orders-title">
+      <section className="mt-14 sm:mt-32" aria-labelledby="laundry-orders-title">
         <Reveal className="flex flex-wrap items-end justify-between gap-4 mb-8">
           <div>
             <p className="eyebrow mb-3">Tracking</p>
@@ -700,7 +709,7 @@ export default function LaundryView() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="laundry-confirm-title"
-            className="bg-canvas rounded-t-[28px] sm:rounded-[28px] p-6 sm:p-8 max-w-lg w-full shadow-[var(--shadow-float)] relative sm:my-auto animate-sheet-up"
+            className="bg-canvas rounded-t-[28px] sm:rounded-[28px] p-6 sm:p-8 pb-[calc(env(safe-area-inset-bottom)+24px)] sm:pb-8 max-w-lg w-full shadow-[var(--shadow-float)] relative sm:my-auto animate-sheet-up"
           >
             <span className="w-12 h-12 rounded-full bg-lime text-forest flex items-center justify-center animate-pop-in">
               <PackageCheck className="w-6 h-6" aria-hidden="true" />

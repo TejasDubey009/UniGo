@@ -47,9 +47,20 @@ Do not use Tailwind's default palette (`slate-*`, `purple-*`, `emerald-*`, `indi
 
 ## Layout
 
-- Page container: `max-w-[1280px] mx-auto px-5 lg:px-8`, top padding `pt-12 sm:pt-16`, bottom `pb-24`.
-- Section gaps 64–144px. Element gap 8px multiples.
+- Page container: `max-w-[1280px] mx-auto px-5 lg:px-8`, top padding `pt-6 sm:pt-16`, bottom `pb-16 sm:pb-24`.
+- Section gaps 56–144px (smaller on phones). Element gap 8px multiples.
 - Booking pages follow Uber: a form/summary column (about 5/12) beside a large map or media column (7/12) on desktop, stacked on mobile.
+
+## Phones and tablets (below 1024px)
+
+The site is built phone first and behaves like an app below `lg`:
+
+- **Tab bar** (`TabBar.jsx`): Campus, Rides, Rental, Laundry and More, pinned to the bottom with the home-bar safe area. The active tab gets a lime pill behind its icon. More opens a bottom sheet with Captain or Drive with UniGo, Admin, Food, Party and sign in/out. The top bar is just the logo and the account (60px tall); the desktop menu starts at `lg`. `--tabbar-h` holds the bar's height so pages and pinned bars sit above it.
+- **Page headers** shrink to an app-sized title (about 36px) with 15px supporting copy.
+- **Maps run edge to edge** on phones (`.map-bleed` with `.media-frame`). On the rides page the map comes first, like a ride app, and the booking card (or the live ride tracker, which then replaces the form) overlaps its bottom edge as a sheet; `.map-under-sheet` lifts the map's controls and OpenStreetMap credit clear of it.
+- **Pinned action bar** (`.sticky-cta`): on the rides and laundry forms, the price and the main button stay above the tab bar while the form scrolls, then settle at the end of the card.
+- **Dialogs** open as bottom sheets with rounded tops and room for the home bar.
+- Touch targets: map buttons are 44px and map chips 36px on touch screens; there is no tap highlight or double-tap zoom delay on controls.
 
 ## Motion (purposeful, short)
 
@@ -96,7 +107,8 @@ Look and behaviour:
 - Trees: broadleaf crowns (three lumpy lobes, darker underneath) over a visible trunk across campus; casuarina spires within 260 m of East Coast Road; coconut palms along streets. All instanced, about 420k triangles in all, and only drawn when zoomed in.
 - The home and rides maps open 2× closer than the whole-campus fit (`<CampusMap3D zoom={2} />`, which also sets what **Overview** returns to); a ride route is framed at the same 2×, centred on the trip, so a long route's ends can sit just past the edges.
 - Trees fade out as you zoom out to the whole campus. The overview frames the real campus outline for the map's current shape and reframes on resize until the user moves the map.
-- Controls: drag to pan, shift/right-drag to turn and tilt, ⌘/Ctrl + scroll (or scroll after clicking the map) or pinch to zoom about the pointer, so plain scrolling still moves the page past a tall map, arrow keys and +/- when the map has focus. On touch, two fingers move and zoom; one-finger vertical swipes still scroll the page. Frosted controls (`.map-glass`) are allowed only inside the map.
+- Controls: drag to pan, shift/right-drag to turn and tilt, ⌘/Ctrl + scroll (or scroll after clicking the map) or pinch to zoom about the pointer, so plain scrolling still moves the page past a tall map, arrow keys and +/- when the map has focus. On touch, two fingers move, pinch to zoom and twist to turn; one-finger vertical swipes still scroll the page. Frosted controls (`.map-glass`) are allowed only inside the map.
+- Full screen: the last button in the control stack opens the map over the whole app (tab bar and top bar hide, the page stops scrolling, controls keep clear of the notch and home bar). There one finger pans the map directly. The same button or Escape closes it.
 - The app's hostel lists in `campusData.js` use the spec's ids, so map picks feed the laundry form and ride drop directly.
 - Any building on the map can be a pickup or drop: on the rides page the place card offers **Pickup here** and **Drop here**, and the search fields cover every map place (`src/data/campusPlaceIndex.json`, built by `scripts/build-place-index.mjs`).
 - Ride preview: `<CampusMap3D route={{ from, to }} />` draws the drive between two campus places along the real roads (shortest path over the drivable OSM network, `drivingRoute()` in the world module) as an Apple Maps blue line with a light halo, constant 6px on screen at every zoom, with a start ring, end dot and a distance chip, and frames the whole trip. Route blue (#0A84FF) is a map colour like the POI colours and stays inside the map.

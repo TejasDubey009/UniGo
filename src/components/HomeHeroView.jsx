@@ -174,7 +174,7 @@ export default function HomeHeroView() {
       <div className="relative overflow-hidden">
         <CampusPlanBackdrop />
 
-        <section className="relative max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-20 pb-12 sm:pb-16 text-center">
+        <section className="relative max-w-[1280px] mx-auto px-5 lg:px-8 pt-8 sm:pt-20 pb-10 sm:pb-16 text-center">
           <div className="flex justify-center animate-fade-in">
             <span className="badge badge-ghost !h-8 !px-3.5 !text-[13px] bg-canvas">Pondicherry University · Kalapet</span>
           </div>
@@ -219,10 +219,10 @@ export default function HomeHeroView() {
 
       {/* Campus stage: the 3D map is the product's hero image */}
       <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-4 sm:mt-8">
-        <Reveal className="flex flex-col md:flex-row md:items-end justify-between gap-5 mb-6">
+        <Reveal className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-5 mb-4 sm:mb-6">
           <div className="text-left">
             <p className="eyebrow mb-2">Campus map</p>
-            <h2 className="heading text-[30px] sm:text-[40px]">Find any gate, block or hostel in 3D</h2>
+            <h2 className="heading text-[26px] sm:text-[40px]">Find any gate, block or hostel in 3D</h2>
           </div>
           <Segmented
             ariaLabel="Map engine"
@@ -236,20 +236,21 @@ export default function HomeHeroView() {
         </Reveal>
 
         <Reveal delay={80}>
-          <div className="media-frame h-[min(810px,calc(100svh-96px))] sm:h-[990px]">
+          {/* Edge to edge on phones, sized to the screen between the top bar and the tab bar */}
+          <div className="media-frame map-bleed h-[min(720px,calc(100svh-var(--tabbar-h)-150px))] min-h-[420px] sm:h-[990px]">
             {mapEngine === 'satellite' ? <GoogleCampusMap /> : <CampusMap3D zoom={2} />}
           </div>
         </Reveal>
       </section>
 
       {/* Services index */}
-      <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-28 sm:mt-36">
-        <Reveal className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+      <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-16 sm:mt-36">
+        <Reveal className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-10">
           <div>
-            <p className="eyebrow mb-4">Services</p>
-            <h2 className="display text-[44px] sm:text-[72px]">What you<br />can book</h2>
+            <p className="eyebrow mb-2 sm:mb-4">Services</p>
+            <h2 className="display text-[36px] sm:text-[72px]">What you<br />can book</h2>
           </div>
-          <p className="text-[17px] text-body max-w-md leading-relaxed">
+          <p className="text-[15px] sm:text-[17px] text-body max-w-md leading-relaxed">
             Sign in once with your university email to book any of them.
           </p>
         </Reveal>

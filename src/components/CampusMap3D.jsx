@@ -35,6 +35,8 @@ import {
   Bus,
   Layers,
   LocateFixed,
+  Maximize2,
+  Minimize2,
   Plus,
   Minus,
   X,
@@ -190,6 +192,9 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
   const [hasInteracted, setHasInteracted] = useState(false);
   // Shown briefly when someone scrolls over the map without the zoom key: the page scrolls instead
   const [wheelHint, setWheelHint] = useState(false);
+  // Full screen covers the app; on phones one finger then drives the map instead of scrolling the page
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const fullscreenRef = useRef(false);
 
   // Follow picks made outside the map (laundry form, Google map card) by moving the pin there
   const [seenHighlight, setSeenHighlight] = useState(highlightedId);
@@ -438,7 +443,12 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
 
     const pinchState = () => {
       const [a, b] = [...pointers.values()];
-      return { cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2, dist: Math.hypot(a.x - b.x, a.y - b.y) || 1 };
+      return {
+        cx: (a.x + b.x) / 2,
+        cy: (a.y + b.y) / 2,
+        dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+        angle: Math.atan2(b.y - a.y, b.x - a.x),
+      };
     };
 
     const onPointerDown = (e) => {
@@ -454,7 +464,9 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
         gesture = { type: 'pinch', ...pinchState(), moved: DRAG_CLICK_TOLERANCE_PX };
         return;
       }
-      const wantsTurn = e.button === 2 || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey || e.pointerType === 'touch';
+      // Inline on a phone, one finger only turns (vertical swipes scroll the page); full screen, it pans
+      const wantsTurn =
+        e.button === 2 || e.shiftKey || e.altKey || e.ctrlKey || e.metaKey || (e.pointerType === 'touch' && !fullscreenRef.current);
       gesture = { type: wantsTurn ? 'turn' : 'pan', x: e.clientX, y: e.clientY, moved: 0 };
       domEl.style.cursor = 'grabbing';
     };
@@ -467,6 +479,12 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
         pan(next.cx - gesture.cx, next.cy - gesture.cy);
         const focus = groundPoint(next.cx, next.cy);
         zoomAbout(gesture.dist / next.dist, focus || targetLookAt.current);
+        // Twisting two fingers turns the map with them
+        const twist = Math.atan2(Math.sin(next.angle - gesture.angle), Math.cos(next.angle - gesture.angle));
+        if (Math.abs(twist) > 0.002) {
+          const { radius, theta, phi } = getOrbit();
+          setOrbit(targetLookAt.current.clone(), radius, theta + twist, phi);
+        }
         gesture = { ...gesture, ...next };
         markMoved();
         return;
@@ -497,7 +515,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
       } else if (pointers.size === 1) {
         // Lifting one finger of a pinch carries on as a one-finger gesture from where it is
         const [remaining] = [...pointers.values()];
-        gesture = { type: 'turn', x: remaining.x, y: remaining.y, moved: DRAG_CLICK_TOLERANCE_PX };
+        gesture = { type: fullscreenRef.current ? 'pan' : 'turn', x: remaining.x, y: remaining.y, moved: DRAG_CLICK_TOLERANCE_PX };
       }
       domEl.style.cursor = 'grab';
       if (!wasClick) return;
@@ -913,6 +931,31 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
   }, []);
 
   // Keyboard: arrows move the view, + and - zoom
+  // Full screen: lock the page behind, let one finger move the map, and close on Escape
+  useEffect(() => {
+    fullscreenRef.current = isFullscreen;
+    const canvas = mountRef.current?.querySelector('canvas');
+    if (canvas) canvas.style.touchAction = isFullscreen ? 'none' : 'pan-y';
+    if (!isFullscreen) return;
+    const root = document.documentElement;
+    root.dataset.mapFullscreen = 'true';
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setIsFullscreen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      delete root.dataset.mapFullscreen;
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [isFullscreen]);
+
+  const toggleFullscreen = () => {
+    setIsStyleMenuOpen(false);
+    // Show the gesture hint again: it differs between the two modes
+    setHasInteracted(false);
+    setIsFullscreen((open) => !open);
+  };
+
   const handleKeyDown = (e) => {
     if (e.target !== containerRef.current) return;
     const step = 80;
@@ -984,7 +1027,9 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
       role="region"
       aria-label="Campus map. Arrow keys move the map, plus and minus zoom."
       onKeyDown={handleKeyDown}
-      className="campus-map @container relative w-full h-full select-none overflow-hidden rounded-[inherit] focus-visible:outline-2 focus-visible:-outline-offset-2"
+      className={`campus-map @container w-full h-full select-none overflow-hidden focus-visible:outline-2 focus-visible:-outline-offset-2 ${
+        isFullscreen ? 'is-fullscreen fixed inset-0 z-[90] rounded-none' : 'relative rounded-[inherit]'
+      }`}
       data-theme={theme}
     >
       <div ref={mountRef} className="absolute inset-0" />
@@ -1058,7 +1103,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
       </div>
 
       {/* Quick places, like the category chips under a map search bar */}
-      <div className="absolute top-3 left-3 right-[60px] z-10 flex gap-1.5 overflow-x-auto pb-1 ![scrollbar-width:none] pointer-events-none">
+      <div className="absolute top-[calc(var(--map-inset-top,0px)+12px)] left-3 right-[60px] z-10 flex gap-1.5 overflow-x-auto pb-1 ![scrollbar-width:none] pointer-events-none [mask-image:linear-gradient(to_right,black_calc(100%-24px),transparent)]">
         {PRESET_CHIPS.map((chip) => {
           const Icon = chip.icon;
           const isActive = viewPreset === chip.value;
@@ -1079,7 +1124,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
       </div>
 
       {/* Map controls: style, 2D/3D, recentre */}
-      <div ref={styleMenuRef} data-map-control className="absolute top-3 right-3 z-20 flex flex-col items-end gap-2">
+      <div ref={styleMenuRef} data-map-control className="absolute top-[calc(var(--map-inset-top,0px)+12px)] right-3 z-20 flex flex-col items-end gap-2">
         <div className="map-glass rounded-[12px] flex flex-col overflow-hidden divide-y divide-[var(--map-line)]">
           <button
             type="button"
@@ -1100,6 +1145,15 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
           </button>
           <button type="button" onClick={() => handlePreset(PRESET_CHIPS[0])} aria-label="Show the whole campus" className="map-btn">
             <LocateFixed className="w-[18px] h-[18px]" aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            aria-pressed={isFullscreen}
+            aria-label={isFullscreen ? 'Exit full screen' : 'Full screen map'}
+            className="map-btn"
+          >
+            {isFullscreen ? <Minimize2 className="w-[18px] h-[18px]" aria-hidden="true" /> : <Maximize2 className="w-[18px] h-[18px]" aria-hidden="true" />}
           </button>
         </div>
 
@@ -1141,7 +1195,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
       </div>
 
       {/* Compass and zoom */}
-      <div data-map-control className={`absolute bottom-7 right-3 z-10 flex flex-col items-center gap-2 ${card ? '@max-2xl:hidden' : ''}`}>
+      <div data-map-control className={`absolute bottom-[calc(var(--map-inset-bottom,0px)+28px)] right-3 z-10 flex flex-col items-center gap-2 ${card ? '@max-2xl:hidden' : ''}`}>
         <button
           type="button"
           onClick={resetNorth}
@@ -1167,7 +1221,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
 
       {/* Legend and first-run hint */}
       {!card && (
-        <div className="absolute bottom-7 left-3 right-[60px] z-10 flex items-end justify-between gap-2 pointer-events-none">
+        <div className="absolute bottom-[calc(var(--map-inset-bottom,0px)+28px)] left-3 right-[60px] z-10 flex items-end justify-between gap-2 pointer-events-none">
           <ul aria-label="Map legend" data-map-control className="map-glass hidden @3xl:flex items-center gap-3.5 h-9 px-3.5 rounded-full text-[12px] font-medium">
             {LEGEND.map((item) => (
               <li key={item.label} className="flex items-center gap-1.5">
@@ -1183,8 +1237,17 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
             }`}
           >
             <Hand className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
-            <span className="@xl:hidden">Use two fingers to move the map</span>
-            <span className="hidden @xl:inline">Drag to move · shift-drag to turn · {ZOOM_KEY} + scroll to zoom</span>
+            {isFullscreen ? (
+              <>
+                <span className="@xl:hidden">Drag to move · pinch to zoom · twist to turn</span>
+                <span className="hidden @xl:inline">Drag to move · shift-drag to turn · scroll to zoom</span>
+              </>
+            ) : (
+              <>
+                <span className="@xl:hidden">Use two fingers, or open full screen</span>
+                <span className="hidden @xl:inline">Drag to move · shift-drag to turn · {ZOOM_KEY} + scroll to zoom</span>
+              </>
+            )}
           </p>
         </div>
       )}
@@ -1198,7 +1261,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
         </p>
       )}
       {routeKey && !trip && (
-        <p className="map-glass absolute z-20 left-1/2 bottom-16 -translate-x-1/2 max-w-[calc(100%-32px)] px-3.5 py-2 rounded-full text-center text-[12px] font-medium pointer-events-none">
+        <p className="map-glass absolute z-20 left-1/2 bottom-[calc(var(--map-inset-bottom,0px)+64px)] -translate-x-1/2 max-w-[calc(100%-32px)] px-3.5 py-2 rounded-full text-center text-[12px] font-medium pointer-events-none">
           No road route on the map between these places
         </p>
       )}
@@ -1209,7 +1272,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
         target="_blank"
         rel="noopener noreferrer"
         data-map-control
-        className="absolute bottom-1.5 right-3 z-10 text-[10px] leading-none text-[var(--map-muted)] hover:text-[var(--map-ink)] transition-colors duration-150"
+        className="absolute bottom-[calc(var(--map-inset-bottom,0px)+6px)] right-3 z-10 text-[10px] leading-none text-[var(--map-muted)] hover:text-[var(--map-ink)] transition-colors duration-150"
       >
         © OpenStreetMap contributors
       </a>
@@ -1220,7 +1283,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
           key={card.id}
           aria-label={card.name}
           data-map-control
-          className="map-glass map-card absolute z-30 left-3 right-3 bottom-6 @2xl:right-auto @2xl:w-[320px] rounded-[18px] p-4 animate-sheet-up"
+          className="map-glass map-card absolute z-30 left-3 right-3 bottom-[calc(var(--map-inset-bottom,0px)+24px)] @2xl:right-auto @2xl:w-[320px] rounded-[18px] p-4 animate-sheet-up"
         >
           <div className="flex items-start gap-3">
             <span

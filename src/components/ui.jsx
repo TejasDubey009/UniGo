@@ -72,13 +72,13 @@ export function Wordmark({ className = '' }) {
 // Consistent page opening: small label, big display title, optional supporting copy and a right-side slot
 export function PageHeader({ eyebrow, title, description, aside, className = '' }) {
   return (
-    <header className={`flex flex-col lg:flex-row lg:items-end justify-between gap-6 ${className}`}>
+    <header className={`flex flex-col lg:flex-row lg:items-end justify-between gap-4 sm:gap-6 ${className}`}>
       <div className="max-w-3xl">
-        {eyebrow && <p className="eyebrow mb-4">{eyebrow}</p>}
-        {/* Scales down on the narrowest phones so long words fit */}
-        <h1 className="display text-[min(44px,11.5vw)] sm:text-[64px] lg:text-[76px]">{title}</h1>
+        {eyebrow && <p className="eyebrow mb-2 sm:mb-4">{eyebrow}</p>}
+        {/* App-sized on phones (and smaller still on the narrowest, so long words fit) */}
+        <h1 className="display text-[min(36px,9.6vw)] sm:text-[64px] lg:text-[76px]">{title}</h1>
         {description && (
-          <p className="mt-5 text-[17px] sm:text-lg text-body max-w-2xl leading-relaxed [text-wrap:pretty]">
+          <p className="mt-3 sm:mt-5 text-[15px] sm:text-lg text-body max-w-2xl leading-relaxed [text-wrap:pretty]">
             {description}
           </p>
         )}

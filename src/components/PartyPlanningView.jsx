@@ -66,7 +66,7 @@ export default function PartyPlanningView() {
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
+    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader
         eyebrow="UniGo Party · coming soon"
         title="Hostel birthdays, planned"
@@ -76,7 +76,7 @@ export default function PartyPlanningView() {
 
       {/* Inquiry planner */}
       <section
-        className="mt-16 sm:mt-24 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16"
+        className="mt-12 sm:mt-24 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-16"
         aria-labelledby="party-planner-title"
       >
         <Reveal className="lg:col-span-5">

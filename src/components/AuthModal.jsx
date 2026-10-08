@@ -374,7 +374,7 @@ export default function AuthModal() {
         role="dialog"
         aria-modal="true"
         aria-labelledby={`${titleId}-title`}
-        className="bg-canvas rounded-t-[28px] sm:rounded-[28px] p-6 sm:p-8 max-w-md w-full shadow-[var(--shadow-float)] relative sm:my-auto animate-sheet-up"
+        className="bg-canvas rounded-t-[28px] sm:rounded-[28px] p-6 sm:p-8 pb-[calc(env(safe-area-inset-bottom)+24px)] sm:pb-8 max-w-md w-full shadow-[var(--shadow-float)] relative sm:my-auto animate-sheet-up"
       >
         <button type="button" onClick={closeAuth} className="btn-icon !w-9 !h-9 absolute top-5 right-5" aria-label="Close">
           <X className="w-4 h-4" />

@@ -184,7 +184,7 @@ export default function FoodView() {
   );
 
   return (
-    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
+    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader
         eyebrow="UniGo Food · coming soon"
         title="Late-night food, to your hostel"
@@ -193,7 +193,7 @@ export default function FoodView() {
       />
 
       {/* What is coming */}
-      <section className="mt-24 sm:mt-32 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+      <section className="mt-14 sm:mt-32 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-16">
         <Reveal className="lg:col-span-4">
           <p className="eyebrow mb-4">What is coming</p>
           <h2 className="heading text-[30px] sm:text-[40px]">Set up like laundry</h2>
@@ -218,7 +218,7 @@ export default function FoodView() {
       </section>
 
       {/* Dish vote */}
-      <section className="mt-24 sm:mt-32 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
+      <section className="mt-14 sm:mt-32 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-16">
         <Reveal className="lg:col-span-4">
           <p className="eyebrow mb-4">Help us pick</p>
           <h2 className="heading text-[30px] sm:text-[40px]">Vote for the first menu</h2>

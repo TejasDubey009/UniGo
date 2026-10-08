@@ -44,7 +44,8 @@ export default function Navbar() {
   ];
 
   const thumb = useSlidingThumb(navRef, activeTab);
-  // The Captain and Admin tabs make the bar wider, so the full menu needs a wider screen
+  // The Captain and Admin tabs make the bar wider, so on laptops between lg and xl the long menu folds
+  // into a dropdown. Phones and tablets use the bottom tab bar instead.
   const isLongMenu = navItems.length > 6;
 
   // Hairline under the bar only once the page has scrolled
@@ -79,11 +80,11 @@ export default function Navbar() {
 
   return (
     <header
-      className={`sticky top-0 z-40 w-full bg-canvas/[0.97] backdrop-blur-xl select-none transition-shadow duration-200 ${
+      className={`app-header sticky top-0 z-40 w-full bg-canvas/[0.97] backdrop-blur-xl select-none transition-shadow duration-200 ${
         isScrolled || isMobileMenuOpen ? 'shadow-[0_1px_0_rgb(14_15_12/0.1)]' : ''
       }`}
     >
-      <div className="max-w-[1280px] mx-auto px-5 lg:px-8 h-[72px] flex items-center justify-between gap-4">
+      <div className="max-w-[1280px] mx-auto px-5 lg:px-8 h-[60px] sm:h-[72px] flex items-center justify-between gap-4">
         <button
           type="button"
           onClick={() => handleNavClick('home')}
@@ -196,23 +197,25 @@ export default function Navbar() {
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={isMobileMenuOpen}
-            className={`${isLongMenu ? 'xl:hidden' : 'lg:hidden'} btn-icon`}
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {isLongMenu && (
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isMobileMenuOpen}
+              className="hidden lg:inline-flex xl:hidden btn-icon"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isMobileMenuOpen && (
+      {/* Dropdown menu for the long menu on laptops */}
+      {isMobileMenuOpen && isLongMenu && (
         <nav
           aria-label="Main"
-          className={`${isLongMenu ? 'xl:hidden' : 'lg:hidden'} px-5 pb-5 pt-1 max-h-[calc(100dvh-72px)] overflow-y-auto overscroll-contain animate-pop-in origin-top`}
+          className={`hidden lg:block xl:hidden px-5 pb-5 pt-1 max-h-[calc(100dvh-72px)] overflow-y-auto overscroll-contain animate-pop-in origin-top`}
         >
           <div className="surface p-2">
             {navItems.map((item) => {

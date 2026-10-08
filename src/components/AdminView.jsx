@@ -614,14 +614,15 @@ function AdminConsole({ resyncTick }) {
   const label = (name, count) => (count ? `${name} · ${count}` : name);
 
   return (
-    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
+    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader
         eyebrow="UniGo admin"
         title="Operations"
         description="Every ride, laundry order, lease and captain application, live. Dispatch rides, move laundry and rentals along, and approve captains."
       />
 
-      <div className="mt-10 overflow-x-auto -mx-5 px-5 [scrollbar-width:none]">
+      {/* Tighter segments on phones so all four sections fit without scrolling */}
+      <div className="mt-6 sm:mt-10 overflow-x-auto -mx-5 px-5 [scrollbar-width:none] max-sm:[&_.segmented-item]:!px-3 max-sm:[&_.segmented-item]:!text-[13px]">
         <Segmented
           ariaLabel="Admin section"
           value={section}
@@ -665,7 +666,7 @@ export default function AdminView() {
   if (user && isAdmin) return <AdminConsole resyncTick={resyncTick} />;
 
   return (
-    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
+    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader eyebrow="UniGo admin" title="Operations" />
       <div className="mt-12 surface p-6 sm:p-8 max-w-xl">
         {!authReady || (user && !rolesLoaded) ? (

@@ -11,6 +11,7 @@ import PartyPlanningView from './components/PartyPlanningView';
 import CaptainView from './components/CaptainView';
 import AuthModal from './components/AuthModal';
 import Footer from './components/Footer';
+import TabBar from './components/TabBar';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Only admins open this page, so students never download it
@@ -37,7 +38,8 @@ function MainAppContent() {
   }, [activeTab]);
 
   return (
-    <div className="min-h-screen bg-canvas text-ink flex flex-col font-sans">
+    // Bottom padding keeps the footer clear of the phone tab bar
+    <div className="min-h-screen bg-canvas text-ink flex flex-col font-sans pb-[var(--tabbar-h)]">
       <Navbar />
 
       <main className="flex-1">
@@ -54,6 +56,7 @@ function MainAppContent() {
 
       <AuthModal />
       <Footer />
+      <TabBar />
     </div>
   );
 }

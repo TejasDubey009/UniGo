@@ -219,7 +219,7 @@ export default function RentalView() {
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
+    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader
         eyebrow="Scooter and bike rental"
         title="Self-drive by the hour"
@@ -234,7 +234,7 @@ export default function RentalView() {
 
       {/* Live availability from Supabase */}
       {freeCount > 0 ? (
-        <div className="mt-10 flex flex-col md:flex-row md:items-center justify-between gap-3 py-4 border-y border-hairline">
+        <div className="mt-6 sm:mt-10 flex flex-col md:flex-row md:items-center justify-between gap-3 py-4 border-y border-hairline">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 min-w-0">
             <span className="badge badge-lime self-start sm:self-auto">
               <span className="live-dot" aria-hidden="true" />
@@ -269,8 +269,8 @@ export default function RentalView() {
       )}
 
       {/* Fleet */}
-      <div className="mt-14 flex flex-wrap items-end justify-between gap-3">
-        <h2 className="heading text-[28px] sm:text-[34px]">Choose a vehicle</h2>
+      <div className="mt-10 sm:mt-14 flex flex-wrap items-end justify-between gap-3">
+        <h2 className="heading text-[24px] sm:text-[34px]">Choose a vehicle</h2>
         <p className="text-[14px] text-muted num">
           {freeCount} of {fleet.length} free now
         </p>
@@ -292,7 +292,7 @@ export default function RentalView() {
                 aria-labelledby={`vehicle-${vehicle.id}`}
                 className={`option ${isSelected ? 'is-selected' : ''} active:transform-none rounded-[28px] p-3 sm:p-4 grid grid-cols-1 sm:grid-cols-[200px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)_230px] gap-4 sm:gap-x-6`}
               >
-                <div className="relative overflow-hidden rounded-[18px] bg-ash aspect-[16/10] sm:aspect-auto sm:min-h-[180px] sm:row-span-2 lg:row-span-1">
+                <div className="relative overflow-hidden rounded-[18px] bg-ash aspect-[16/9] sm:aspect-auto sm:min-h-[180px] sm:row-span-2 lg:row-span-1">
                   {/* Absolutely placed so a tall photo can't stretch the row */}
                   <img
                     src={vehicle.image}
@@ -338,7 +338,7 @@ export default function RentalView() {
                     </li>
                   </ul>
 
-                  <ul className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-[13px] text-body">
+                  <ul className="mt-4 hidden sm:grid grid-cols-2 gap-x-4 gap-y-1.5 text-[13px] text-body">
                     {vehicle.features.map((feat) => (
                       <li key={feat} className="flex items-start gap-2">
                         <Check className="w-3.5 h-3.5 text-forest shrink-0 mt-0.5" strokeWidth={2.5} aria-hidden="true" />
@@ -385,7 +385,7 @@ export default function RentalView() {
 
       {/* The student's leases, with status kept live from Supabase */}
       {leases.length > 0 && (
-        <section className="mt-16 sm:mt-20" aria-labelledby="leases-title">
+        <section className="mt-12 sm:mt-20" aria-labelledby="leases-title">
           <h2 id="leases-title" className="heading text-[28px] sm:text-[34px]">
             Your leases
           </h2>
@@ -422,7 +422,7 @@ export default function RentalView() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="lease-title"
-              className="relative w-full max-w-2xl bg-canvas rounded-t-[28px] sm:rounded-[28px] p-6 sm:p-8 shadow-[var(--shadow-float)] animate-sheet-up"
+              className="relative w-full max-w-2xl bg-canvas rounded-t-[28px] sm:rounded-[28px] p-6 sm:p-8 pb-[calc(env(safe-area-inset-bottom)+24px)] sm:pb-8 shadow-[var(--shadow-float)] animate-sheet-up"
             >
               <button
                 type="button"
@@ -674,7 +674,7 @@ export default function RentalView() {
               role="dialog"
               aria-modal="true"
               aria-labelledby="receipt-title"
-              className="relative w-full max-w-md bg-canvas rounded-t-[28px] sm:rounded-[28px] p-6 sm:p-8 shadow-[var(--shadow-float)] animate-sheet-up"
+              className="relative w-full max-w-md bg-canvas rounded-t-[28px] sm:rounded-[28px] p-6 sm:p-8 pb-[calc(env(safe-area-inset-bottom)+24px)] sm:pb-8 shadow-[var(--shadow-float)] animate-sheet-up"
             >
               <span className="w-12 h-12 rounded-full bg-lime text-forest flex items-center justify-center animate-pop-in">
                 <Check className="w-6 h-6" strokeWidth={3} aria-hidden="true" />

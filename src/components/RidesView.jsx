@@ -265,16 +265,20 @@ export default function RidesView() {
   };
 
   return (
-    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-12 sm:pt-16 pb-24">
+    <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader
         eyebrow="Campus rides"
         title="Rides across campus"
       />
 
-      <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
-        {/* Booking column (Uber-style panel beside the map) */}
-        <div className="lg:col-span-5 min-w-0 flex flex-col gap-6">
-          <section aria-labelledby="ride-form-title" className="surface p-6 sm:p-8">
+      <div className="mt-5 sm:mt-12 grid grid-cols-1 lg:grid-cols-12 lg:gap-10 items-start">
+        {/* Booking column: beside the map on laptops; on phones a sheet that overlaps the map's bottom edge */}
+        <div className="lg:col-span-5 min-w-0 flex flex-col gap-6 relative z-10 max-lg:-mt-6">
+          {/* While a ride is under way, phones show just the tracker; the disabled form adds nothing there */}
+          <section
+            aria-labelledby="ride-form-title"
+            className={`surface p-6 sm:p-8 max-lg:shadow-[0_-6px_24px_rgb(0_0_0/0.1)] ${blockingRide ? 'max-lg:hidden' : ''}`}
+          >
             <h2 id="ride-form-title" className="heading text-[26px] sm:text-[30px]">
               Request a ride
             </h2>
@@ -412,7 +416,9 @@ export default function RidesView() {
                 </div>
               )}
 
-              <div className="mt-5 flex items-end justify-between gap-4">
+              {/* Fare and the request button: a bar pinned above the tab bar on phones */}
+              <div className="sticky-cta mt-5">
+              <div className="flex items-end justify-between gap-4 max-lg:hidden">
                 <div>
                   <p className="text-[13px] text-muted">Fare</p>
                   <p className="flex items-baseline gap-2 mt-1">
@@ -429,26 +435,38 @@ export default function RidesView() {
               </div>
 
               {error && (
-                <p role="alert" className="mt-5 rounded-[10px] bg-alert-wash px-4 py-3 text-[14px] text-alert">
+                <p role="alert" className="mt-5 max-lg:mt-0 max-lg:mb-3 rounded-[10px] bg-alert-wash px-4 py-3 text-[14px] text-alert">
                   {error}
                 </p>
               )}
 
-              <button
-                type="submit"
-                disabled={isSamePlace || Boolean(blockingRide) || isSubmitting}
-                aria-busy={isSubmitting}
-                className="btn btn-primary btn-lg w-full mt-6"
-              >
-                {blockingRide ? 'You have a ride on the way' : isSubmitting ? 'Sending your request…' : 'Request a captain'}
-                {!blockingRide && !isSubmitting && <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />}
-              </button>
+              <div className="mt-6 max-lg:mt-0 flex items-center gap-4">
+                <div className="lg:hidden shrink-0">
+                  <p className="text-[12px] text-muted leading-none">Fare</p>
+                  <p className="flex items-baseline gap-1.5 mt-1">
+                    <span className="font-display font-black text-[28px] leading-none text-ink num [font-stretch:112%]">₹{shownFare}</span>
+                    {discount > 0 && <span className="text-[13px] text-muted line-through num">₹{shownBaseFare}</span>}
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={isSamePlace || Boolean(blockingRide) || isSubmitting}
+                  aria-busy={isSubmitting}
+                  className="btn btn-primary btn-lg w-full min-w-0 max-lg:flex-1 max-lg:!px-5"
+                >
+                  <span className="truncate">
+                    {blockingRide ? 'You have a ride on the way' : isSubmitting ? 'Sending your request…' : 'Request a captain'}
+                  </span>
+                  {!blockingRide && !isSubmitting && <ArrowRight className="w-4 h-4 btn-arrow shrink-0" aria-hidden="true" />}
+                </button>
+              </div>
+              </div>
             </form>
           </section>
 
           {/* Live ride tracker: follows the ride's status in Supabase as it changes */}
           {activeRide && (
-            <section aria-label="Your ride" className="surface-line p-6 sm:p-8 animate-pop-in">
+            <section aria-label="Your ride" className="surface-line p-6 sm:p-8 animate-pop-in max-lg:order-first max-lg:shadow-[0_-6px_24px_rgb(0_0_0/0.1)]">
               <div className="flex items-center justify-between gap-3">
                 <p className="eyebrow">
                   Your ride<span className="font-mono normal-case tracking-normal ml-2">{shortRef(activeRide.id)}</span>
@@ -579,7 +597,7 @@ export default function RidesView() {
                         )}
                       </span>
                       <span
-                        className={`mt-2 px-1 text-[12px] leading-tight ${
+                        className={`mt-2 sm:px-1 text-[11px] sm:text-[12px] tracking-[-0.01em] sm:tracking-normal leading-tight ${
                           isDone || isCurrent ? 'font-semibold text-ink' : 'text-muted'
                         }`}
                       >
@@ -632,18 +650,19 @@ export default function RidesView() {
         </div>
 
         {/* Map column: the drive from pickup to drop, for the ride being booked or the one under way */}
-        <div className="lg:col-span-7 min-w-0">
-          <div className="media-frame h-[630px] sm:h-[810px] lg:h-[960px]">
+        {/* Phones show the map first, edge to edge, like a ride app */}
+        <div className="lg:col-span-7 min-w-0 max-lg:order-first">
+          <div className="media-frame map-bleed map-under-sheet h-[min(56svh,520px)] min-h-[360px] sm:h-[640px] lg:h-[960px]">
             <CampusMap3D route={mapRoute} zoom={2} />
           </div>
           {!mapRoute && isOutside && !activeRide && (
-            <p className="mt-3 text-[13px] text-muted">The map shows routes inside campus. {dropLocation} is off campus.</p>
+            <p className="mt-3 text-[13px] text-muted max-lg:hidden">The map shows routes inside campus. {dropLocation} is off campus.</p>
           )}
         </div>
       </div>
 
       {/* Facts */}
-      <Reveal className="mt-16 sm:mt-20 grid grid-cols-1 sm:grid-cols-3 sm:divide-x divide-hairline border-t border-hairline">
+      <Reveal className="mt-10 sm:mt-20 grid grid-cols-1 sm:grid-cols-3 sm:divide-x divide-hairline border-t border-hairline">
         {RIDE_FACTS.map((fact) => {
           const Icon = fact.icon;
           return (
