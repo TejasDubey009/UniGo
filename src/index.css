@@ -5,8 +5,6 @@
  * Token roles (keep them; see DESIGN.md):
  *   lime    – primary CTA fills, live/active accents, success. Never a large background.
  *   forest  – selected states, links, text on lime, the dark feature block.
- *   gold    – UniGo coins only.
- *   teal    – info badges and secondary links.
  *   alert   – errors and destructive actions.
  */
 @theme {
@@ -22,11 +20,8 @@
   --color-forest-deep: #0f2400;
   --color-lime: #9fe870;
   --color-lime-strong: #86dc4f;
-  --color-mint-wash: #ecf9f9;
-  --color-teal: #0b4c72;
   --color-alert: #cb272f;
   --color-alert-wash: #fdeced;
-  --color-gold: #ffd300;
 
   --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Archivo', 'Inter', system-ui, sans-serif;
@@ -38,13 +33,14 @@
   --radius-card-xl: 38px;
 
   --shadow-ring: 0 0 0 1px rgb(14 15 12 / 0.12);
-  --shadow-soft: 0 6px 20px rgb(0 0 0 / 0.08);
   --shadow-float: 0 10px 32px rgb(0 0 0 / 0.15), 0 40px 40px rgb(0 0 0 / 0.04);
 
   --ease-emph: cubic-bezier(0.2, 0, 0, 1);
   --ease-decel: cubic-bezier(0.05, 0.7, 0.1, 1);
 
-  --animate-page-in: page-in 420ms var(--ease-decel) both;
+  /* No fill: a finished-but-filling transform animation would make every position:fixed dialog
+     inside the page position against the page instead of the screen */
+  --animate-page-in: page-in 420ms var(--ease-decel);
   --animate-pop-in: pop-in 200ms var(--ease-emph) both;
   --animate-fade-in: fade-in 200ms var(--ease-emph) both;
   --animate-sheet-up: sheet-up 320ms var(--ease-decel) both;
@@ -288,14 +284,6 @@
     color: var(--color-forest);
     box-shadow: var(--shadow-ring);
   }
-  .badge-info {
-    background: var(--color-mint-wash);
-    color: var(--color-teal);
-  }
-  .badge-alert {
-    background: var(--color-alert-wash);
-    color: var(--color-alert);
-  }
 
   /* Live status dot: forest core with a lime halo that pulses */
   .live-dot {
@@ -341,25 +329,6 @@
     background: var(--color-forest);
     color: #ffffff;
     border-radius: var(--radius-card-xl);
-  }
-  .console {
-    background: var(--color-ink);
-    color: #d4dacf;
-    font-family: var(--font-mono);
-    border-radius: var(--radius-card-sm);
-  }
-
-  /* Interactive tile: lifts slightly and tints on hover */
-  .tile {
-    transition: background-color 160ms var(--ease-emph), box-shadow 160ms var(--ease-emph),
-      transform 160ms var(--ease-emph);
-  }
-  .tile:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-soft);
-  }
-  .tile:active {
-    transform: translateY(0) scale(0.99);
   }
 
   /* Selectable option (radio-like button) */
@@ -546,65 +515,79 @@
     box-shadow: 0 2px 8px rgb(0 0 0 / 0.18);
   }
 
-  /* Place markers: a coloured glyph dot with its name beside it, haloed like map text */
-  .map-poi {
+  /* Place badges: Apple Maps pills (spec: 14px radius, 12px blur, category icon + name).
+     Far away or crowded, a badge shrinks to its icon ("dot" mode). */
+  .map-badge {
     position: absolute;
     left: 0;
     top: 0;
-    width: 0;
-    height: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    height: 22px;
+    padding: 0 8px 0 3px;
+    border-radius: 14px;
+    background: var(--badge-bg);
+    color: #1d1d1f;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    translate: -50% -50%;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.12), 0 0 0 0.5px rgb(0 0 0 / 0.06);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
     pointer-events: auto;
     will-change: transform;
+    transition: scale 160ms var(--ease-emph), padding 160ms var(--ease-emph);
   }
-  .map-poi-dot {
-    position: absolute;
-    left: -11px;
-    top: -11px;
-    width: 22px;
-    height: 22px;
+  .campus-map[data-theme='dark'] .map-badge {
+    background: rgb(44 44 46 / 0.88);
+    color: #f5f5f7;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.4), 0 0 0 0.5px rgb(255 255 255 / 0.08);
+  }
+  .map-badge-icon {
+    width: 16px;
+    height: 16px;
+    flex: none;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 9999px;
     background: var(--poi);
     color: #ffffff;
-    box-shadow: 0 0 0 1.5px var(--map-halo), 0 1px 4px rgb(0 0 0 / 0.3);
-    transition: transform 160ms var(--ease-emph);
+  }
+  .map-badge[data-mode='dot'] {
+    padding: 0 3px;
+    gap: 0;
+  }
+  .map-badge[data-mode='dot'] .map-badge-text {
+    display: none;
+  }
+  .map-badge:hover,
+  .map-badge.is-hover {
+    scale: 1.08;
+  }
+  .map-badge:focus-visible {
+    outline: 2px solid var(--poi);
+    outline-offset: 2px;
+  }
+
+  /* Pin anchor for the selected place */
+  .map-poi {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 0;
+    height: 0;
+    will-change: transform;
   }
   .map-poi-label {
     position: absolute;
-    left: 15px;
-    top: -9px;
-    font-size: 12px;
-    line-height: 18px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
     white-space: nowrap;
     color: var(--poi);
     text-shadow: 0 0 2px var(--map-halo), 0 0 2px var(--map-halo), 0 0 3px var(--map-halo), 0 0 4px var(--map-halo);
     pointer-events: none;
-    transition: opacity 180ms var(--ease-emph);
-  }
-  .map-poi[data-far='1'] .map-poi-dot {
-    transform: scale(0.78);
-  }
-  .map-poi[data-far='1'] .map-poi-label {
-    opacity: 0;
-  }
-  .map-poi:hover .map-poi-dot,
-  .map-poi.is-hover .map-poi-dot {
-    transform: scale(1.15);
-  }
-  .map-poi:hover .map-poi-label,
-  .map-poi.is-hover .map-poi-label,
-  .map-poi:focus-visible .map-poi-label {
-    opacity: 1;
-  }
-  .map-poi:focus-visible {
-    outline: none;
-  }
-  .map-poi:focus-visible .map-poi-dot {
-    box-shadow: 0 0 0 1.5px var(--map-halo), 0 0 0 4px var(--poi);
   }
 
   /* Selected place: a balloon pin that drops in, with a soft shadow where it lands */

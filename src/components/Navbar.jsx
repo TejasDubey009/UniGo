@@ -1,50 +1,48 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useApp } from '../context/useApp';
 import { useSlidingThumb } from '../hooks/useMotion';
-import { Wordmark, CoinIcon } from './ui';
-import {
-  User,
-  ShieldCheck,
-  Terminal,
-  Menu,
-  X,
-  ChevronDown,
-  ArrowUpRight,
-} from 'lucide-react';
+import { Wordmark } from './ui';
+import { Menu, X, ChevronDown, ArrowUpRight, LogOut } from 'lucide-react';
 
-const DASHBOARDS = [
-  { id: 'user-dashboard', label: 'Student dashboard', hint: 'Profile, leases & orders', icon: User },
-  { id: 'admin-dashboard', label: 'Admin console', hint: 'Fleet & laundry queue', icon: ShieldCheck },
-  { id: 'dev-dashboard', label: 'Developer console', hint: 'WebGL telemetry & logs', icon: Terminal },
-];
+const initialsOf = (user) =>
+  (user.name || user.email)
+    .split(/[\s.@]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join('');
+
+function Avatar({ user }) {
+  return user.avatar ? (
+    <img src={user.avatar} alt="" referrerPolicy="no-referrer" className="w-8 h-8 shrink-0 rounded-full object-cover" />
+  ) : (
+    <span aria-hidden="true" className="w-8 h-8 shrink-0 rounded-full bg-forest text-lime text-[13px] font-semibold flex items-center justify-center">
+      {initialsOf(user)}
+    </span>
+  );
+}
 
 export default function Navbar() {
-  const {
-    activeTab,
-    setActiveTab,
-    user,
-    setIsAuthModalOpen,
-    rentalSettings,
-  } = useApp();
+  const { activeTab, setActiveTab, authReady, user, captain, openAuth, signOut, fleet } = useApp();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isDashboardsOpen, setIsDashboardsOpen] = useState(false);
+  const [isAccountOpen, setIsAccountOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const dashboardsRef = useRef(null);
+  const accountRef = useRef(null);
   const navRef = useRef(null);
 
   const navItems = [
     { id: 'home', label: 'Campus' },
     { id: 'rides', label: 'Rides' },
-    { id: 'rental', label: 'Rental', live: rentalSettings.isAvailable },
+    { id: 'rental', label: 'Rental', live: fleet.some((v) => v.available) },
     { id: 'laundry', label: 'Laundry' },
     { id: 'food', label: 'Food', soon: true },
     { id: 'party', label: 'Party', soon: true },
+    // Only captains see their page in the menu
+    ...(captain ? [{ id: 'captain', label: 'Captain', live: captain.on_duty }] : []),
   ];
 
-  const isNavTab = navItems.some((item) => item.id === activeTab);
   const thumb = useSlidingThumb(navRef, activeTab);
-  const isDashboardTab = DASHBOARDS.some((d) => d.id === activeTab);
 
   // Hairline under the bar only once the page has scrolled
   useEffect(() => {
@@ -54,14 +52,14 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // Close the dashboards dropdown on outside click or Escape
+  // Close the account menu on outside click or Escape
   useEffect(() => {
-    if (!isDashboardsOpen) return;
+    if (!isAccountOpen) return;
     const onPointerDown = (e) => {
-      if (!dashboardsRef.current?.contains(e.target)) setIsDashboardsOpen(false);
+      if (!accountRef.current?.contains(e.target)) setIsAccountOpen(false);
     };
     const onKeyDown = (e) => {
-      if (e.key === 'Escape') setIsDashboardsOpen(false);
+      if (e.key === 'Escape') setIsAccountOpen(false);
     };
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
@@ -69,12 +67,11 @@ export default function Navbar() {
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [isDashboardsOpen]);
+  }, [isAccountOpen]);
 
   const handleNavClick = (id) => {
     setActiveTab(id);
     setIsMobileMenuOpen(false);
-    setIsDashboardsOpen(false);
   };
 
   return (
@@ -95,7 +92,7 @@ export default function Navbar() {
 
         {/* Desktop navigation with a thumb that slides to the active page */}
         <nav ref={navRef} aria-label="Main" className="hidden lg:flex items-center relative">
-          {thumb && isNavTab && (
+          {thumb && (
             <span
               aria-hidden="true"
               className="absolute top-0 bottom-0 left-0 rounded-full bg-ash transition-[transform,width] duration-300 ease-[cubic-bezier(0.2,0,0,1)]"
@@ -116,7 +113,7 @@ export default function Navbar() {
                 }`}
               >
                 {item.label}
-                {item.live && <span className="live-dot" title="Scooters available now" />}
+                {item.live && <span className="live-dot" title={item.id === 'captain' ? 'On duty' : 'Scooters available now'} />}
                 {item.soon && (
                   <span className="text-[11px] font-semibold text-subtle -translate-y-1">soon</span>
                 )}
@@ -126,81 +123,61 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Role dashboards */}
-          <div className="relative" ref={dashboardsRef}>
-            <button
-              type="button"
-              onClick={() => setIsDashboardsOpen(!isDashboardsOpen)}
-              aria-expanded={isDashboardsOpen}
-              aria-haspopup="menu"
-              className={`btn btn-sm ${isDashboardTab ? 'btn-forest' : 'btn-quiet'} !gap-1.5`}
-            >
-              <span className="hidden sm:inline">Dashboards</span>
-              <span className="sm:hidden">Roles</span>
-              <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ${isDashboardsOpen ? 'rotate-180' : ''}`}
-                aria-hidden="true"
-              />
-            </button>
-
-            {isDashboardsOpen && (
-              <div
-                role="menu"
-                className="absolute right-0 mt-2 w-72 bg-canvas rounded-[18px] p-2 shadow-[var(--shadow-float)] z-50 origin-top-right animate-pop-in"
+          {/* Account: sign in, or the signed-in student with a sign-out menu */}
+          {!authReady ? (
+            <span aria-hidden="true" className="w-8 h-8 sm:w-28 sm:h-10 rounded-full bg-ash animate-pulse" />
+          ) : user ? (
+            <div className="relative" ref={accountRef}>
+              <button
+                type="button"
+                onClick={() => setIsAccountOpen((open) => !open)}
+                aria-expanded={isAccountOpen}
+                aria-haspopup="menu"
+                aria-label={`Account: ${user.name || user.email}`}
+                className="flex items-center gap-2 pl-1 pr-1 sm:pr-3 py-1 rounded-full bg-canvas shadow-[var(--shadow-ring)] hover:bg-paper transition-colors duration-150 active:scale-[0.98]"
               >
-                <p className="eyebrow px-3 pt-2 pb-1.5">Switch view</p>
-                {DASHBOARDS.map((d) => {
-                  const Icon = d.icon;
-                  const isActive = activeTab === d.id;
-                  return (
-                    <button
-                      key={d.id}
-                      type="button"
-                      role="menuitem"
-                      onClick={() => handleNavClick(d.id)}
-                      className={`w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 transition-colors duration-150 ${
-                        isActive ? 'bg-paper' : 'hover:bg-paper'
-                      }`}
-                    >
-                      <span
-                        className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
-                          isActive ? 'bg-lime text-forest' : 'bg-ash text-ink'
-                        }`}
-                      >
-                        <Icon className="w-4 h-4" aria-hidden="true" />
-                      </span>
-                      <span className="flex-1 min-w-0">
-                        <span className="block text-[14px] font-semibold text-ink">{d.label}</span>
-                        <span className="block text-[13px] text-muted">{d.hint}</span>
-                      </span>
-                      {isActive && <span className="live-dot" aria-label="Current view" />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                <Avatar user={user} />
+                <span className="hidden sm:block text-[14px] font-semibold text-ink max-w-[120px] truncate">
+                  {(user.name || user.email).split(/[\s@]/)[0]}
+                </span>
+                <ChevronDown
+                  className={`hidden sm:block w-4 h-4 text-muted transition-transform duration-200 ${isAccountOpen ? 'rotate-180' : ''}`}
+                  aria-hidden="true"
+                />
+              </button>
 
-          {/* Signed-in student */}
-          <button
-            type="button"
-            onClick={() => setIsAuthModalOpen(true)}
-            className="flex items-center gap-2.5 pl-1 pr-1 sm:pr-3.5 py-1 rounded-full bg-canvas shadow-[var(--shadow-ring)] hover:bg-paper transition-colors duration-150 active:scale-[0.98]"
-            title="Switch student profile"
-          >
-            <img
-              src={user.avatar}
-              alt=""
-              className="w-8 h-8 shrink-0 rounded-full object-cover"
-            />
-            <span className="text-left hidden sm:block leading-tight">
-              <span className="block text-[13px] font-semibold text-ink">{user.name.split(' ')[0]}</span>
-              <span className="flex items-center gap-1 text-[12px] text-muted num">
-                <CoinIcon className="w-3 h-3" />
-                {user.coins}
-              </span>
-            </span>
-          </button>
+              {isAccountOpen && (
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2 w-72 bg-canvas rounded-[18px] p-2 shadow-[var(--shadow-float)] z-50 origin-top-right animate-pop-in"
+                >
+                  <div className="px-3 pt-2.5 pb-3 flex items-center gap-3 border-b border-hairline">
+                    <Avatar user={user} />
+                    <div className="min-w-0">
+                      {user.name && <p className="text-[14px] font-semibold text-ink truncate">{user.name}</p>}
+                      <p className="text-[13px] text-muted truncate">{user.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setIsAccountOpen(false);
+                      signOut();
+                    }}
+                    className="mt-1 w-full text-left px-3 py-2.5 rounded-xl flex items-center gap-3 text-[14px] font-semibold text-ink hover:bg-paper transition-colors duration-150"
+                  >
+                    <LogOut className="w-4 h-4 text-muted" aria-hidden="true" />
+                    Sign out
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button type="button" onClick={() => openAuth()} className="btn btn-sm btn-primary">
+              Sign in
+            </button>
+          )}
 
           <button
             type="button"

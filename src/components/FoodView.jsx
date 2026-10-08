@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ArrowRight, Check, Clock, Coffee, Moon, ThumbsUp, Utensils } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { useApp } from '../context/useApp';
+import { supabase } from '../lib/supabase';
+import { celebrate } from '../lib/celebrate';
 import { PageHeader, Reveal } from './ui';
 
 const COMING = [
@@ -50,7 +52,7 @@ function DishRow({ dish, votes, maxVotes, voted, onVote }) {
             />
           </span>
           <span key={votes} className="w-[72px] text-right text-[13px] text-muted num animate-pop-in">
-            {votes} votes
+            {votes} {votes === 1 ? 'vote' : 'votes'}
           </span>
         </div>
       </div>
@@ -74,63 +76,93 @@ function DishRow({ dish, votes, maxVotes, voted, onVote }) {
 }
 
 export default function FoodView() {
-  const [notifyEmail, setNotifyEmail] = useState('');
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [votedItems, setVotedItems] = useState({
-    'maggi': 142,
-    'dosa': 210,
-    'shawarma': 188,
-    'biryani': 264,
-    'coffee': 175,
-  });
-  const [myVotes, setMyVotes] = useState({});
+  const { user, requireAuth } = useApp();
+  const userId = user?.id;
+  // Vote totals are public; which dishes this student voted for, and the launch list, are theirs
+  const [voteCounts, setVoteCounts] = useState({});
+  const [mine, setMine] = useState({ userId: null, votes: {}, onList: false });
+  const [isJoining, setIsJoining] = useState(false);
+  const [error, setError] = useState('');
 
-  // One vote per dish; clicking again takes the vote back
-  const handleVote = (key) => {
-    const hasVoted = Boolean(myVotes[key]);
-    setMyVotes((prev) => ({ ...prev, [key]: !hasVoted }));
-    setVotedItems((prev) => ({
-      ...prev,
-      [key]: prev[key] + (hasVoted ? -1 : 1),
-    }));
-  };
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    if (!notifyEmail) return;
-    setIsSubscribed(true);
-    confetti({
-      particleCount: 60,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors: ['#9fe870', '#163300', '#ffd300'],
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.rpc('dish_vote_counts').then(({ data }) => {
+      if (data) setVoteCounts(Object.fromEntries(data.map((row) => [row.dish_id, Number(row.votes)])));
     });
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    Promise.all([
+      supabase.from('dish_votes').select('dish_id'),
+      supabase.from('launch_waitlist').select('service').eq('service', 'food'),
+    ]).then(([votes, list]) => {
+      if (cancelled) return;
+      setMine({
+        userId,
+        votes: Object.fromEntries((votes.data || []).map((row) => [row.dish_id, true])),
+        onList: Boolean(list.data?.length),
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  const myVotes = mine.userId === userId ? mine.votes : {};
+  const isSubscribed = mine.userId === userId && mine.onList;
+
+  // One vote per dish; clicking again takes the vote back. Shown at once, undone if saving fails.
+  const handleVote = async (dishId) => {
+    if (!requireAuth('Sign in with your university account to vote for the first menu.')) return;
+    const hasVoted = Boolean(myVotes[dishId]);
+    const apply = (voted) => {
+      setMine((prev) => ({ ...prev, userId, votes: { ...prev.votes, [dishId]: voted } }));
+      setVoteCounts((prev) => ({ ...prev, [dishId]: Math.max(0, (prev[dishId] || 0) + (voted ? 1 : -1)) }));
+    };
+    apply(!hasVoted);
+    const { error: voteError } = hasVoted
+      ? await supabase.from('dish_votes').delete().eq('dish_id', dishId)
+      : await supabase.from('dish_votes').insert({ dish_id: dishId });
+    if (voteError) apply(hasVoted);
   };
 
-  const maxVotes = Math.max(...Object.values(votedItems));
+  const handleSubscribe = async (e) => {
+    e.preventDefault();
+    if (!requireAuth('Sign in with your university account to hear when UniGo Food launches.')) return;
+    setIsJoining(true);
+    setError('');
+    const { error: joinError } = await supabase.from('launch_waitlist').insert({ service: 'food' });
+    setIsJoining(false);
+    // Already on the list counts as success
+    if (joinError && joinError.code !== '23505') {
+      setError("Couldn't add you to the list. Please try again.");
+      return;
+    }
+    setMine((prev) => ({ ...prev, userId, onList: true }));
+    celebrate(60);
+  };
+
+  const maxVotes = Math.max(1, ...DISHES.map((dish) => voteCounts[dish.id] || 0));
 
   const waitlist = (
     <div className="w-full lg:w-[400px]">
       {!isSubscribed ? (
         <form onSubmit={handleSubscribe} className="surface p-5 sm:p-6">
-          <label htmlFor="food-notify" className="label">
-            Get a message when we launch
-          </label>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              id="food-notify"
-              type="text"
-              required
-              value={notifyEmail}
-              onChange={(e) => setNotifyEmail(e.target.value)}
-              placeholder="WhatsApp number or email"
-              className="field flex-1 min-w-0"
-            />
-            <button type="submit" className="btn btn-primary shrink-0">
-              Notify me
-              <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
-            </button>
-          </div>
+          <p className="text-[16px] font-semibold text-ink">Hear first when we launch</p>
+          <p className="mt-1 text-[14px] text-body">
+            {user ? `We'll email ${user.email} on launch day.` : "We'll email your university address on launch day."}
+          </p>
+          {error && (
+            <p role="alert" className="mt-3 text-[14px] text-alert">
+              {error}
+            </p>
+          )}
+          <button type="submit" disabled={isJoining} aria-busy={isJoining} className="btn btn-primary w-full mt-4">
+            {isJoining ? 'Adding you…' : 'Notify me'}
+            {!isJoining && <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />}
+          </button>
           <p className="mt-3 text-[13px] text-muted">Early sign-ups get a free midnight delivery at launch.</p>
         </form>
       ) : (
@@ -141,7 +173,7 @@ export default function FoodView() {
           <div className="min-w-0">
             <p className="text-[16px] font-semibold text-ink">You are on the list</p>
             <p className="mt-1 text-[14px] text-body leading-relaxed break-words">
-              We will message {notifyEmail} on launch day with your free midnight delivery coupon.
+              We will email {user?.email || 'you'} on launch day with your free midnight delivery coupon.
             </p>
           </div>
         </div>
@@ -199,7 +231,7 @@ export default function FoodView() {
             <Reveal as="li" key={dish.id} delay={i * 60} className="py-5 border-b border-hairline">
               <DishRow
                 dish={dish}
-                votes={votedItems[dish.id]}
+                votes={voteCounts[dish.id] || 0}
                 maxVotes={maxVotes}
                 voted={Boolean(myVotes[dish.id])}
                 onVote={() => handleVote(dish.id)}

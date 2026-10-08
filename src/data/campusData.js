@@ -1,50 +1,33 @@
-// Pondicherry University Campus & UniGo Services Dataset with Real GPS Coordinates
-
-export const PU_CAMPUS_CENTER = {
-  lat: 12.0185,
-  lng: 79.8550,
-  altitude: 35,
-  zoom: 16.5,
-  tilt: 62.5,
-  heading: 38,
-  address: 'East Coast Road, Pillaichavady, Kalapet, Puducherry 605014',
-};
+// Pondicherry University places and UniGo's service catalogue. Positions are real GPS
+// coordinates; the 3D map places buildings from OpenStreetMap (see src/data/puAppleMap.js).
 
 export const PU_LANDMARKS = [
   {
     id: 'gate-1',
     name: 'Gate 1 (Main Entrance - ECR)',
     category: 'gate',
-    pos: [-28, 0, 22],
-    lat: 12.019818,
-    lng: 79.858469,
-    altitude: 12,
+    lat: 12.01942,
+    lng: 79.859593,
     color: '#3b82f6',
-    desc: 'Main gateway on East Coast Road with UniGo Pickup Hub 1 & Security Post',
-    hub: true,
+    desc: 'Main gateway on East Coast Road, with the UniGo rental hub and the security post',
     gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pondicherry+University+Gate+1',
   },
   {
     id: 'gate-2',
     name: 'Gate 2 (Kalapet Entrance)',
     category: 'gate',
-    pos: [28, 0, 22],
-    lat: 12.016672,
-    lng: 79.856177,
-    altitude: 14,
+    lat: 12.015851,
+    lng: 79.858551,
     color: '#3b82f6',
-    desc: 'Northern entrance connecting to Kalapet town and beach access road',
-    hub: true,
+    desc: 'Southern entrance on East Coast Road, towards Kalapet town and the beach',
     gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pondicherry+University+Gate+2',
   },
   {
     id: 'admin-block',
     name: 'Administrative Complex & Clock Tower',
     category: 'academic',
-    pos: [-12, 0, 12],
     lat: 12.022025,
     lng: 79.857315,
-    altitude: 28,
     color: '#8b5cf6',
     desc: 'University Secretariat, Senate Hall, Finance Branch, and Registrar Office',
     gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Administrative+Office+Pondicherry+University',
@@ -53,23 +36,18 @@ export const PU_LANDMARKS = [
     id: 'library',
     name: 'Ananda Rangapillai Central Library',
     category: 'academic',
-    pos: [0, 0, 5],
     lat: 12.020152,
     lng: 79.855872,
-    altitude: 24,
     color: '#ec4899',
     desc: 'Iconic 3-tier circular Central Library & 24/7 Digital Reading Room',
-    hub: true,
     gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Ananda+Rangapillai+Library+Pondicherry+University',
   },
   {
     id: 'sjc-campus',
     name: 'Silver Jubilee Campus (SJC)',
     category: 'academic',
-    pos: [22, 0, -8],
     lat: 12.03266,
     lng: 79.857993,
-    altitude: 20,
     color: '#6366f1',
     desc: 'Department of Computer Science, Management Studies & Media Sciences',
     gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Silver+Jubilee+Campus+Pondicherry+University',
@@ -78,10 +56,8 @@ export const PU_LANDMARKS = [
     id: 'science-complex',
     name: 'Science Complex',
     category: 'academic',
-    pos: [-20, 0, -4],
     lat: 12.0175,
     lng: 79.855691,
-    altitude: 18,
     color: '#10b981',
     desc: 'Physics, Chemistry, Earth Sciences, and Biotechnology Research Laboratories',
     gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Science+Complex+Pondicherry+University',
@@ -90,10 +66,8 @@ export const PU_LANDMARKS = [
     id: 'canteen-complex',
     name: 'Student Canteen & Shopping Hub',
     category: 'amenity',
-    pos: [4, 0, 0],
     lat: 12.021872,
     lng: 79.856053,
-    altitude: 15,
     color: '#f59e0b',
     desc: 'Food Court, Co-op Store, Stationery & UniGo Express Laundry Hub',
     gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pondicherry+University+Canteen',
@@ -102,10 +76,8 @@ export const PU_LANDMARKS = [
     id: 'sports-complex',
     name: 'Rajiv Gandhi Sports Stadium & Gym',
     category: 'amenity',
-    pos: [18, 0, 15],
     lat: 12.026472,
     lng: 79.850852,
-    altitude: 16,
     color: '#14b8a6',
     desc: 'Athletic Track, Basketball Courts, and Fitness Arena',
     gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Rajiv+Gandhi+Stadium+Pondicherry+University',
@@ -114,18 +86,13 @@ export const PU_LANDMARKS = [
     id: 'health-centre',
     name: 'University Health Centre',
     category: 'amenity',
-    pos: [-18, 0, 18],
     lat: 12.019605,
     lng: 79.850688,
-    altitude: 14,
     color: '#ef4444',
     desc: '24/7 Campus Medical Care & Emergency Ambulance Base',
     gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Health+Centre+Pondicherry+University',
   },
 ];
-
-// UniGo support line used for WhatsApp confirmations and the rental emergency contact
-export const UNIGO_HELPLINE = '+91 98765 00112';
 
 // Hostels carry the same category/desc fields as landmarks so maps and forms can treat every location uniformly
 const withHostelMeta = (hostels, category, label) =>
@@ -178,6 +145,7 @@ export const OTHER_LOCATIONS = [
   'Science Complex Foyer',
 ];
 
+// Vehicles for hire. Which ones are free right now comes from the rental_fleet table in Supabase.
 export const RENTAL_FLEET = [
   {
     id: 'scoot-1',
@@ -187,12 +155,8 @@ export const RENTAL_FLEET = [
     hourlyRate: 40,
     dailyRate: 299,
     rangeOrMileage: '55 km/l',
-    speed: '85 km/h',
-    fuelLevel: '95%',
-    available: true,
     pickupLocation: 'Gate 1 UniGo Hub',
     helmetsIncluded: 2,
-    badge: 'Instant Book',
     features: ['Combi Brake System', 'Smart Keyless Start', 'Underseat Storage', 'USB Phone Mount'],
     image: 'https://images.unsplash.com/photo-1716574400004-ba794161f8cd?auto=format&fit=crop&w=800&q=80',
     imageCredit: { author: 'Ratul Pal', license: 'Unsplash', url: 'https://unsplash.com/photos/tp9K1aZdREo' },
@@ -205,12 +169,8 @@ export const RENTAL_FLEET = [
     hourlyRate: 35,
     dailyRate: 279,
     rangeOrMileage: '50 km/l',
-    speed: '80 km/h',
-    fuelLevel: '80%',
-    available: true,
     pickupLocation: 'Library Hub',
     helmetsIncluded: 2,
-    badge: 'Ready to Ride',
     features: ['Front Fuel Fill', 'Metal Max Body', 'Spacious Floorboard', 'Digital Display'],
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/TVS_Jupiter_Scooter.jpg/500px-TVS_Jupiter_Scooter.jpg',
     imageCredit: { author: 'SnapMeUp', license: 'CC BY 4.0', url: 'https://commons.wikimedia.org/wiki/File:TVS_Jupiter_Scooter.jpg' },
@@ -223,12 +183,8 @@ export const RENTAL_FLEET = [
     hourlyRate: 45,
     dailyRate: 349,
     rangeOrMileage: '105 km / charge',
-    speed: '90 km/h (Warp Mode)',
-    fuelLevel: '100% Battery',
-    available: true,
     pickupLocation: 'Gate 1 EV Dock',
     helmetsIncluded: 2,
-    badge: 'Zero Emission',
     features: ['Google Maps Touchscreen', 'Reverse Assist', 'Fast Charging Dock in PU', 'Regenerative Braking'],
     image: 'https://images.unsplash.com/photo-1610267037736-abf3096c88fb?auto=format&fit=crop&w=800&q=80',
     imageCredit: { author: 'Om Kamath', license: 'Unsplash', url: 'https://unsplash.com/photos/j6qObqsw1Wg' },
@@ -241,14 +197,8 @@ export const RENTAL_FLEET = [
     hourlyRate: 30,
     dailyRate: 229,
     rangeOrMileage: '80 km / charge',
-    speed: '45 km/h (Safe Campus Limit)',
-    fuelLevel: '90% Battery',
-    available: false,
-    nextAvailable: 'Available today at 4:30 PM (Returned by student)',
-    nextAvailableTime: '4:30 PM',
     pickupLocation: 'Gate 2 Hub',
     helmetsIncluded: 1,
-    badge: 'Reserved',
     features: ['Dual Battery', 'Digital Speedometer', 'Silent Ride', 'No License Required under 25 km/h'],
     // Commons has no Optima CX photo; this is the Optima Plus from the same Hero Electric line
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Optima_Plus_%28Hero_Electric%2C_India%29.jpg/500px-Optima_Plus_%28Hero_Electric%2C_India%29.jpg',
@@ -262,12 +212,8 @@ export const RENTAL_FLEET = [
     hourlyRate: 75,
     dailyRate: 599,
     rangeOrMileage: '36 km/l',
-    speed: '115 km/h',
-    fuelLevel: '75%',
-    available: true,
     pickupLocation: 'Gate 1 Hub',
     helmetsIncluded: 2,
-    badge: 'Highway Cruiser',
     features: ['Dual-Channel ABS', 'Tripper Navigation', 'Signature RE Exhaust', 'Ideal for Auroville & Rock Beach'],
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/42/Hunter_350_side_view_India_Model.png/500px-Hunter_350_side_view_India_Model.png',
     imageCredit: { author: 'Pintu dasaundhi', license: 'CC BY-SA 4.0', url: 'https://commons.wikimedia.org/wiki/File:Hunter_350_side_view_India_Model.png' },
@@ -277,101 +223,15 @@ export const RENTAL_FLEET = [
 // Ride pickup/drop points use the same names as the map so "Ride Here" can prefill the drop
 export const CAMPUS_LOCATIONS_LIST = ALL_PU_LOCATIONS.map((loc) => loc.name);
 
-export const OUTSIDE_LOCATIONS_LIST = [
-  'Auroville Visitors Centre (8.5 km)',
-  'Pondicherry Rock Beach & Promenade (12 km)',
-  'White Town / French Quarter (11.5 km)',
-  'Kalapet Market & Beach (1.2 km)',
-  'JIPMER Medical Campus (14 km)',
-  'Puducherry Central Bus Stand (13 km)',
-  'Serenity Beach, Kottakuppam (7 km)',
+// Off-campus drops and their road distance from campus; the fare is worked out from `km`
+// (src/lib/pricing.js). The names must match the ride_destinations table in supabase/schema.sql.
+export const OFF_CAMPUS_DESTINATIONS = [
+  { name: 'Kalapet Market & Beach', km: 1.2 },
+  { name: 'Serenity Beach, Kottakuppam', km: 7 },
+  { name: 'Auroville Visitors Centre', km: 8.5 },
+  { name: 'White Town / French Quarter', km: 11.5 },
+  { name: 'Pondicherry Rock Beach & Promenade', km: 12 },
+  { name: 'Puducherry Central Bus Stand', km: 13 },
+  { name: 'JIPMER Medical Campus', km: 14 },
 ];
-
-export const INITIAL_LAUNDRY_ORDERS = [
-  {
-    id: 'ORD-PU-8821',
-    studentName: 'Sneha Patel',
-    phone: '+91 98452 11029',
-    category: 'Girls Hostel',
-    hostelName: 'Mother Teresa Hostel',
-    room: 'Room 314 (3rd Floor)',
-    type: 'Wash + Iron',
-    weightEstimate: '5.5 kg',
-    price: 435,
-    status: 'Washing & Steam Ironing',
-    date: 'Today, 09:30 AM',
-    eta: 'Today by 6:00 PM',
-  },
-  {
-    id: 'ORD-PU-8819',
-    studentName: 'Karthik Raja',
-    phone: '+91 94432 77102',
-    category: 'Boys Hostel',
-    hostelName: 'Subramania Bharathiar Hostel',
-    room: 'Room 108 (Ground Floor)',
-    type: 'Wash Only',
-    weightEstimate: '4.0 kg',
-    price: 196,
-    status: 'Ready for Delivery',
-    date: 'Yesterday, 04:15 PM',
-    eta: 'Out with delivery captain',
-  },
-  {
-    id: 'ORD-PU-8815',
-    studentName: 'Ananya Roy',
-    phone: '+91 98112 55431',
-    category: 'Girls Hostel',
-    hostelName: 'Madame Curie Hostel',
-    room: 'Room 205 (2nd Floor)',
-    type: 'Wash + Iron',
-    weightEstimate: '6.0 kg',
-    price: 474,
-    status: 'Delivered',
-    date: '06 Oct, 11:00 AM',
-    eta: 'Delivered at hostel reception',
-  },
-];
-
-export const DEFAULT_RENTAL_SETTINGS = {
-  isAvailable: true,
-  nextAvailableTime: '04:15 PM',
-  nextAvailableModel: 'Honda Activa 6G (Smart Key)',
-  adminNote: 'Peak evening demand: Scooters at Gate 1 and Library hubs are cycling fast.',
-  emergencyContact: UNIGO_HELPLINE,
-};
-
-export const INITIAL_RENTAL_BOOKINGS = [
-  {
-    id: 'AGR-PU-9081',
-    vehicleId: 'scoot-1',
-    vehicleName: 'Honda Activa 6G (Smart Key)',
-    studentName: 'Arjun Sharma',
-    userEmail: 'arjun.sharma@pondiuni.ac.in',
-    rollNo: '24CS089',
-    phone: '+91 98765 43210',
-    pickupTime: 'Today, 02:00 PM',
-    duration: '4 Hours',
-    totalAmount: 160,
-    signatureUrl: '',
-    signedAt: 'Today, 01:45 PM',
-    dlNumber: 'TN-01-2023-88992',
-    pickupHub: 'Gate 1 UniGo Hub',
-    status: 'Active Trip',
-  },
-];
-
-export const INITIAL_ACTIVE_RIDES = [
-  {
-    id: 'RIDE-PU-4412',
-    passenger: 'Vignesh M.',
-    pickup: 'Subramania Bharathiar Hostel',
-    drop: 'Silver Jubilee Campus (SJC)',
-    vehicle: 'UniGo Solo Bike',
-    fare: 20,
-    captainName: 'Murugan S.',
-    captainBike: 'Hero Splendor (TN-32-BF-1092)',
-    status: 'In Transit',
-    eta: '3 mins',
-    rating: 4.9,
-  },
-];
+export const OUTSIDE_LOCATIONS_LIST = OFF_CAMPUS_DESTINATIONS.map((d) => d.name);

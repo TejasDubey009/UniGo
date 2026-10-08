@@ -1,6 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { useApp } from '../context/useApp';
+import { supabase } from '../lib/supabase';
+import { celebrate } from '../lib/celebrate';
 import { PageHeader, Reveal } from './ui';
 
 const EVENT_TYPES = [
@@ -60,22 +62,49 @@ const PACKAGES = [
 ];
 
 export default function PartyPlanningView() {
+  const { user, requireAuth, saveProfileDetails } = useApp();
   const [eventType, setEventType] = useState(EVENT_TYPES[0]);
-  const [date, setDate] = useState('Tomorrow, 11:45 PM');
-  const [hostelOrBeach, setHostelOrBeach] = useState('Hostel common room or wing');
+  const [date, setDate] = useState('');
+  const [venue, setVenue] = useState('');
   const [cakeFlavor, setCakeFlavor] = useState(CAKE_OPTIONS[0]);
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [notes, setNotes] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState('');
   const [inquirySent, setInquirySent] = useState(false);
   const plannerRef = useRef(null);
 
-  const handleSendInquiry = (e) => {
+  // Fill the phone from the student's profile once it arrives
+  const [filledFor, setFilledFor] = useState(user?.key);
+  if (user && user.key !== filledFor) {
+    setFilledFor(user.key);
+    if (!phone) setPhone(user.phone);
+  }
+
+  const handleSendInquiry = async (e) => {
     e.preventDefault();
-    setInquirySent(true);
-    confetti({
-      particleCount: 120,
-      spread: 90,
-      origin: { y: 0.5 },
-      colors: ['#9fe870', '#163300', '#ffd300'],
+    if (isSending) return;
+    if (!requireAuth('Sign in with your university account to send a party request.')) return;
+
+    setIsSending(true);
+    setError('');
+    const { error: sendError } = await supabase.from('party_inquiries').insert({
+      contact_name: user.name || user.email.split('@')[0],
+      phone: phone.trim(),
+      occasion: eventType,
+      event_when: date.trim(),
+      venue: venue.trim(),
+      cake: cakeFlavor,
+      notes: notes.trim() || null,
     });
+    setIsSending(false);
+    if (sendError) {
+      setError("Couldn't send your request. Please try again.");
+      return;
+    }
+    setInquirySent(true);
+    saveProfileDetails({ phone: phone.trim() });
+    celebrate(120);
   };
 
   return (
@@ -152,8 +181,8 @@ export default function PartyPlanningView() {
             Tell us what you have in mind
           </h2>
           <p className="mt-4 text-[17px] text-body leading-relaxed max-w-md">
-            Send the details and a student event planner replies on WhatsApp within 30 minutes with cake photos and
-            decorator slots.
+            Send the details and a student event planner calls or WhatsApps you with cake photos and decorator
+            slots.
           </p>
         </Reveal>
 
@@ -184,6 +213,7 @@ export default function PartyPlanningView() {
                   <input
                     id="party-date"
                     type="text"
+                    required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     placeholder="e.g. 12 Oct, 11:50 PM"
@@ -200,8 +230,9 @@ export default function PartyPlanningView() {
                   <input
                     id="party-location"
                     type="text"
-                    value={hostelOrBeach}
-                    onChange={(e) => setHostelOrBeach(e.target.value)}
+                    required
+                    value={venue}
+                    onChange={(e) => setVenue(e.target.value)}
                     placeholder="e.g. Mother Teresa Hostel, 3rd floor"
                     className="field"
                   />
@@ -224,9 +255,47 @@ export default function PartyPlanningView() {
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary btn-lg w-full !mt-7">
-                Send inquiry
-                <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label htmlFor="party-phone" className="label">
+                    Phone for the planner
+                  </label>
+                  <input
+                    id="party-phone"
+                    type="tel"
+                    required
+                    autoComplete="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 9XXXX XXXXX"
+                    className="field num"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="party-notes" className="label">
+                    Anything else <span className="font-normal text-muted">(optional)</span>
+                  </label>
+                  <input
+                    id="party-notes"
+                    type="text"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. 8 friends, it's a surprise"
+                    className="field"
+                  />
+                </div>
+              </div>
+
+              {error && (
+                <p role="alert" className="rounded-[10px] bg-alert-wash px-4 py-3 text-[14px] text-alert">
+                  {error}
+                </p>
+              )}
+
+              <button type="submit" disabled={isSending} aria-busy={isSending} className="btn btn-primary btn-lg w-full !mt-7">
+                {isSending ? 'Sending…' : 'Send inquiry'}
+                {!isSending && <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />}
               </button>
             </form>
           ) : (
@@ -236,8 +305,8 @@ export default function PartyPlanningView() {
               </span>
               <h3 className="heading text-[26px] sm:text-[30px] mt-5">Inquiry sent</h3>
               <p className="mt-2 text-[15px] text-body leading-relaxed max-w-md">
-                A planner will WhatsApp you within 30 minutes with cake photos and decorator slots for{' '}
-                <span className="font-semibold text-ink">{hostelOrBeach}</span>.
+                A planner will call or WhatsApp you at <span className="font-semibold text-ink num">{phone}</span> with cake
+                photos and decorator slots for <span className="font-semibold text-ink">{venue}</span>.
               </p>
               <button type="button" onClick={() => setInquirySent(false)} className="btn btn-quiet mt-6">
                 Plan another event

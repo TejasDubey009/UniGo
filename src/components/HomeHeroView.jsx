@@ -1,45 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/useApp';
-import { useCountUp, useInView } from '../hooks/useMotion';
 import { Reveal, Segmented } from './ui';
 import CampusMap3D from './LazyCampusMap3D';
-import GoogleCampus3DMap from './GoogleCampus3DMap';
+import GoogleCampusMap from './GoogleCampusMap';
+import { rideFare } from '../lib/pricing';
 import { ArrowRight, Satellite, Map as MapIcon } from 'lucide-react';
 
 const HEADLINE = [['Ride.', 'Rent.'], ['Rinse.', 'Repeat.']];
 
-// Sample trips cycled in the hero to show what a ₹20 hop looks like
+// Example trips cycled in the hero to show what a ₹20 hop looks like
 const SAMPLE_ROUTES = [
   { from: 'Gate 1', to: 'SJC', fare: 20, mins: 3 },
   { from: 'Central Library', to: 'Bharathiar Hostel', fare: 20, mins: 4 },
   { from: 'Science Complex', to: 'Gate 2', fare: 20, mins: 3 },
-  { from: 'Mother Teresa Hostel', to: 'Rock Beach', fare: 68, mins: 18 },
-];
-
-const CAPTAINS_ON_DUTY = 8;
-
-const TESTIMONIALS = [
-  {
-    quote:
-      'I book laundry from Mother Teresa hostel on the map, the runner collects it from the common hall, and it is back steam-ironed the next evening.',
-    student: 'Priya Nair',
-    dept: 'MBA International Business',
-    hostel: 'Mother Teresa Hostel',
-  },
-  {
-    quote:
-      'Rented the Ather from Gate 1 for a weekend down ECR to Auroville and Rock Beach. The lease took thirty seconds to sign on my phone.',
-    student: 'Arjun Sharma',
-    dept: 'M.Sc. Computer Science',
-    hostel: 'Subramania Bharathiar Hostel',
-  },
-  {
-    quote:
-      'Science Complex to Gate 1 in the afternoon sun used to be a trek. Now a captain picks me up in about three minutes for twenty rupees.',
-    student: 'Sneha Patel',
-    dept: 'Ph.D. Biotechnology',
-    hostel: 'Madame Curie Hostel',
-  },
+  { from: 'Mother Teresa Hostel', to: 'Rock Beach', fare: rideFare({ km: 12 }), mins: 18 },
 ];
 
 const PASSES = [
@@ -63,7 +37,7 @@ function RouteTicker() {
       className="inline-flex items-center gap-3 px-4 sm:pr-5 py-2.5 sm:py-0 sm:h-11 rounded-[18px] sm:rounded-full bg-canvas shadow-[var(--shadow-ring)] text-[14px] max-w-full"
       aria-live="polite"
     >
-      <span className="eyebrow !text-[11px] !text-forest hidden sm:inline">Now</span>
+      <span className="eyebrow !text-[11px] !text-forest hidden sm:inline">For example</span>
       <span
         key={index}
         className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 animate-pop-in"
@@ -85,50 +59,35 @@ function RouteTicker() {
   );
 }
 
-function LiveStat({ value, label, suffix = '' }) {
-  const ref = useRef(null);
-  const inView = useInView(ref);
-  const shown = useCountUp(inView ? value : 0, 900);
-  return (
-    <div ref={ref} className="flex items-baseline gap-2">
-      <span className="font-display font-black text-[28px] leading-none text-ink num [font-stretch:112%]">
-        {shown}
-        {suffix}
-      </span>
-      <span className="text-[14px] text-muted">{label}</span>
-    </div>
-  );
-}
-
 export default function HomeHeroView() {
-  const { setActiveTab, rentalSettings, fleet } = useApp();
+  const { setActiveTab, fleet } = useApp();
   const [mapEngine, setMapEngine] = useState('webgl');
 
-  const freeScooters = fleet.filter((v) => v.available).length;
+  const freeVehicles = fleet.filter((v) => v.available).length;
 
   const services = [
     {
       id: 'rides',
       title: 'Rides',
-      tagline: 'Flat ₹20 anywhere inside campus',
-      desc: 'Verified student captains between gates, hostels, SJC and the Science Complex, plus subsidised drops to Auroville and Rock Beach.',
-      status: { tone: 'live', text: `${CAPTAINS_ON_DUTY} captains on duty` },
+      tagline: 'Flat ₹20 anywhere inside campus, ₹30 for two',
+      desc: 'Verified student captains between gates, hostels, SJC and the Science Complex, plus drops to Auroville and Rock Beach. Your first ride is 20% off.',
+      status: { tone: 'ghost', text: 'Book in seconds' },
     },
     {
       id: 'rental',
       title: 'Rental',
       tagline: 'Activa, Jupiter, Ather EV & Hunter 350',
       desc: 'Self-drive by the hour or day. Sign the lease on your phone, show your DL and student ID at the Gate 1 hub, ride off.',
-      status: rentalSettings.isAvailable
-        ? { tone: 'live', text: `${freeScooters} available now` }
-        : { tone: 'neutral', text: `Back at ${rentalSettings.nextAvailableTime}` },
+      status: freeVehicles
+        ? { tone: 'live', text: `${freeVehicles} available now` }
+        : { tone: 'neutral', text: 'All out on trips' },
     },
     {
       id: 'laundry',
       title: 'Laundry',
-      tagline: '24-hour turnaround, wash or wash + iron',
-      desc: 'Pin your hostel on the 3D map. A runner collects from your floor, barcodes every bag and brings it back the next day.',
-      status: { tone: 'ghost', text: 'Pickup in 45 min' },
+      tagline: 'Wednesday and Sunday pickups, back in two days',
+      desc: 'Pin your hostel on the 3D map. A runner collects from your floor, barcodes every bag and brings it back two days later.',
+      status: { tone: 'ghost', text: 'From ₹49 / kg' },
     },
     {
       id: 'food',
@@ -179,7 +138,7 @@ export default function HomeHeroView() {
         <Reveal delay={420}>
           <p className="mt-8 text-[17px] sm:text-xl text-body max-w-2xl mx-auto leading-relaxed [text-wrap:pretty]">
             Flat ₹20 bike rides between hostels and departments, self-drive scooters from Gate 1, and
-            24-hour laundry collected from your hostel floor. Built for Pondicherry University.
+            laundry collected from your hostel floor every Wednesday and Sunday. Built for Pondicherry University.
           </p>
 
           <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-7">
@@ -211,21 +170,15 @@ export default function HomeHeroView() {
             onChange={setMapEngine}
             options={[
               { value: 'webgl', label: 'Map', icon: MapIcon },
-              { value: 'google3d', label: 'Satellite', icon: Satellite },
+              { value: 'satellite', label: 'Satellite', icon: Satellite },
             ]}
           />
         </Reveal>
 
         <Reveal delay={80}>
           <div className="media-frame h-[540px] sm:h-[660px]">
-            {mapEngine === 'google3d' ? <GoogleCampus3DMap /> : <CampusMap3D />}
+            {mapEngine === 'satellite' ? <GoogleCampusMap /> : <CampusMap3D />}
           </div>
-        </Reveal>
-
-        <Reveal className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-10 border-t border-hairline pt-8">
-          <LiveStat value={CAPTAINS_ON_DUTY} label="captains on duty" />
-          <LiveStat value={freeScooters} label={`of ${fleet.length} scooters free`} />
-          <LiveStat value={45} suffix="m" label="to your laundry pickup" />
         </Reveal>
       </section>
 
@@ -237,8 +190,7 @@ export default function HomeHeroView() {
             <h2 className="display text-[44px] sm:text-[72px]">One app for<br />campus life</h2>
           </div>
           <p className="text-[17px] text-body max-w-md leading-relaxed">
-            Every service runs from the same campus map, the same student ID and the same coin
-            balance.
+            Every service runs from the same campus map and the same university account.
           </p>
         </Reveal>
 
@@ -284,20 +236,12 @@ export default function HomeHeroView() {
       <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-28 sm:mt-36">
         <Reveal className="surface-feature p-8 sm:p-14 lg:p-16 grid grid-cols-1 lg:grid-cols-[1.15fr_1fr] gap-12 lg:gap-16 items-center overflow-hidden">
           <div>
-            <p className="eyebrow !text-lime mb-5">Campus Pass & gift cards</p>
+            <p className="eyebrow !text-lime mb-5">Campus Pass · coming soon</p>
             <h2 className="display !text-white text-[44px] sm:text-[68px]">Save up to 40% all semester</h2>
             <p className="mt-6 text-[17px] text-white/75 max-w-lg leading-relaxed">
-              Load your UniGo card once for automatic laundry pickups, priority scooter holds for
-              weekend trips and unlimited campus rides. Passes can also be gifted to a friend's PU email.
+              One pass for automatic laundry pickups, priority scooter holds for weekend trips and
+              unlimited campus rides. Passes will be giftable to a friend's PU email.
             </p>
-            <button
-              type="button"
-              onClick={() => setActiveTab('user-dashboard')}
-              className="btn btn-primary btn-lg mt-9"
-            >
-              Check your coin balance
-              <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
-            </button>
           </div>
 
           <ul className="divide-y divide-white/15 border-y border-white/15">
@@ -314,35 +258,6 @@ export default function HomeHeroView() {
             ))}
           </ul>
         </Reveal>
-      </section>
-
-      {/* Testimonials */}
-      <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-28 sm:mt-36">
-        <Reveal>
-          <p className="eyebrow mb-4">Heard on campus</p>
-          <h2 className="heading text-[30px] sm:text-[40px] max-w-xl">Students who stopped walking to Gate 1</h2>
-        </Reveal>
-
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 md:divide-x divide-hairline border-t border-hairline">
-          {TESTIMONIALS.map((t, i) => (
-            <Reveal
-              as="figure"
-              key={t.student}
-              delay={i * 90}
-              className="pt-8 pb-2 md:px-8 first:md:pl-0 last:md:pr-0 flex flex-col justify-between gap-8 border-b border-hairline md:border-b-0 pb-8 md:pb-2"
-            >
-              <blockquote className="text-[18px] sm:text-[19px] leading-relaxed text-ink [text-wrap:pretty]">
-                “{t.quote}”
-              </blockquote>
-              <figcaption className="text-[14px]">
-                <span className="block font-semibold text-ink">{t.student}</span>
-                <span className="block text-muted">
-                  {t.dept} · {t.hostel}
-                </span>
-              </figcaption>
-            </Reveal>
-          ))}
-        </div>
       </section>
     </div>
   );

@@ -9,7 +9,7 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
-    // The lazily loaded WebGL map chunk is mostly three.js (~560 kB) and can't be split further
-    chunkSizeWarningLimit: 600,
+    // The lazily loaded WebGL map chunk is three.js (~560 kB) plus the campus spec and OpenStreetMap geometry (~300 kB)
+    chunkSizeWarningLimit: 900,
   },
 });

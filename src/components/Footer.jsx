@@ -1,7 +1,6 @@
 import React from 'react';
 import { useApp } from '../context/useApp';
-import { MapPin, Phone } from 'lucide-react';
-import { UNIGO_HELPLINE } from '../data/campusData';
+import { MapPin } from 'lucide-react';
 import { Wordmark } from './ui';
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -14,22 +13,6 @@ const SERVICE_LINKS = [
   { id: 'party', label: 'Party planning' },
 ];
 
-const PORTAL_LINKS = [
-  { id: 'user-dashboard', label: 'Student dashboard' },
-  { id: 'admin-dashboard', label: 'Admin console' },
-  { id: 'dev-dashboard', label: 'Developer console' },
-  { id: 'home', label: '3D campus map' },
-];
-
-function FooterColumn({ title, children }) {
-  return (
-    <div>
-      <h4 className="eyebrow mb-5">{title}</h4>
-      <ul className="space-y-3 text-[15px]">{children}</ul>
-    </div>
-  );
-}
-
 export default function Footer() {
   const { setActiveTab } = useApp();
 
@@ -39,46 +22,31 @@ export default function Footer() {
   return (
     <footer className="w-full bg-paper select-none">
       <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-16 sm:pt-20 pb-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr] gap-12 pb-14">
-          <div className="space-y-6 max-w-sm sm:col-span-2 lg:col-span-1">
+        <div className="grid grid-cols-1 sm:grid-cols-[2fr_1fr] gap-12 pb-14">
+          <div className="space-y-6 max-w-sm">
             <Wordmark />
             <p className="text-[15px] text-body leading-relaxed">
               Rides, rentals, laundry and late-night food for Pondicherry University students, all on
               one campus map.
             </p>
-            <div className="space-y-2.5 text-[14px] text-body">
-              <p className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 mt-0.5 text-forest shrink-0" aria-hidden="true" />
-                East Coast Road, Kalapet, Puducherry 605014
-              </p>
-              <p className="flex items-start gap-2">
-                <Phone className="w-4 h-4 mt-0.5 text-forest shrink-0" aria-hidden="true" />
-                <span className="num">
-                  {UNIGO_HELPLINE} · +91 413 2655179
-                </span>
-              </p>
-            </div>
+            <p className="flex items-start gap-2 text-[14px] text-body">
+              <MapPin className="w-4 h-4 mt-0.5 text-forest shrink-0" aria-hidden="true" />
+              Pondicherry University, East Coast Road, Kalapet, Puducherry 605014
+            </p>
           </div>
 
-          <FooterColumn title="Services">
-            {SERVICE_LINKS.map((l) => (
-              <li key={l.id}>
-                <button type="button" onClick={() => setActiveTab(l.id)} className={linkClass}>
-                  {l.label}
-                </button>
-              </li>
-            ))}
-          </FooterColumn>
-
-          <FooterColumn title="Dashboards">
-            {PORTAL_LINKS.map((l) => (
-              <li key={l.id}>
-                <button type="button" onClick={() => setActiveTab(l.id)} className={linkClass}>
-                  {l.label}
-                </button>
-              </li>
-            ))}
-          </FooterColumn>
+          <div>
+            <h4 className="eyebrow mb-5">Services</h4>
+            <ul className="space-y-3 text-[15px]">
+              {SERVICE_LINKS.map((l) => (
+                <li key={l.id}>
+                  <button type="button" onClick={() => setActiveTab(l.id)} className={linkClass}>
+                    {l.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* Oversized logotype sign-off, cropped by the footer edge */}

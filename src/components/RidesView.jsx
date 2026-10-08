@@ -1,61 +1,59 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useApp } from '../context/useApp';
 import { useCountUp } from '../hooks/useMotion';
-import { CAMPUS_LOCATIONS_LIST, OUTSIDE_LOCATIONS_LIST } from '../data/campusData';
+import { CAMPUS_LOCATIONS_LIST, OFF_CAMPUS_DESTINATIONS, OUTSIDE_LOCATIONS_LIST } from '../data/campusData';
+import { celebrate } from '../lib/celebrate';
+import { shortRef, formatWhen } from '../lib/format';
+import { baseRideFare, rideFare, CAMPUS_FARE, FIRST_RIDE_DISCOUNT } from '../lib/pricing';
+import { supabase } from '../lib/supabase';
+import { placeByName, distanceMeters, formatDistance, minutesAway } from '../lib/geo';
 import CampusMap3D from './LazyCampusMap3D';
 import { PageHeader, Reveal, Segmented } from './ui';
-import {
-  Bike,
-  Zap,
-  ShieldCheck,
-  Clock,
-  ArrowRight,
-  BadgeCheck,
-  IndianRupee,
-  Check,
-  Star,
-} from 'lucide-react';
-import confetti from 'canvas-confetti';
+import { Bike, User, Users, ShieldCheck, Clock, ArrowRight, BadgeCheck, IndianRupee, Phone, Check } from 'lucide-react';
 
-// Status values come from the ride context; labels are what students read
-const RIDE_STEPS = ['Searching Captain', 'Captain Arriving', 'In Transit', 'Completed'];
+// Ride statuses as stored in Supabase (set by staff as the ride moves along), in order
+const RIDE_STEPS = ['requested', 'assigned', 'arriving', 'in_transit', 'completed'];
 const STEP_LABELS = {
-  'Searching Captain': 'Finding captain',
-  'Captain Arriving': 'Captain arriving',
-  'In Transit': 'On the way',
-  Completed: 'Arrived',
+  requested: 'Requested',
+  assigned: 'Accepted',
+  arriving: 'At pickup',
+  in_transit: 'On the way',
+  completed: 'Arrived',
+  cancelled: 'Cancelled',
 };
-const STUDENT_DISCOUNT = 0.2;
-const BASE_FARES = {
-  'UniGo Solo Bike': { inside: 20, outside: 85 },
-  'UniGo EV Glide': { inside: 25, outside: 95 },
-};
+const ACTIVE_STATUSES = new Set(['requested', 'assigned', 'arriving', 'in_transit']);
+const CANCELLABLE = new Set(['requested', 'assigned', 'arriving']);
+// Once a captain has the ride: they share their location, and the rider has a pickup code
+const WITH_CAPTAIN = new Set(['assigned', 'arriving', 'in_transit']);
 const DEFAULT_DROP = 'Silver Jubilee Campus (SJC)';
-const CAPTAINS_ON_DUTY = 8;
+const DESTINATION_KM = Object.fromEntries(OFF_CAMPUS_DESTINATIONS.map((d) => [d.name, d.km]));
+const FIRST_RIDE_PERCENT = Math.round(FIRST_RIDE_DISCOUNT * 100);
+const TWO_RIDER_FARE = baseRideFare({ passengers: 2 });
 
-const VEHICLES = [
-  { id: 'UniGo Solo Bike', name: 'Solo bike', icon: Bike, desc: 'Quickest for one rider with a backpack' },
-  { id: 'UniGo EV Glide', name: 'EV Glide', icon: Zap, desc: 'Quiet electric ride, more floor space' },
+const RIDER_OPTIONS = [
+  { value: 1, name: 'Just me', icon: User, desc: 'One rider' },
+  { value: 2, name: 'Two of us', icon: Users, desc: 'You and a friend on the same bike' },
 ];
 
 const RIDE_FACTS = [
   { icon: Clock, title: 'About 3 min pickup', text: 'Captains on duty all over campus' },
-  { icon: IndianRupee, title: 'Flat ₹20 inside campus', text: 'Any hostel to any department' },
+  { icon: IndianRupee, title: `Flat ₹${CAMPUS_FARE} inside campus`, text: `₹${TWO_RIDER_FARE} for two · first ride ${FIRST_RIDE_PERCENT}% off` },
   { icon: ShieldCheck, title: 'SOS on every ride', text: 'Campus security, 24/7' },
 ];
 
 function rideHeadline(ride) {
+  const captain = ride.captain_name || 'Your captain';
   switch (ride.status) {
-    case 'Searching Captain':
-      return 'Finding a captain near you';
-    case 'Captain Arriving':
-      return `${ride.captainName || 'Your captain'} is on the way`;
-    case 'In Transit':
+    case 'requested':
+      return 'Waiting for a captain to accept';
+    case 'assigned':
+      return `${captain} is on the way to pick you up`;
+    case 'arriving':
+      return `${captain} is at ${ride.pickup}`;
+    case 'in_transit':
       return 'On the way to your drop';
-    case 'Completed':
-      return 'You have arrived';
     default:
-      return ride.status;
+      return STEP_LABELS[ride.status] || ride.status;
   }
 }
 
@@ -82,7 +80,8 @@ const PICKUP_MARK = 'w-3 h-3 rounded-full border-2 border-forest bg-canvas';
 const DROP_MARK = 'w-3 h-3 rounded-full bg-lime ring-2 ring-forest';
 
 export default function RidesView() {
-  const { user, activeRide, startRide, updateActiveRideStatus, dismissActiveRide, rideDropTarget, setRideDropTarget } = useApp();
+  const { user, rides, bookingsLoaded, requestRide, cancelRide, requireAuth, saveProfileDetails, rideDropTarget, setRideDropTarget } =
+    useApp();
 
   // Drop point may be prefilled from "Ride Here" on the campus map
   const initialDrop = rideDropTarget || DEFAULT_DROP;
@@ -103,43 +102,108 @@ export default function RidesView() {
       setDropLocation(rideDropTarget);
     }
   }
-  const [rideType, setRideType] = useState('UniGo Solo Bike'); // 'UniGo Solo Bike' | 'UniGo EV Glide'
+  const [passengers, setPassengers] = useState(1);
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [error, setError] = useState('');
 
-  // Fare estimation logic
+  // Fill the phone from the student's profile once it arrives (sign-in can happen after the page opens)
+  const [filledFor, setFilledFor] = useState(user?.key);
+  if (user && user.key !== filledFor) {
+    setFilledFor(user.key);
+    if (!phone) setPhone(user.phone);
+  }
+
+  // Fare: flat on campus, by distance off campus, and 20% off a student's first ride
+  // (the database works out the same fare when the ride is booked)
   const isOutside = dropType === 'outside';
-  const fareZone = isOutside ? 'outside' : 'inside';
-  const baseFare = BASE_FARES[rideType][fareZone];
-  const studentDiscount = Math.round(baseFare * STUDENT_DISCOUNT);
-  const finalFare = baseFare - studentDiscount;
+  const km = isOutside ? (DESTINATION_KM[dropLocation] ?? null) : null;
+  // Known only once a signed-in student's past rides have loaded; a cancelled ride doesn't use it up
+  const isFirstRide = Boolean(user) && bookingsLoaded && !rides.some((r) => r.status !== 'cancelled');
+  const baseFare = baseRideFare({ km, passengers });
+  const finalFare = rideFare({ km, passengers, firstRide: isFirstRide });
+  const discount = baseFare - finalFare;
 
-  // Fares tween when the vehicle or destination changes
+  // Fares tween when the riders or destination change
   const shownFare = useCountUp(finalFare);
   const shownBaseFare = useCountUp(baseFare);
 
   const isSamePlace = pickupLocation === dropLocation;
-  const isRideInProgress = Boolean(activeRide) && activeRide.status !== 'Completed';
+  // The newest unfinished ride is the one being tracked; finished ones are history
+  const activeRide = rides.find((r) => ACTIVE_STATUSES.has(r.status)) || null;
+  const pastRides = rides.filter((r) => r !== activeRide).slice(0, 5);
   const rideStepIndex = activeRide ? RIDE_STEPS.indexOf(activeRide.status) : -1;
 
-  const handleBookRide = (e) => {
+  const handleBookRide = async (e) => {
     e.preventDefault();
-    if (isSamePlace || isRideInProgress) return;
-    startRide({
-      passenger: user.name,
-      passengerPhone: user.phone,
-      userEmail: user.email,
-      pickup: pickupLocation,
-      drop: dropLocation,
-      vehicle: rideType,
-      fare: finalFare,
-    });
-    setRideDropTarget(null);
+    if (isSamePlace || activeRide || isSubmitting) return;
+    if (!requireAuth('Sign in with your university account to book a ride.')) return;
 
-    confetti({
-      particleCount: 70,
-      spread: 60,
-      origin: { y: 0.6 },
-      colors: ['#9fe870', '#163300', '#ffd300'],
+    setIsSubmitting(true);
+    setError('');
+    const { error: bookingError } = await requestRide({
+      rider_name: user.name || user.email.split('@')[0],
+      rider_phone: phone.trim(),
+      pickup: pickupLocation,
+      drop_off: dropLocation,
+      passengers,
     });
+    setIsSubmitting(false);
+    if (bookingError) {
+      setError(bookingError);
+      return;
+    }
+    setRideDropTarget(null);
+    saveProfileDetails({ phone: phone.trim() });
+    celebrate(70);
+  };
+
+  // The pickup code, readable only by this rider, made when a captain accepts
+  const activeId = activeRide?.id;
+  const needsCode = activeRide ? activeRide.status === 'assigned' || activeRide.status === 'arriving' : false;
+  const [pickupCode, setPickupCode] = useState({ rideId: null, code: null });
+  useEffect(() => {
+    if (!activeId || !needsCode) return;
+    let cancelled = false;
+    supabase
+      .from('ride_otps')
+      .select('code')
+      .eq('ride_id', activeId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!cancelled && data) setPickupCode({ rideId: activeId, code: data.code });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activeId, needsCode]);
+  const code = needsCode && pickupCode.rideId === activeId ? pickupCode.code : null;
+
+  // The captain's live location, straight from their phone over a private realtime channel
+  const withCaptain = activeRide ? WITH_CAPTAIN.has(activeRide.status) : false;
+  const [captainSpot, setCaptainSpot] = useState(null);
+  useEffect(() => {
+    if (!activeId || !withCaptain) return;
+    const channel = supabase
+      .channel(`ride:${activeId}`, { config: { private: true } })
+      .on('broadcast', { event: 'location' }, ({ payload }) => setCaptainSpot({ rideId: activeId, ...payload }))
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [activeId, withCaptain]);
+  // Distance to wherever the captain is heading: the pickup, then the drop
+  const heading = activeRide ? placeByName(activeRide.status === 'in_transit' ? activeRide.drop_off : activeRide.pickup) : null;
+  const spot = withCaptain && captainSpot?.rideId === activeId ? captainSpot : null;
+  const captainDistance = spot && heading ? distanceMeters(spot, heading) : null;
+
+  const handleCancel = async () => {
+    setIsCancelling(true);
+    setError('');
+    const { error: cancelError } = await cancelRide(activeRide.id);
+    setIsCancelling(false);
+    if (cancelError) setError(cancelError);
   };
 
   return (
@@ -147,13 +211,7 @@ export default function RidesView() {
       <PageHeader
         eyebrow="Campus rides"
         title="Campus rides in 3 minutes"
-        description="Book a verified student captain for a flat ₹20 anywhere inside the 800-acre campus, or a subsidised drop to Auroville, White Town and Rock Beach."
-        aside={
-          <span className="badge badge-lime !h-9 !px-4 !text-[14px]">
-            <span className="live-dot" aria-hidden="true" />
-            {CAPTAINS_ON_DUTY} captains on duty
-          </span>
-        }
+        description={`Book a verified student captain for a flat ₹${CAMPUS_FARE} anywhere inside the 800-acre campus (₹${TWO_RIDER_FARE} for two), or a drop to Auroville, White Town and Rock Beach. Your first ride is ${FIRST_RIDE_PERCENT}% off.`}
       />
 
       <div className="mt-12 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-start">
@@ -230,7 +288,7 @@ export default function RidesView() {
                 >
                   {dropOptions.map((loc) => (
                     <option key={loc} value={loc}>
-                      {loc}
+                      {DESTINATION_KM[loc] ? `${loc} (${DESTINATION_KM[loc]} km)` : loc}
                     </option>
                   ))}
                 </select>
@@ -240,20 +298,36 @@ export default function RidesView() {
                 )}
               </div>
 
-              {/* Vehicle */}
+              <div className="mt-6">
+                <label htmlFor="ride-phone" className="label">
+                  Phone for your captain
+                </label>
+                <input
+                  id="ride-phone"
+                  type="tel"
+                  required
+                  autoComplete="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+91 9XXXX XXXXX"
+                  className="field num"
+                />
+              </div>
+
+              {/* Riders */}
               <div className="mt-7">
-                <p id="ride-vehicle-label" className="label !mb-2.5">
-                  Vehicle
+                <p id="ride-riders-label" className="label !mb-2.5">
+                  Riders
                 </p>
-                <div role="group" aria-labelledby="ride-vehicle-label" className="grid grid-cols-2 gap-3">
-                  {VEHICLES.map((v) => {
+                <div role="group" aria-labelledby="ride-riders-label" className="grid grid-cols-2 gap-3">
+                  {RIDER_OPTIONS.map((v) => {
                     const Icon = v.icon;
-                    const isSelected = rideType === v.id;
+                    const isSelected = passengers === v.value;
                     return (
                       <button
-                        key={v.id}
+                        key={v.value}
                         type="button"
-                        onClick={() => setRideType(v.id)}
+                        onClick={() => setPassengers(v.value)}
                         aria-pressed={isSelected}
                         className="option p-4 flex flex-col gap-3 min-w-0"
                       >
@@ -265,7 +339,9 @@ export default function RidesView() {
                           >
                             <Icon className="w-4 h-4" aria-hidden="true" />
                           </span>
-                          <span className="text-[15px] font-semibold text-ink num">₹{BASE_FARES[v.id][fareZone]}</span>
+                          <span className="text-[15px] font-semibold text-ink num">
+                            ₹{rideFare({ km, passengers: v.value, firstRide: isFirstRide })}
+                          </span>
                         </span>
                         <span>
                           <span className="block text-[15px] font-semibold text-ink">{v.name}</span>
@@ -277,57 +353,62 @@ export default function RidesView() {
                 </div>
               </div>
 
-              {/* Discount line and fare */}
-              <div className="mt-7 flex items-center justify-between gap-4 py-3.5 border-y border-hairline text-[15px]">
-                <span className="flex items-center gap-2 text-body min-w-0">
-                  <BadgeCheck className="w-4 h-4 text-forest shrink-0" aria-hidden="true" />
-                  PU student discount (20%)
-                </span>
-                <span className="font-semibold text-forest num whitespace-nowrap">−₹{studentDiscount}</span>
-              </div>
+              {/* First-ride discount, when it applies (or a heads-up before sign-in) */}
+              {(isFirstRide || !user) && (
+                <div className="mt-7 flex items-center justify-between gap-4 py-3.5 border-y border-hairline text-[15px]">
+                  <span className="flex items-center gap-2 text-body min-w-0">
+                    <BadgeCheck className="w-4 h-4 text-forest shrink-0" aria-hidden="true" />
+                    {isFirstRide ? `First ride: ${FIRST_RIDE_PERCENT}% off` : `New to UniGo? Your first ride is ${FIRST_RIDE_PERCENT}% off`}
+                  </span>
+                  {isFirstRide && <span className="font-semibold text-forest num whitespace-nowrap">−₹{discount}</span>}
+                </div>
+              )}
 
               <div className="mt-5 flex items-end justify-between gap-4">
                 <div>
-                  <p className="text-[13px] text-muted">Estimated fare</p>
+                  <p className="text-[13px] text-muted">Fare</p>
                   <p className="flex items-baseline gap-2 mt-1">
                     <span className="font-display font-black text-[40px] leading-none text-ink num [font-stretch:112%]">
                       ₹{shownFare}
                     </span>
-                    <span className="text-[15px] text-muted line-through num">₹{shownBaseFare}</span>
+                    {discount > 0 && <span className="text-[15px] text-muted line-through num">₹{shownBaseFare}</span>}
                   </p>
                 </div>
-                <p className="text-[13px] text-muted text-right">{isOutside ? 'Off-campus drop' : 'Inside campus'}</p>
+                <p className="text-[13px] text-muted text-right">
+                  {isOutside ? `Off-campus drop${km ? ` · ${km} km` : ''}` : 'Inside campus'}
+                  {passengers === 2 && <span className="block">Two riders</span>}
+                </p>
               </div>
+
+              {error && (
+                <p role="alert" className="mt-5 rounded-[10px] bg-alert-wash px-4 py-3 text-[14px] text-alert">
+                  {error}
+                </p>
+              )}
 
               <button
                 type="submit"
-                disabled={isSamePlace || isRideInProgress}
+                disabled={isSamePlace || Boolean(activeRide) || isSubmitting}
+                aria-busy={isSubmitting}
                 className="btn btn-primary btn-lg w-full mt-6"
               >
-                {isRideInProgress ? 'Ride in progress' : 'Book captain'}
-                <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />
+                {activeRide ? 'You have a ride on the way' : isSubmitting ? 'Sending your request…' : 'Request a captain'}
+                {!activeRide && !isSubmitting && <ArrowRight className="w-4 h-4 btn-arrow" aria-hidden="true" />}
               </button>
             </form>
           </section>
 
-          {/* Live ride tracker */}
+          {/* Live ride tracker: follows the ride's status in Supabase as it changes */}
           {activeRide && (
             <section aria-label="Your ride" className="surface-line p-6 sm:p-8 animate-pop-in">
               <div className="flex items-center justify-between gap-3">
                 <p className="eyebrow">
-                  Your ride{activeRide.id && <span className="font-mono normal-case tracking-normal ml-2">{activeRide.id}</span>}
+                  Your ride<span className="font-mono normal-case tracking-normal ml-2">{shortRef(activeRide.id)}</span>
                 </p>
-                {isRideInProgress ? (
-                  <span className="badge badge-lime">
-                    <span className="live-dot" aria-hidden="true" />
-                    Live
-                  </span>
-                ) : (
-                  <span className="badge badge-forest">
-                    <Check className="w-3.5 h-3.5" strokeWidth={3} aria-hidden="true" />
-                    Done
-                  </span>
-                )}
+                <span className="badge badge-lime">
+                  <span className="live-dot" aria-hidden="true" />
+                  Live
+                </span>
               </div>
 
               <div aria-live="polite">
@@ -341,7 +422,7 @@ export default function RidesView() {
                 <span aria-hidden="true" className="relative flex justify-center">
                   <span className={`relative mt-[3px] ${PICKUP_MARK}`} />
                   <span className="absolute left-1/2 -translate-x-1/2 top-[19px] bottom-[2px]">
-                    <RouteLine animated={activeRide.status === 'In Transit'} />
+                    <RouteLine animated={activeRide.status === 'in_transit'} />
                   </span>
                 </span>
                 <div className="pb-4 min-w-0">
@@ -353,7 +434,7 @@ export default function RidesView() {
                 </span>
                 <div className="min-w-0">
                   <p className="text-[12px] text-muted leading-[18px]">Drop</p>
-                  <p className="font-semibold text-ink leading-snug">{activeRide.drop}</p>
+                  <p className="font-semibold text-ink leading-snug">{activeRide.drop_off}</p>
                 </div>
               </div>
 
@@ -364,47 +445,59 @@ export default function RidesView() {
                     <Bike className="w-5 h-5 text-forest" aria-hidden="true" />
                   </span>
                   <div className="min-w-0">
-                    {activeRide.captainName ? (
-                      <p className="flex items-center gap-1.5 font-semibold text-ink">
-                        <span className="truncate">{activeRide.captainName}</span>
-                        {activeRide.rating && (
-                          <span className="flex items-center gap-0.5 text-[13px] font-semibold text-forest num shrink-0">
-                            <Star className="w-3.5 h-3.5 fill-current" aria-hidden="true" />
-                            {activeRide.rating}
-                          </span>
+                    {activeRide.captain_name ? (
+                      <>
+                        <p className="font-semibold text-ink truncate">{activeRide.captain_name}</p>
+                        {activeRide.captain_vehicle && (
+                          <p className="text-[13px] text-muted truncate">{activeRide.captain_vehicle}</p>
                         )}
-                      </p>
+                        {captainDistance != null && (
+                          <p key={Math.round(captainDistance / 50)} className="text-[13px] font-semibold text-forest animate-pop-in">
+                            {captainDistance < 60
+                              ? activeRide.status === 'in_transit'
+                                ? 'Almost there'
+                                : 'Right at the pickup'
+                              : `${formatDistance(captainDistance)} away · about ${minutesAway(captainDistance)} min`}
+                          </p>
+                        )}
+                        {activeRide.captain_phone && (
+                          <a href={`tel:${activeRide.captain_phone}`} className="btn btn-link !text-[13px] !gap-1">
+                            <Phone className="w-3.5 h-3.5" aria-hidden="true" />
+                            Call captain
+                          </a>
+                        )}
+                      </>
                     ) : (
-                      <p className="text-[15px] text-muted">Locating the nearest captain…</p>
-                    )}
-                    {activeRide.captainBike && (
-                      <p className="text-[13px] text-muted truncate">{activeRide.captainBike}</p>
+                      <p className="text-[15px] text-muted">No captain yet. You'll see their name here.</p>
                     )}
                   </div>
                 </div>
 
-                <div className="rounded-[18px] bg-paper px-4 py-3 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-ink">Ride OTP</p>
-                    <p className="text-[12px] text-muted leading-snug">Share at pickup</p>
+                {activeRide.status !== 'in_transit' && (
+                  <div className="rounded-[18px] bg-paper px-4 py-3 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold text-ink">Pickup code</p>
+                      <p className="text-[12px] text-muted leading-snug">
+                        {code ? 'Tell your captain at pickup' : 'Appears when a captain accepts'}
+                      </p>
+                    </div>
+                    <span
+                      key={code || 'pending'}
+                      className={`font-mono text-[28px] font-bold tracking-[0.18em] leading-none num animate-pop-in ${
+                        code ? 'text-ink' : 'text-subtle'
+                      }`}
+                    >
+                      {code || '••••'}
+                    </span>
                   </div>
-                  <span
-                    key={activeRide.otp || 'pending'}
-                    className={`font-mono text-[28px] font-bold tracking-[0.18em] leading-none num animate-pop-in ${
-                      activeRide.otp ? 'text-ink' : 'text-subtle'
-                    }`}
-                  >
-                    {activeRide.otp || '••••'}
-                  </span>
-                </div>
+                )}
               </div>
 
               {/* Progress */}
-              <ol className="mt-7 grid grid-cols-4">
+              <ol className="mt-7 grid grid-cols-5">
                 {RIDE_STEPS.map((st, i) => {
-                  const isComplete = activeRide.status === 'Completed';
-                  const isCurrent = i === rideStepIndex && !isComplete;
-                  const isDone = i < rideStepIndex || isComplete;
+                  const isCurrent = i === rideStepIndex;
+                  const isDone = i < rideStepIndex;
 
                   return (
                     <li
@@ -416,17 +509,13 @@ export default function RidesView() {
                         <span
                           aria-hidden="true"
                           className={`absolute top-[13px] left-1/2 w-full h-0.5 transition-colors duration-300 ${
-                            i < rideStepIndex || isComplete ? 'bg-forest' : 'bg-ash'
+                            isDone ? 'bg-forest' : 'bg-ash'
                           }`}
                         />
                       )}
                       <span
                         className={`relative z-10 w-7 h-7 rounded-full flex items-center justify-center text-[12px] font-semibold num transition-colors duration-200 ${
-                          isDone
-                            ? 'bg-forest text-white'
-                            : isCurrent
-                            ? 'bg-lime text-forest ring-2 ring-forest'
-                            : 'bg-ash text-muted'
+                          isDone ? 'bg-forest text-white' : isCurrent ? 'bg-lime text-forest ring-2 ring-forest' : 'bg-ash text-muted'
                         }`}
                       >
                         {isDone ? (
@@ -449,39 +538,39 @@ export default function RidesView() {
                 })}
               </ol>
 
-              {/* Captain simulator for demo testing */}
-              <div className="mt-7 pt-5 border-t border-hairline flex flex-wrap items-center justify-between gap-3">
-                <p className="text-[13px] text-muted">Demo: move the ride along</p>
-                <div className="flex flex-wrap items-center gap-2">
-                  {isRideInProgress ? (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => updateActiveRideStatus('In Transit')}
-                        disabled={activeRide.status !== 'Captain Arriving'}
-                        className={`btn btn-sm ${activeRide.status === 'Captain Arriving' ? 'btn-forest' : 'btn-quiet'}`}
-                      >
-                        Start ride
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => updateActiveRideStatus('Completed')}
-                        disabled={activeRide.status !== 'In Transit'}
-                        className={`btn btn-sm ${activeRide.status === 'In Transit' ? 'btn-forest' : 'btn-quiet'}`}
-                      >
-                        Complete ride
-                      </button>
-                      <button type="button" onClick={dismissActiveRide} className="btn btn-sm btn-danger">
-                        Cancel ride
-                      </button>
-                    </>
-                  ) : (
-                    <button type="button" onClick={dismissActiveRide} className="btn btn-sm btn-quiet">
-                      Close tracker
-                    </button>
-                  )}
+              {CANCELLABLE.has(activeRide.status) && (
+                <div className="mt-7 pt-5 border-t border-hairline flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-[13px] text-muted">Plans changed? Cancel before your captain picks you up.</p>
+                  <button type="button" onClick={handleCancel} disabled={isCancelling} className="btn btn-sm btn-danger">
+                    {isCancelling ? 'Cancelling…' : 'Cancel ride'}
+                  </button>
                 </div>
-              </div>
+              )}
+            </section>
+          )}
+
+          {/* Recent rides */}
+          {pastRides.length > 0 && (
+            <section aria-labelledby="past-rides-title">
+              <h2 id="past-rides-title" className="eyebrow mb-3">
+                Recent rides
+              </h2>
+              <ul className="divide-y divide-hairline border-y border-hairline">
+                {pastRides.map((ride) => (
+                  <li key={ride.id} className="py-3.5 flex items-start justify-between gap-4 text-[14px]">
+                    <div className="min-w-0">
+                      <p className="font-semibold text-ink truncate">
+                        {ride.pickup} → {ride.drop_off}
+                      </p>
+                      <p className="text-muted">
+                        {formatWhen(ride.created_at)} · {STEP_LABELS[ride.status]}
+                        {ride.passengers === 2 && ' · two riders'}
+                      </p>
+                    </div>
+                    <span className="font-semibold text-ink num shrink-0">₹{ride.fare}</span>
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
         </div>
