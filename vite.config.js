@@ -47,6 +47,11 @@ export default defineConfig(({ mode }) => {
           ),
       },
     ],
+    server: {
+      host: '0.0.0.0',
+      port: 3000,
+      allowedHosts: true,
+    },
     build: {
       // The lazily loaded WebGL map chunk is three.js (~560 kB), the campus spec and OpenStreetMap geometry
       // (~300 kB) and the screen-width route lines (~30 kB)
