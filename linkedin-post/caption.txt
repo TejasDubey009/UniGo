@@ -1,0 +1,37 @@
+🚀 I built UniGo for PromptWars x The Prompt Arena, organised by Hack2skill and the Department of CSE, Pondicherry University.
+
+UniGo brings campus rides, scooter rental and hostel laundry together in one app for Pondicherry University students.
+
+🔴 The problem
+Our Kalapet campus is huge. Hostels, departments, the library and the gates are far apart, and there's no reliable way to get between them. Rides get arranged over WhatsApp, scooters are lent out with no record, and doing laundry means a trip off campus. Prices change from person to person, and nothing makes a ride safe or accountable.
+
+✅ The solution
+🛵 Rides: book a student captain from any of 84 campus places. A blue line on a 3D campus map shows your route, and the fare is fixed: ₹20 on campus, with 20% off your first ride. The first captain to accept gets the ride. It starts only when the captain enters the 4-digit code shown on your phone.
+🔑 Scooter rental: pick a vehicle, sign a digital lease on screen, and collect it at the Gate 1 or Library hub.
+🧺 Laundry: picked up from your hostel on Wednesdays and Sundays, back two days later.
+🗺️ 3D campus map: built from OpenStreetMap, with search for every gate, block and hostel.
+
+👥 Three roles
+• Student: books and tracks rides, rentals and laundry
+• Captain: an approved student driver who goes on duty, accepts rides, checks pickup codes and shares live location
+• Admin: dispatches rides, approves captains, and moves laundry and rentals through each step
+
+🔐 Built to be trusted
+• Only @pondiuni.ac.in accounts can sign up, and the database enforces it
+• Every price is calculated on the server, so nobody can book with a made-up fare
+• Row Level Security on every table: each student sees only their own data
+• One atomic update decides who accepts a ride, so two captains can't both get it
+• Pickup codes lock after 5 wrong tries, and phone numbers are cleared when a ride ends
+• Content Security Policy on the live site, plus limits on how many bookings a student can make
+
+🛠️ Tech stack
+React 19 · Vite · Tailwind CSS v4 · Three.js · Supabase (Postgres, Auth, Realtime, RLS) · OpenStreetMap · Google Maps
+
+🤖 Built by prompting
+I built UniGo end to end by prompting an AI coding agent (Claude Code). That covered planning, design research, the 3D map, the database rules, and a full security and logic audit, which found and fixed bugs like fare tampering and two captains accepting the same ride at once. I then tested every flow with a test account for each role.
+
+🔗 Code: https://github.com/TejasDubey009/UniGo
+
+Thank you, Hack2skill and the Department of CSE, Pondicherry University, for the challenge!
+
+#PromptWars #ThePromptArena #Hack2skill #PondicherryUniversity #BuildWithAI #PromptEngineering #ClaudeCode #React #Supabase #ThreeJS #WebDevelopment #CampusTech
