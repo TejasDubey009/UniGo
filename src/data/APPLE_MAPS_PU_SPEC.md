@@ -5,6 +5,8 @@
 > **Master Machine-Readable JSON Reference**: [`src/data/pu_apple_maps_reference.json`](file:///Users/pallavidubey/Developer/UniGo/src/data/pu_apple_maps_reference.json)  
 > **Target Consumer**: Claude Code / WebGL / Three.js / MapLibre / UniGo 3D Engine  
 
+> **Superseded for names and facts (10 October 2026).** This document is the original design brief. Its building names, room counts, floor counts, amenities and "UniGo hub" labels were not checked against the university and many were wrong (there is no Mother Teresa Hostel; the 400 m track is at Thiruvalluvar Stadium, not Rajiv Gandhi; Gate 2 is the southern gate). The JSON catalogue has since been corrected against Pondicherry University sources and OpenStreetMap, and five missing hostels were added. For any name or fact, trust `pu_apple_maps_reference.json` and "Place names and facts" in `DESIGN.md`, not the lists below. The coordinate system, colours and camera presets here still apply.
+
 ---
 
 ## 1. Executive Summary & Geographic Coordinate System

@@ -1,44 +1,56 @@
 [
  {
-  "id": "digital-reading-hall",
-  "name": "24/7 Digital Reading Hall",
-  "label": "Digital Reading Hall",
-  "kind": "library",
-  "lat": 12.020516,
-  "lng": 79.85527
- },
- {
-  "id": "admin-office-complex",
-  "name": "Administrative Office Complex & Senate",
-  "label": "Administration",
-  "kind": "admin",
-  "lat": 12.022022,
-  "lng": 79.857318,
-  "appId": "admin-block"
+  "id": "amudham-mess",
+  "name": "Amudham Mess",
+  "kind": "dining",
+  "lat": 12.029015,
+  "lng": 79.850682
  },
  {
   "id": "stop-amudham-mess",
   "name": "Amudham Mess Bus Stop",
   "label": "Amudham Mess stop",
   "kind": "bus",
-  "lat": 12.029595,
-  "lng": 79.850813
- },
- {
-  "id": "amudham-mess",
-  "name": "Amudham Mess for Boys",
-  "kind": "dining",
-  "lat": 12.029015,
-  "lng": 79.850682
+  "lat": 12.029594,
+  "lng": 79.850814
  },
  {
   "id": "central-library",
-  "name": "Ananda Rangapillai Central Library",
+  "name": "Ananda Rangapillai Library (Central Library)",
   "label": "Central Library",
   "kind": "library",
   "lat": 12.020164,
   "lng": 79.855875,
   "appId": "library"
+ },
+ {
+  "id": "new-mega-mess",
+  "name": "Annapurna Mess (Mega Mess)",
+  "label": "Mega Mess",
+  "kind": "dining",
+  "lat": 12.02946,
+  "lng": 79.852444
+ },
+ {
+  "id": "bicycle-service-point",
+  "name": "Bicycle Service Point",
+  "kind": "amenity",
+  "lat": 12.021456,
+  "lng": 79.856493
+ },
+ {
+  "id": "bh-birsa-munda",
+  "name": "Birsa Munda Hostel",
+  "kind": "boys_hostel",
+  "lat": 12.029978,
+  "lng": 79.853492
+ },
+ {
+  "id": "book-shop",
+  "name": "Book Shop",
+  "kind": "amenity",
+  "lat": 12.019838,
+  "lng": 79.855837
  },
  {
   "id": "stop-boys-teatime",
@@ -50,43 +62,70 @@
  },
  {
   "id": "bh-cv-raman",
-  "name": "C.V. Raman Boys Hostel",
-  "label": "C.V. Raman Hostel",
+  "name": "C.V. Raman Hostel",
   "kind": "boys_hostel",
   "lat": 12.02679,
   "lng": 79.85313
  },
  {
-  "id": "shopping-complex-central",
-  "name": "Campus Shopping Complex & Post Office",
-  "label": "Shopping Complex",
-  "kind": "amenity",
-  "lat": 12.017833,
-  "lng": 79.853607
+  "id": "canteen-1-central",
+  "name": "Canteen I",
+  "kind": "dining",
+  "lat": 12.021875,
+  "lng": 79.856053,
+  "appId": "canteen-complex"
  },
  {
   "id": "canteen-2-science",
-  "name": "Canteen 2 (Science Complex)",
-  "label": "Science Canteen",
+  "name": "Canteen II",
   "kind": "dining",
   "lat": 12.015438,
   "lng": 79.854212
  },
  {
+  "id": "mba-canteen-3",
+  "name": "Canteen III",
+  "kind": "dining",
+  "lat": 12.022284,
+  "lng": 79.853681
+ },
+ {
   "id": "gh-cauveri",
-  "name": "Cauveri Ladies Hostel",
-  "label": "Cauveri Hostel",
+  "name": "Cauvery Hostel",
   "kind": "girls_hostel",
   "lat": 12.020414,
   "lng": 79.850345
  },
  {
-  "id": "stop-central-library",
-  "name": "Central Library Shuttle Stop",
-  "label": "Library stop",
-  "kind": "bus",
-  "lat": 12.020309,
-  "lng": 79.856125
+  "id": "distance-education-block",
+  "name": "Centre for Distance and Online Education (DDE)",
+  "label": "Distance Education",
+  "kind": "academic",
+  "lat": 12.018369,
+  "lng": 79.853005
+ },
+ {
+  "id": "centre-social-inclusion",
+  "name": "Centre for Study of Social Inclusion",
+  "label": "Social Inclusion",
+  "kind": "academic",
+  "lat": 12.034073,
+  "lng": 79.857491
+ },
+ {
+  "id": "convention-centre",
+  "name": "Convention Centre",
+  "kind": "auditorium",
+  "lat": 12.017474,
+  "lng": 79.857571
+ },
+ {
+  "id": "dept-anthropology",
+  "name": "Department of Anthropology",
+  "label": "Anthropology",
+  "kind": "academic",
+  "lat": 12.034206,
+  "lng": 79.858009
  },
  {
   "id": "dept-applied-psychology",
@@ -139,23 +178,47 @@
  },
  {
   "id": "dept-mass-comm",
-  "name": "Department of Electronic Media & Mass Communication",
+  "name": "Department of Electronic Media and Mass Communication",
   "label": "Mass Communication",
   "kind": "academic",
   "lat": 12.032689,
   "lng": 79.856558
  },
  {
+  "id": "dept-english",
+  "name": "Department of English",
+  "label": "English",
+  "kind": "academic",
+  "lat": 12.033996,
+  "lng": 79.858716
+ },
+ {
   "id": "dept-food-science",
-  "name": "Department of Food Science & Technology",
+  "name": "Department of Food Science and Technology",
   "label": "Food Science",
   "kind": "academic",
   "lat": 12.027795,
   "lng": 79.855821
  },
  {
+  "id": "dept-french",
+  "name": "Department of French",
+  "label": "French",
+  "kind": "academic",
+  "lat": 12.03387,
+  "lng": 79.858964
+ },
+ {
+  "id": "dept-history",
+  "name": "Department of History",
+  "label": "History",
+  "kind": "academic",
+  "lat": 12.033548,
+  "lng": 79.857532
+ },
+ {
   "id": "dept-management-studies",
-  "name": "Department of Management Studies (DMS)",
+  "name": "Department of Management Studies",
   "label": "Management Studies",
   "kind": "academic",
   "lat": 12.022145,
@@ -163,7 +226,7 @@
  },
  {
   "id": "performing-arts-complex",
-  "name": "Department of Performing Arts & Studio Theatres",
+  "name": "Department of Performing Arts",
   "label": "Performing Arts",
   "kind": "academic",
   "lat": 12.020526,
@@ -178,12 +241,45 @@
   "lng": 79.8535
  },
  {
-  "id": "distance-education-block",
-  "name": "Directorate of Distance Education",
-  "label": "Distance Education",
+  "id": "dept-politics",
+  "name": "Department of Politics & International Studies",
+  "label": "Politics",
   "kind": "academic",
-  "lat": 12.018369,
-  "lng": 79.853005
+  "lat": 12.034231,
+  "lng": 79.857723
+ },
+ {
+  "id": "dept-philosophy-education",
+  "name": "Departments of Philosophy and Education",
+  "label": "Philosophy & Education",
+  "kind": "academic",
+  "lat": 12.033333,
+  "lng": 79.858984
+ },
+ {
+  "id": "dept-sanskrit-hindi",
+  "name": "Departments of Sanskrit and Hindi",
+  "label": "Sanskrit & Hindi",
+  "kind": "academic",
+  "lat": 12.033189,
+  "lng": 79.858743
+ },
+ {
+  "id": "dept-social-work-sociology",
+  "name": "Departments of Social Work and Sociology",
+  "label": "Social Work & Sociology",
+  "kind": "academic",
+  "lat": 12.033803,
+  "lng": 79.857413
+ },
+ {
+  "id": "admin-office-complex",
+  "name": "Dr. B.R. Ambedkar Administrative Building",
+  "label": "Administration",
+  "kind": "admin",
+  "lat": 12.022022,
+  "lng": 79.857318,
+  "appId": "admin-block"
  },
  {
   "id": "examination-building",
@@ -191,6 +287,14 @@
   "kind": "admin",
   "lat": 12.022473,
   "lng": 79.856385
+ },
+ {
+  "id": "faculty-quarters",
+  "name": "Faculty Quarters (F1–F40)",
+  "label": "Faculty Quarters",
+  "kind": "amenity",
+  "lat": 12.021371,
+  "lng": 79.847639
  },
  {
   "id": "stop-food-science",
@@ -201,23 +305,29 @@
   "lng": 79.855612
  },
  {
+  "id": "gh-foreign",
+  "name": "Foreign Hostel",
+  "kind": "girls_hostel",
+  "lat": 12.02327,
+  "lng": 79.84847
+ },
+ {
   "id": "foreign-students-hostel",
   "name": "Foreign Students Hostel",
-  "kind": "hostel_international",
+  "kind": "boys_hostel",
   "lat": 12.02094,
   "lng": 79.859132
  },
  {
   "id": "gh-ganga",
-  "name": "Ganga Ladies Hostel",
-  "label": "Ganga Hostel",
+  "name": "Ganga Hostel",
   "kind": "girls_hostel",
   "lat": 12.022221,
   "lng": 79.849435
  },
  {
   "id": "gate-1-main",
-  "name": "Gate 1 (Main Entrance - ECR)",
+  "name": "Gate 1 (Main Gate)",
   "label": "Gate 1",
   "kind": "gate_security",
   "lat": 12.01942,
@@ -226,7 +336,7 @@
  },
  {
   "id": "stop-gate-1-ecr",
-  "name": "Gate 1 Main Gate Bus Shelter",
+  "name": "Gate 1 Bus Stop",
   "label": "Gate 1 stop",
   "kind": "bus",
   "lat": 12.019472,
@@ -234,8 +344,7 @@
  },
  {
   "id": "gate-2-kalapet",
-  "name": "Gate 2 (Kalapet Town Entrance)",
-  "label": "Gate 2",
+  "name": "Gate 2",
   "kind": "gate_security",
   "lat": 12.015851,
   "lng": 79.858551,
@@ -243,17 +352,32 @@
  },
  {
   "id": "gender-gate",
-  "name": "Gender Gate Checkpoint",
+  "name": "Gender Gate",
   "kind": "gate_security",
   "lat": 12.025798,
   "lng": 79.849509
  },
  {
   "id": "gents-gym",
-  "name": "Gents Central Gym",
+  "name": "Gents Gym",
   "kind": "sports",
   "lat": 12.030145,
   "lng": 79.850174
+ },
+ {
+  "id": "stop-health-centre",
+  "name": "Health Centre Bus Stop",
+  "label": "Health Centre stop",
+  "kind": "bus",
+  "lat": 12.019184,
+  "lng": 79.850339
+ },
+ {
+  "id": "horticulture-wing",
+  "name": "Horticulture Wing",
+  "kind": "admin",
+  "lat": 12.021092,
+  "lng": 79.853218
  },
  {
   "id": "hrtem-centre",
@@ -264,15 +388,14 @@
  },
  {
   "id": "bh-ilango-adigal",
-  "name": "Ilango Adigal Boys Hostel",
-  "label": "Ilango Adigal Hostel",
+  "name": "Ilango Adigal Hostel",
   "kind": "boys_hostel",
   "lat": 12.028272,
   "lng": 79.852757
  },
  {
   "id": "indian-bank-central",
-  "name": "Indian Bank Campus Branch & ATMs",
+  "name": "Indian Bank, Pondicherry University Branch",
   "label": "Indian Bank",
   "kind": "bank_service",
   "lat": 12.021827,
@@ -288,16 +411,14 @@
  },
  {
   "id": "bh-kabir-das",
-  "name": "Kabir Das Boys Hostel",
-  "label": "Kabir Das Hostel",
+  "name": "Kabirdas Hostel",
   "kind": "boys_hostel",
   "lat": 12.029211,
   "lng": 79.849227
  },
  {
   "id": "bh-kalidas",
-  "name": "Kalidas Boys Hostel",
-  "label": "Kalidas Hostel",
+  "name": "Kalidas Hostel",
   "kind": "boys_hostel",
   "lat": 12.030291,
   "lng": 79.849478
@@ -311,66 +432,79 @@
  },
  {
   "id": "bh-kamban",
-  "name": "Kamban Boys Hostel",
-  "label": "Kamban Hostel",
+  "name": "Kamban Hostel",
   "kind": "boys_hostel",
   "lat": 12.029734,
   "lng": 79.851902
  },
  {
   "id": "bh-kannadasan",
-  "name": "Kannadasan Boys Hostel",
-  "label": "Kannadasan Hostel",
+  "name": "Kannadasan Hostel",
   "kind": "boys_hostel",
   "lat": 12.029383,
   "lng": 79.850189
  },
  {
-  "id": "kendriya-vidyalaya-2",
-  "name": "Kendriya Vidyalaya No. 2 (KV 2)",
-  "label": "KV 2",
-  "kind": "academic",
-  "lat": 12.028574,
-  "lng": 79.857437
+  "id": "gh-kannagi",
+  "name": "Kannagi Hostel",
+  "kind": "girls_hostel",
+  "lat": 12.024598,
+  "lng": 79.846269
  },
  {
   "id": "ladies-gym",
-  "name": "Ladies Central Gym",
+  "name": "Ladies Gym",
   "kind": "sports",
   "lat": 12.020956,
   "lng": 79.849779
  },
  {
-  "id": "lecture-hall-complex-2",
-  "name": "Lecture Hall Complex - 2 (LHC-2)",
-  "label": "LHC-2",
-  "kind": "academic",
-  "lat": 12.022093,
-  "lng": 79.854853
- },
- {
   "id": "lecture-hall-complex-1",
-  "name": "Lecture Hall Complex - I (LHC-I)",
+  "name": "Lecture Hall Complex 1",
   "label": "LHC-1",
   "kind": "academic",
   "lat": 12.016538,
   "lng": 79.854869
  },
  {
+  "id": "lecture-hall-complex-2",
+  "name": "Lecture Hall Complex 2",
+  "label": "LHC-2",
+  "kind": "academic",
+  "lat": 12.022093,
+  "lng": 79.854853
+ },
+ {
+  "id": "digital-reading-hall",
+  "name": "Library Annexe (Reading Hall)",
+  "label": "Reading Hall",
+  "kind": "library",
+  "lat": 12.020516,
+  "lng": 79.85527
+ },
+ {
+  "id": "stop-central-library",
+  "name": "Library Bus Stop",
+  "label": "Library stop",
+  "kind": "bus",
+  "lat": 12.020597,
+  "lng": 79.856466
+ },
+ {
   "id": "library-humanities",
   "name": "Library, School of Humanities",
   "label": "Humanities Library",
   "kind": "library",
-  "lat": 12.033553,
-  "lng": 79.858339
+  "lat": 12.033544,
+  "lng": 79.858392
  },
  {
   "id": "library-social-sciences",
   "name": "Library, School of Social Sciences",
   "label": "Social Sciences Library",
   "kind": "library",
-  "lat": 12.033612,
-  "lng": 79.858104
+  "lat": 12.033654,
+  "lng": 79.858023
  },
  {
   "id": "gh-madame-curie",
@@ -380,86 +514,108 @@
   "lng": 79.848237
  },
  {
-  "id": "stop-mass-media",
-  "name": "Mass Media Bus Stop",
-  "label": "Mass Media stop",
+  "id": "umsget-green-energy",
+  "name": "Madanjeet School of Green Energy Technologies",
+  "label": "Green Energy",
+  "kind": "academic",
+  "lat": 12.015804,
+  "lng": 79.852521
+ },
+ {
+  "id": "stop-maka",
+  "name": "MAKA Bus Stop",
+  "label": "MAKA stop",
   "kind": "bus",
-  "lat": 12.032294,
-  "lng": 79.85682
+  "lat": 12.029183,
+  "lng": 79.848579
  },
  {
   "id": "bh-maka",
-  "name": "Maulana Abul Kalam Azad Boys Hostel (MAKA)",
-  "label": "MAKA Hostel",
+  "name": "MAKA Hostel",
   "kind": "boys_hostel",
   "lat": 12.02978,
   "lng": 79.848673
  },
  {
-  "id": "mba-canteen-3",
-  "name": "MBA Canteen III",
-  "kind": "dining",
-  "lat": 12.022284,
-  "lng": 79.853681
+  "id": "stop-mass-media",
+  "name": "Mass Media Bus Stop",
+  "label": "Mass Media stop",
+  "kind": "bus",
+  "lat": 12.032292,
+  "lng": 79.856983
  },
  {
   "id": "stop-mega-mess",
   "name": "Mega Mess Bus Stop",
   "label": "Mega Mess stop",
   "kind": "bus",
-  "lat": 12.029069,
-  "lng": 79.852269
- },
- {
-  "id": "gh-mother-teresa",
-  "name": "Mother Teresa Hostel",
-  "kind": "girls_hostel",
-  "lat": 12.0215,
-  "lng": 79.8568
+  "lat": 12.029219,
+  "lng": 79.852326
  },
  {
   "id": "mother-teresa-mess",
-  "name": "Mother Teresa Mess (Girls Dining)",
-  "label": "Mother Teresa Mess",
+  "name": "Mother Teresa Mess",
   "kind": "dining",
   "lat": 12.021977,
   "lng": 79.847926
  },
  {
+  "id": "stop-mother-teresa-mess",
+  "name": "Mother Teresa Mess Bus Stop",
+  "label": "Mother Teresa Mess stop",
+  "kind": "bus",
+  "lat": 12.022286,
+  "lng": 79.847923
+ },
+ {
+  "id": "gh-msme",
+  "name": "MSME Hostel for Girls",
+  "label": "MSME Girls Hostel",
+  "kind": "girls_hostel",
+  "lat": 12.011597,
+  "lng": 79.856814
+ },
+ {
+  "id": "stop-narmadha",
+  "name": "Narmadha Bus Stop",
+  "label": "Narmadha stop",
+  "kind": "bus",
+  "lat": 12.023107,
+  "lng": 79.84724
+ },
+ {
   "id": "gh-narmatha",
-  "name": "Narmatha Ladies Hostel",
-  "label": "Narmatha Hostel",
+  "name": "Narmadha Hostel",
   "kind": "girls_hostel",
   "lat": 12.022602,
   "lng": 79.846752
  },
  {
-  "id": "new-mega-mess",
-  "name": "New Mega Mess",
-  "kind": "dining",
-  "lat": 12.02946,
-  "lng": 79.852444
- },
- {
   "id": "bh-pavendar",
-  "name": "Pavendar Bharathidasan Boys Hostel",
-  "label": "Pavendar Hostel",
+  "name": "Pavendar Bharathidasan Hostel",
+  "label": "Bharathidasan Hostel",
   "kind": "boys_hostel",
   "lat": 12.028256,
   "lng": 79.85347
  },
  {
-  "id": "canteen-1-central",
-  "name": "Pondicherry University Central Canteen-1",
-  "label": "Central Canteen",
+  "id": "kendriya-vidyalaya-2",
+  "name": "PM SHRI Kendriya Vidyalaya No. 2",
+  "label": "KV 2",
+  "kind": "academic",
+  "lat": 12.028574,
+  "lng": 79.857437
+ },
+ {
+  "id": "ponlait-booth",
+  "name": "Ponlait Booth",
   "kind": "dining",
-  "lat": 12.021875,
-  "lng": 79.856053,
-  "appId": "canteen-complex"
+  "lat": 12.021586,
+  "lng": 79.856135
  },
  {
   "id": "coop-credit-society",
-  "name": "PU Co-operative Credit Society",
+  "name": "PU Staff Co-operative Credit Society",
   "label": "Credit Society",
   "kind": "bank_service",
   "lat": 12.021671,
@@ -467,8 +623,8 @@
  },
  {
   "id": "rajiv-gandhi-stadium",
-  "name": "Rajiv Gandhi Sports Stadium",
-  "label": "Rajiv Gandhi Stadium",
+  "name": "Rajiv Gandhi Cricket Stadium",
+  "label": "Cricket Stadium",
   "kind": "sports",
   "lat": 12.026472,
   "lng": 79.850852,
@@ -483,56 +639,76 @@
   "lng": 79.854343
  },
  {
+  "id": "stop-reading-room",
+  "name": "Reading Room Bus Stop",
+  "label": "Reading Room stop",
+  "kind": "bus",
+  "lat": 12.020759,
+  "lng": 79.855477
+ },
+ {
   "id": "gh-saraswati",
-  "name": "Saraswati Ladies Hostel",
-  "label": "Saraswati Hostel",
+  "name": "Saraswathy Hostel",
   "kind": "girls_hostel",
   "lat": 12.021528,
   "lng": 79.849745
  },
  {
-  "id": "bh-srk",
-  "name": "Sarvepalli Radhakrishnan Boys Hostel (SRK)",
-  "label": "SRK Hostel",
-  "kind": "boys_hostel",
-  "lat": 12.028819,
-  "lng": 79.84783
- },
- {
-  "id": "umsget-green-energy",
-  "name": "School of Green Energy Technology (UMSGET)",
-  "label": "Green Energy",
-  "kind": "academic",
-  "lat": 12.015804,
-  "lng": 79.852521
+  "id": "gh-savithribai-phule",
+  "name": "Savithribai Phule Hostel",
+  "label": "Savithribai Phule",
+  "kind": "girls_hostel",
+  "lat": 12.023364,
+  "lng": 79.846324
  },
  {
   "id": "school-humanities",
-  "name": "School of Humanities Complex",
+  "name": "School of Humanities",
   "label": "Humanities",
   "kind": "academic",
-  "lat": 12.033189,
-  "lng": 79.858743
+  "lat": 12.033553,
+  "lng": 79.858339
+ },
+ {
+  "id": "school-of-management",
+  "name": "School of Management",
+  "kind": "academic",
+  "lat": 12.021752,
+  "lng": 79.85439
  },
  {
   "id": "school-social-sciences",
   "name": "School of Social Sciences & International Studies",
   "label": "Social Sciences",
   "kind": "academic",
-  "lat": 12.03363,
-  "lng": 79.858219
+  "lat": 12.033612,
+  "lng": 79.858104
  },
  {
-  "id": "campus-temple",
-  "name": "Shree Valampuri Vinayagar Temple",
-  "label": "Vinayagar Temple",
+  "id": "science-block-1",
+  "name": "Science Block I",
+  "kind": "academic",
+  "lat": 12.015917,
+  "lng": 79.855833
+ },
+ {
+  "id": "shopping-complex-central",
+  "name": "Shopping Complex",
   "kind": "amenity",
-  "lat": 12.021627,
-  "lng": 79.852698
+  "lat": 12.017833,
+  "lng": 79.853607
+ },
+ {
+  "id": "stop-shopping-complex",
+  "name": "Shopping Complex Bus Stop",
+  "label": "Shopping Complex stop",
+  "kind": "bus",
+  "lat": 12.017644,
+  "lng": 79.853624
  },
  {
   "id": "sjc-main-complex",
-  "name": "Silver Jubilee Campus (SJC) Main Complex",
+  "name": "Silver Jubilee Campus (SJC)",
   "label": "Silver Jubilee Campus",
   "kind": "academic",
   "lat": 12.03266,
@@ -545,7 +721,7 @@
   "label": "SJC stop",
   "kind": "bus",
   "lat": 12.033197,
-  "lng": 79.857577
+  "lng": 79.857578
  },
  {
   "id": "sjc-canteen-cultural",
@@ -557,11 +733,25 @@
  },
  {
   "id": "bh-sri-aurobindo",
-  "name": "Sri Aurobindo Boys Hostel",
-  "label": "Sri Aurobindo Hostel",
+  "name": "Sri Aurobindo Hostel",
   "kind": "boys_hostel",
   "lat": 12.029348,
   "lng": 79.853467
+ },
+ {
+  "id": "campus-temple",
+  "name": "Sri Valampuri Vidya Vinayagar Temple",
+  "label": "Vinayagar Temple",
+  "kind": "amenity",
+  "lat": 12.021627,
+  "lng": 79.852698
+ },
+ {
+  "id": "bh-srk",
+  "name": "SRK Hostel",
+  "kind": "boys_hostel",
+  "lat": 12.028819,
+  "lng": 79.84783
  },
  {
   "id": "students-welfare-centre",
@@ -571,16 +761,37 @@
   "lng": 79.856693
  },
  {
+  "id": "studio-theatre-1",
+  "name": "Studio Theatre 1",
+  "kind": "academic",
+  "lat": 12.020683,
+  "lng": 79.859494
+ },
+ {
+  "id": "studio-theatre-2",
+  "name": "Studio Theatre 2",
+  "kind": "academic",
+  "lat": 12.020872,
+  "lng": 79.85956
+ },
+ {
+  "id": "studio-theatre-3",
+  "name": "Studio Theatre 3",
+  "kind": "academic",
+  "lat": 12.021082,
+  "lng": 79.859613
+ },
+ {
   "id": "bh-subramania-bharathi",
-  "name": "Subramania Bharathiar Boys Hostel",
-  "label": "Bharathiar Hostel",
+  "name": "Subramania Bharathi Hostel",
+  "label": "Bharathi Hostel",
   "kind": "boys_hostel",
   "lat": 12.028748,
   "lng": 79.853222
  },
  {
   "id": "school-tamil-literature",
-  "name": "Subramania Bharathiar School of Tamil",
+  "name": "Subramania Bharathi School of Tamil Language & Literature",
   "label": "School of Tamil",
   "kind": "academic",
   "lat": 12.03421,
@@ -596,39 +807,52 @@
  },
  {
   "id": "bh-tagore",
-  "name": "Tagore Boys Hostel",
-  "label": "Tagore Hostel",
+  "name": "Tagore Hostel",
   "kind": "boys_hostel",
   "lat": 12.030148,
   "lng": 79.850794
  },
  {
+  "id": "central-gymnasium-complex",
+  "name": "Tennis, Basketball & Volleyball Courts",
+  "label": "Sports Courts",
+  "kind": "sports",
+  "lat": 12.027162,
+  "lng": 79.849971
+ },
+ {
+  "id": "thiruvalluvar-stadium",
+  "name": "Thiruvalluvar Stadium",
+  "kind": "sports",
+  "lat": 12.027434,
+  "lng": 79.848956
+ },
+ {
   "id": "transit-hostel",
-  "name": "Transit Hostel & Guest Annex",
-  "label": "Transit Hostel",
+  "name": "Transit Hostel",
   "kind": "hostel_international",
   "lat": 12.020378,
   "lng": 79.859568
  },
  {
   "id": "ugc-hrdc-centre",
-  "name": "UGC - Human Resource Development Centre (HRDC)",
-  "label": "HRDC",
+  "name": "UGC-Malaviya Mission Teacher Training Centre (MMTTC)",
+  "label": "MMTTC",
   "kind": "academic",
   "lat": 12.032445,
   "lng": 79.859374
  },
  {
   "id": "stop-unesco",
-  "name": "UNESCO Complex Bus Stop",
+  "name": "UNESCO Bus Stop",
   "label": "UNESCO stop",
   "kind": "bus",
   "lat": 12.031309,
-  "lng": 79.858068
+  "lng": 79.858067
  },
  {
   "id": "unesco-south-asia",
-  "name": "UNESCO Madanjeet Singh Institute (UMISARC)",
+  "name": "UNESCO Madanjeet Singh Institute of South Asia Regional Cooperation (UMISARC)",
   "label": "UMISARC",
   "kind": "academic",
   "lat": 12.031076,
@@ -643,25 +867,15 @@
   "appId": "health-centre"
  },
  {
-  "id": "central-gymnasium-complex",
-  "name": "University Sports Pavilion & Courts",
-  "label": "Sports Pavilion",
-  "kind": "sports",
-  "lat": 12.027162,
-  "lng": 79.849971
- },
- {
   "id": "bh-valmiki",
-  "name": "Valmiki Boys Hostel",
-  "label": "Valmiki Hostel",
+  "name": "Valmiki Hostel",
   "kind": "boys_hostel",
   "lat": 12.028957,
   "lng": 79.85144
  },
  {
   "id": "gh-yamuna",
-  "name": "Yamuna Ladies Hostel",
-  "label": "Yamuna Hostel",
+  "name": "Yamuna Hostel",
   "kind": "girls_hostel",
   "lat": 12.022662,
   "lng": 79.848647

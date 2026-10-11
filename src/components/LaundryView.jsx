@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDialog } from '../hooks/useDialog';
 import { useApp } from '../context/useApp';
 import { useCountUp } from '../hooks/useMotion';
-import { GIRLS_HOSTELS, BOYS_HOSTELS, OTHER_LOCATIONS } from '../data/campusData';
+import { GIRLS_HOSTELS, BOYS_HOSTELS, OTHER_LOCATIONS, FORMER_PLACE_NAMES } from '../data/campusData';
 import { celebrate } from '../lib/celebrate';
 import { shortRef, formatWhen } from '../lib/format';
 import {
@@ -96,10 +96,12 @@ const pickupFromUser = (user) => {
   if (!user?.hostelCategory) return { mainCategory: 'Girls Hostel', hostelName: GIRLS_HOSTELS[0].name, otherLocation: '' };
   const hostels = HOSTELS_BY_CATEGORY[user.hostelCategory];
   if (hostels) {
-    // Older profiles may store a short name ("Bharathiar Hostel"), so fall back to a partial match
-    const shortName = (user.hostelName || '').replace(/ Hostel$/, '');
+    // Older profiles may store a corrected spelling ("Cauveri Hostel") or a short name ("Bharathiar
+    // Hostel"): map the former, then fall back to a partial match
+    const savedName = FORMER_PLACE_NAMES[user.hostelName] || user.hostelName || '';
+    const shortName = savedName.replace(/ Hostel$/, '');
     const hostel =
-      hostels.find((h) => h.name === user.hostelName) ||
+      hostels.find((h) => h.name === savedName) ||
       (shortName && hostels.find((h) => h.name.includes(shortName))) ||
       hostels[0];
     return { mainCategory: user.hostelCategory, hostelName: hostel.name, otherLocation: '' };
@@ -356,7 +358,7 @@ export default function LaundryView() {
                 >
                   {HOSTELS_BY_CATEGORY[mainCategory].map((h) => (
                     <option key={h.id} value={h.name}>
-                      {h.name} ({h.rooms})
+                      {h.name}
                     </option>
                   ))}
                 </select>

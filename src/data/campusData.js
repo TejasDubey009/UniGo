@@ -1,6 +1,26 @@
 // Pondicherry University places and UniGo's service catalogue. Positions are real GPS
 // coordinates; the 3D map places buildings from OpenStreetMap (see src/data/puAppleMap.js).
 
+// Old names for places that have since been corrected to the university's own spelling. Saved
+// profiles and past rides may still carry them; `null` means the place never existed.
+export const FORMER_PLACE_NAMES = {
+  'Mother Teresa Hostel': null,
+  'Cauveri Hostel': 'Cauvery Hostel',
+  'Saraswati Hostel': 'Saraswathy Hostel',
+  'Narmatha Hostel': 'Narmadha Hostel',
+  'Kabir Das Hostel': 'Kabirdas Hostel',
+  'Subramania Bharathiar Hostel': 'Subramania Bharathi Hostel',
+  'Maulana Abul Kalam Azad Hostel (MAKA)': 'MAKA Hostel',
+  'Sarvepalli Radhakrishnan Hostel (SRK)': 'SRK Hostel',
+  'Gate 2 (Kalapet Entrance)': 'Gate 2 (ECR, Science Block side)',
+  'Administrative Complex & Clock Tower': 'Dr. B.R. Ambedkar Administrative Building',
+  'Ananda Rangapillai Central Library': 'Ananda Rangapillai Library (Central Library)',
+  'Student Canteen & Shopping Hub': 'Canteen I',
+  'Rajiv Gandhi Sports Stadium & Gym': 'Rajiv Gandhi Cricket Stadium',
+};
+
+const gmaps = (query) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+
 export const PU_LANDMARKS = [
   {
     id: 'gate-1',
@@ -9,38 +29,38 @@ export const PU_LANDMARKS = [
     lat: 12.01942,
     lng: 79.859593,
     color: '#3b82f6',
-    desc: 'Main gateway on East Coast Road, with the UniGo rental hub and the security post',
-    gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pondicherry+University+Gate+1',
+    desc: 'Main gate on East Coast Road. Visitors show ID here, and the in-campus buses start and end here',
+    gmapsUrl: gmaps('Pondicherry University Gate 1'),
   },
   {
     id: 'gate-2',
-    name: 'Gate 2 (Kalapet Entrance)',
+    name: 'Gate 2 (ECR, Science Block side)',
     category: 'gate',
     lat: 12.015851,
     lng: 79.858551,
     color: '#3b82f6',
-    desc: 'Southern entrance on East Coast Road, towards Kalapet town and the beach',
-    gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pondicherry+University+Gate+2',
+    desc: 'Second gate on East Coast Road, south of Gate 1, nearest the Science Blocks and the Convention Centre',
+    gmapsUrl: gmaps('Pondicherry University Gate 2'),
   },
   {
     id: 'admin-block',
-    name: 'Administrative Complex & Clock Tower',
+    name: 'Dr. B.R. Ambedkar Administrative Building',
     category: 'academic',
     lat: 12.022025,
     lng: 79.857315,
     color: '#8b5cf6',
-    desc: 'University Secretariat, Senate Hall, Finance Branch, and Registrar Office',
-    gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Administrative+Office+Pondicherry+University',
+    desc: "Registrar's office, Executive Council Hall and the J.N. Auditorium; the post office is next door",
+    gmapsUrl: gmaps('Administrative Building Pondicherry University'),
   },
   {
     id: 'library',
-    name: 'Ananda Rangapillai Central Library',
+    name: 'Ananda Rangapillai Library (Central Library)',
     category: 'academic',
     lat: 12.020152,
     lng: 79.855872,
     color: '#ec4899',
-    desc: 'Iconic 3-tier circular Central Library & 24/7 Digital Reading Room',
-    gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Ananda+Rangapillai+Library+Pondicherry+University',
+    desc: 'Main university library. Weekdays 8:30 am to 8:30 pm, weekends 9:30 am to 5:30 pm',
+    gmapsUrl: gmaps('Ananda Rangapillai Library Pondicherry University'),
   },
   {
     id: 'sjc-campus',
@@ -49,8 +69,8 @@ export const PU_LANDMARKS = [
     lat: 12.03266,
     lng: 79.857993,
     color: '#6366f1',
-    desc: 'Department of Computer Science, Management Studies & Media Sciences',
-    gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Silver+Jubilee+Campus+Pondicherry+University',
+    desc: 'Social Sciences, Humanities, Tamil, Mass Communication and UMISARC',
+    gmapsUrl: gmaps('Silver Jubilee Campus Pondicherry University'),
   },
   {
     id: 'science-complex',
@@ -59,28 +79,28 @@ export const PU_LANDMARKS = [
     lat: 12.0175,
     lng: 79.855691,
     color: '#10b981',
-    desc: 'Physics, Chemistry, Earth Sciences, and Biotechnology Research Laboratories',
-    gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Science+Complex+Pondicherry+University',
+    desc: 'Science Blocks I and II: Chemistry, Physics, Computer Science, Mathematics, Biotechnology and Earth Sciences',
+    gmapsUrl: gmaps('Department of Chemistry Pondicherry University'),
   },
   {
     id: 'canteen-complex',
-    name: 'Student Canteen & Shopping Hub',
+    name: 'Canteen I',
     category: 'amenity',
     lat: 12.021872,
     lng: 79.856053,
     color: '#f59e0b',
-    desc: 'Food Court, Co-op Store, Stationery & UniGo Express Laundry Hub',
-    gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pondicherry+University+Canteen',
+    desc: 'South Indian food, 9 am to 5:30 pm, near the Administrative Building. A Ponlait milk booth is beside it',
+    gmapsUrl: gmaps('Pondicherry University Canteen 1'),
   },
   {
     id: 'sports-complex',
-    name: 'Rajiv Gandhi Sports Stadium & Gym',
+    name: 'Rajiv Gandhi Cricket Stadium',
     category: 'amenity',
     lat: 12.026472,
     lng: 79.850852,
     color: '#14b8a6',
-    desc: 'Athletic Track, Basketball Courts, and Fitness Arena',
-    gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Rajiv+Gandhi+Stadium+Pondicherry+University',
+    desc: 'Cricket ground with turf wickets and floodlights. Thiruvalluvar Stadium (400 m track) and the courts are beside it',
+    gmapsUrl: gmaps('Rajiv Gandhi Stadium Pondicherry University'),
   },
   {
     id: 'health-centre',
@@ -89,46 +109,58 @@ export const PU_LANDMARKS = [
     lat: 12.019605,
     lng: 79.850688,
     color: '#ef4444',
-    desc: '24/7 Campus Medical Care & Emergency Ambulance Base',
-    gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Health+Centre+Pondicherry+University',
+    desc: 'Open round the clock, with an ambulance. Free medicines at the university counter 9:30 am to 5:30 pm',
+    gmapsUrl: gmaps('Health Centre Pondicherry University'),
   },
 ];
 
 // Hostels carry the same category/desc fields as landmarks so maps and forms can treat every location uniformly
-const withHostelMeta = (hostels, category, label) =>
+const withHostelMeta = (hostels, category, label, color) =>
   hostels.map((h) => ({
     ...h,
     category,
-    desc: `${label} • ${h.rooms} • ${h.floor} • Laundry pickup point`,
+    color,
+    desc: [label, h.rooms, h.mess, 'Laundry pickup point'].filter(Boolean).join(' • '),
+    gmapsUrl: gmaps(`${h.name} Pondicherry University`),
   }));
 
-// Real hostels and positions from src/data/pu_apple_maps_reference.json (the Apple Maps campus spec)
+// The 26 hostels, named exactly as on the university's warden lists (4 September 2026). Room counts
+// are from the annual reports' hostel tables and messes from the Mess Committee circular
+// (25 September 2026); a hostel with no published figure leaves it out. `aliases` are other
+// spellings people search by. Ids keep their original spelling so saved data still matches.
 export const GIRLS_HOSTELS = withHostelMeta([
-  { id: 'gh-mother-teresa', name: 'Mother Teresa Hostel', lat: 12.0215, lng: 79.8568, rooms: '180 Rooms', floor: '4 Floors', color: '#FF2D55', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Mother+Teresa+Hostel+Pondicherry+University' },
-  { id: 'gh-madame-curie', name: 'Madame Curie Hostel', lat: 12.023188, lng: 79.848237, rooms: '160 Rooms', floor: '3 Floors', color: '#FF2D55', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Madame+Curie+Hostel+Pondicherry+University' },
-  { id: 'gh-kalpana-chawla', name: 'Kalpana Chawla Hostel', lat: 12.023298, lng: 79.847414, rooms: '150 Rooms', floor: '3 Floors', color: '#FF2D55', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Kalpana+Chawla+Hostel+Pondicherry+University' },
-  { id: 'gh-ganga', name: 'Ganga Hostel', lat: 12.02214, lng: 79.849375, rooms: '190 Rooms', floor: '4 Floors', color: '#FF2D55', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Ganga+Hostel+Pondicherry+University' },
-  { id: 'gh-yamuna', name: 'Yamuna Hostel', lat: 12.022701, lng: 79.848646, rooms: '190 Rooms', floor: '4 Floors', color: '#FF2D55', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Yamuna+Hostel+Pondicherry+University' },
-  { id: 'gh-cauveri', name: 'Cauveri Hostel', lat: 12.020366, lng: 79.850288, rooms: '200 Rooms', floor: '4 Floors', color: '#FF2D55', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Cauveri+Hostel+Pondicherry+University' },
-  { id: 'gh-saraswati', name: 'Saraswati Hostel', lat: 12.021525, lng: 79.849757, rooms: '180 Rooms', floor: '4 Floors', color: '#FF2D55', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Saraswati+Hostel+Pondicherry+University' },
-  { id: 'gh-narmatha', name: 'Narmatha Hostel', lat: 12.022609, lng: 79.84678, rooms: '150 Rooms', floor: '3 Floors', color: '#FF2D55', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Narmatha+Hostel+Pondicherry+University' },
-], 'girls-hostel', 'Girls Residence');
+  { id: 'gh-yamuna', name: 'Yamuna Hostel', lat: 12.022701, lng: 79.848646, rooms: '40 rooms', mess: 'Madame Curie Mess' },
+  { id: 'gh-cauveri', name: 'Cauvery Hostel', lat: 12.020366, lng: 79.850288, rooms: '76 rooms', mess: 'Ganga Mess', aliases: 'Cauveri Kaveri' },
+  { id: 'gh-kalpana-chawla', name: 'Kalpana Chawla Hostel', lat: 12.023298, lng: 79.847414, rooms: '73 rooms', mess: 'Madame Curie Mess' },
+  { id: 'gh-narmatha', name: 'Narmadha Hostel', lat: 12.022609, lng: 79.84678, rooms: '182 rooms', mess: 'Mother Teresa Mess', aliases: 'Narmatha Narmada' },
+  { id: 'gh-saraswati', name: 'Saraswathy Hostel', lat: 12.021525, lng: 79.849757, rooms: '32 rooms', mess: 'Ganga Mess', aliases: 'Saraswati' },
+  { id: 'gh-ganga', name: 'Ganga Hostel', lat: 12.02214, lng: 79.849375, rooms: '72 rooms', mess: 'Ganga Mess' },
+  // At the MSME Technology Centre south of the campus; the exact building is not published
+  { id: 'gh-msme', name: 'MSME Hostel for Girls', lat: 12.011597, lng: 79.856814, mess: 'Ganga Mess', aliases: 'MSME Technology Centre' },
+  { id: 'gh-kannagi', name: 'Kannagi Hostel', lat: 12.024615, lng: 79.84628, mess: 'Mother Teresa Mess', aliases: 'Kannaki' },
+  { id: 'gh-madame-curie', name: 'Madame Curie Hostel', lat: 12.023188, lng: 79.848237, rooms: '256 rooms', mess: 'Madame Curie Mess', aliases: 'Madam Curie' },
+  // The foreign women's section, run with Madame Curie Hostel
+  { id: 'gh-foreign', name: 'Foreign Hostel', lat: 12.02327, lng: 79.84847, rooms: '49 air-conditioned rooms', mess: 'Madame Curie Mess', aliases: 'Foreign Students Hostel Girls International' },
+  { id: 'gh-savithribai-phule', name: 'Savithribai Phule Hostel', lat: 12.023364, lng: 79.846324, mess: 'Mother Teresa Mess', aliases: 'Savitribai Phule' },
+], 'girls-hostel', 'Girls hostel', '#FF2D55');
 
 export const BOYS_HOSTELS = withHostelMeta([
-  { id: 'bh-tagore', name: 'Tagore Hostel', lat: 12.030188, lng: 79.850771, rooms: '230 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Tagore+Hostel+Pondicherry+University' },
-  { id: 'bh-kalidas', name: 'Kalidas Hostel', lat: 12.030283, lng: 79.849501, rooms: '200 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Kalidas+Hostel+Pondicherry+University' },
-  { id: 'bh-kamban', name: 'Kamban Hostel', lat: 12.029773, lng: 79.851897, rooms: '210 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Kamban+Hostel+Pondicherry+University' },
-  { id: 'bh-maka', name: 'Maulana Abul Kalam Azad Hostel (MAKA)', lat: 12.029731, lng: 79.848715, rooms: '180 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Maulana+Abul+Kalam+Azad+Hostel+MAKA+Pondicherry+University' },
-  { id: 'bh-kabir-das', name: 'Kabir Das Hostel', lat: 12.029236, lng: 79.849187, rooms: '190 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Kabir+Das+Hostel+Pondicherry+University' },
-  { id: 'bh-kannadasan', name: 'Kannadasan Hostel', lat: 12.02941, lng: 79.850154, rooms: '200 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Kannadasan+Hostel+Pondicherry+University' },
-  { id: 'bh-valmiki', name: 'Valmiki Hostel', lat: 12.028967, lng: 79.851404, rooms: '210 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Valmiki+Hostel+Pondicherry+University' },
-  { id: 'bh-srk', name: 'Sarvepalli Radhakrishnan Hostel (SRK)', lat: 12.028761, lng: 79.847858, rooms: '220 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Sarvepalli+Radhakrishnan+Hostel+SRK+Pondicherry+University' },
-  { id: 'bh-cv-raman', name: 'C.V. Raman Hostel', lat: 12.026794, lng: 79.853096, rooms: '200 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=CV+Raman+Hostel+Pondicherry+University' },
-  { id: 'bh-subramania-bharathi', name: 'Subramania Bharathiar Hostel', lat: 12.028707, lng: 79.853228, rooms: '190 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Subramania+Bharathiar+Hostel+Pondicherry+University' },
-  { id: 'bh-ilango-adigal', name: 'Ilango Adigal Hostel', lat: 12.028324, lng: 79.852756, rooms: '180 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Ilango+Adigal+Hostel+Pondicherry+University' },
-  { id: 'bh-pavendar', name: 'Pavendar Bharathidasan Hostel', lat: 12.028216, lng: 79.853481, rooms: '190 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Pavendar+Bharathidasan+Hostel+Pondicherry+University' },
-  { id: 'bh-sri-aurobindo', name: 'Sri Aurobindo Hostel', lat: 12.029358, lng: 79.853457, rooms: '220 Rooms', floor: '4 Floors', color: '#007AFF', gmapsUrl: 'https://www.google.com/maps/search/?api=1&query=Sri+Aurobindo+Hostel+Pondicherry+University' },
-], 'boys-hostel', 'Boys Residence');
+  { id: 'bh-cv-raman', name: 'C.V. Raman Hostel', lat: 12.026794, lng: 79.853096, rooms: '177 rooms', mess: 'Ilango Adigal Mess', aliases: 'CV Raman' },
+  { id: 'bh-pavendar', name: 'Pavendar Bharathidasan Hostel', lat: 12.028216, lng: 79.853481, rooms: '62 rooms', aliases: 'Bharathidasan' },
+  { id: 'bh-subramania-bharathi', name: 'Subramania Bharathi Hostel', lat: 12.028707, lng: 79.853228, rooms: '62 rooms', aliases: 'Bharathiar Subramanya Bharati' },
+  { id: 'foreign-students-hostel', name: 'Foreign Students Hostel', lat: 12.020952, lng: 79.859135, rooms: '41 rooms', aliases: 'International Boys' },
+  { id: 'bh-kalidas', name: 'Kalidas Hostel', lat: 12.030283, lng: 79.849501, rooms: '46 rooms', mess: 'Amudham Mess' },
+  { id: 'bh-sri-aurobindo', name: 'Sri Aurobindo Hostel', lat: 12.029358, lng: 79.853457, rooms: '182 rooms', mess: 'Annapurna Mess' },
+  { id: 'bh-valmiki', name: 'Valmiki Hostel', lat: 12.028967, lng: 79.851404, rooms: '78 rooms' },
+  { id: 'bh-maka', name: 'MAKA Hostel', lat: 12.029731, lng: 79.848715, rooms: '80 rooms', mess: 'Amudham Mess', aliases: 'Maulana Abul Kalam Azad MAK Azad' },
+  { id: 'bh-birsa-munda', name: 'Birsa Munda Hostel', lat: 12.029958, lng: 79.853502, mess: 'Annapurna Mess' },
+  { id: 'bh-ilango-adigal', name: 'Ilango Adigal Hostel', lat: 12.028324, lng: 79.852756, rooms: '77 rooms', mess: 'Ilango Adigal Mess' },
+  { id: 'bh-tagore', name: 'Tagore Hostel', lat: 12.030188, lng: 79.850771, rooms: '66 rooms', mess: 'Amudham Mess' },
+  { id: 'bh-kabir-das', name: 'Kabirdas Hostel', lat: 12.029236, lng: 79.849187, rooms: '81 rooms', mess: 'Amudham Mess', aliases: 'Kabir Das' },
+  { id: 'bh-kamban', name: 'Kamban Hostel', lat: 12.029773, lng: 79.851897, rooms: '66 rooms', mess: 'Amudham Mess' },
+  { id: 'bh-kannadasan', name: 'Kannadasan Hostel', lat: 12.02941, lng: 79.850154, rooms: '80 rooms', mess: 'Amudham Mess' },
+  { id: 'bh-srk', name: 'SRK Hostel', lat: 12.028761, lng: 79.847858, rooms: '81 rooms', mess: 'Amudham Mess', aliases: 'Sarvepalli Radhakrishnan S Radhakrishnan' },
+], 'boys-hostel', 'Boys hostel', '#007AFF');
 
 export const ALL_PU_LOCATIONS = [
   ...PU_LANDMARKS,
@@ -136,13 +168,14 @@ export const ALL_PU_LOCATIONS = [
   ...BOYS_HOSTELS,
 ];
 
+// Laundry pickup points for people who don't live in a hostel
 export const OTHER_LOCATIONS = [
-  'Day Scholar Entrance Portico (Gate 1)',
-  'Staff Quarters Complex (Type IV / V)',
-  'International Guest House (IGH)',
-  'Silver Jubilee Campus Portico',
-  'Central Library Portico',
-  'Science Complex Foyer',
+  'Gate 1 (Main Gate)',
+  'Faculty Quarters (F1–F40)',
+  'Transit Hostel',
+  'Ananda Rangapillai Library',
+  'Silver Jubilee Campus',
+  'Shopping Complex',
 ];
 
 // Vehicles for hire. Which ones are free right now comes from the rental_fleet table in Supabase.

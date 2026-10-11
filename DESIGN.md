@@ -80,7 +80,7 @@ The hero copy sits over a hairline plan of the real campus: OpenStreetMap roads,
 - `scripts/build-hero-plan.mjs` bakes `src/assets/campus-plan.svg` (about 30 kB gzipped, loaded as an image, not in the JS bundle) and `src/data/heroCampusPlan.json` (where the plan sits, plus one real road route). Re-run it after `build-campus-map.mjs`.
 - The plan is drawn at a fixed scale per layout (`PLAN_VIEWS` in `HomeHeroView.jsx`), pinned to the hero's centre line, so it never stretches and its position against the copy is predictable.
 - `.hero-plan` masks keep it at 12–20% behind the copy and fade it out at every edge.
-- From 1280px wide, one real trip (Narmatha Hostel → Health Centre by road) is drawn in forest in the left margin beside the paragraph, never under text. It draws once on load. Narrower screens show the plan only.
+- From 1280px wide, one real trip (Narmadha Hostel → Health Centre by road) is drawn in forest in the left margin beside the paragraph, never under text. It draws once on load. Narrower screens show the plan only.
 - Prices in the hero's price strip come from `src/lib/pricing.js` and the fleet data; never type a price into the copy.
 - The footer carries the OpenStreetMap credit; it must stay.
 
@@ -93,7 +93,7 @@ The WebGL campus map (`src/components/CampusMap3D.jsx`, scene in `src/components
 
 Placement rules the build script and world module enforce:
 
-- Each spec building takes its matched OSM outline (67 of 70). A place with no outline keeps the spec rectangle only on open ground; if that rectangle would cover a real building or road it becomes a badge without a building (SJC main complex, the credit society, Mother Teresa Hostel).
+- Each catalogue building takes its matched OSM outline (84 of 94). A place with no outline keeps the spec rectangle only on open ground; if that rectangle would cover a real building or road it becomes a badge without a building (SJC main complex, the credit society, Mother Teresa Hostel).
 - Gates sit where their OSM road ("Pondicherry University Road Gate Number 1/2") crosses the university boundary, on East Coast Road. The Gate 1 shelter waits 40 m inside the gate.
 - Bus stops sit at the kerb of the nearest street, never on the carriageway, and are labelled "… stop" so they don't read as a second badge for the building beside them.
 - Departments OSM maps as rooms inside a bigger building (the SJC libraries) share the host's walls and badge height. Badge-only places inside a building stand on its roof.
@@ -114,9 +114,20 @@ Look and behaviour:
 - Controls: drag to pan, shift/right-drag to turn and tilt, ⌘/Ctrl + scroll (or scroll after clicking the map) or pinch to zoom about the pointer, so plain scrolling still moves the page past a tall map, arrow keys and +/- when the map has focus. On touch, two fingers move, pinch to zoom and twist to turn; one-finger vertical swipes still scroll the page. Frosted controls (`.map-glass`) are allowed only inside the map.
 - Full screen: the last button in the control stack opens the map over the whole app (tab bar and top bar hide, the page stops scrolling, controls keep clear of the notch and home bar). There one finger pans the map directly. The same button or Escape closes it.
 - The app's hostel lists in `campusData.js` use the spec's ids, so map picks feed the laundry form and ride drop directly.
+
+### Place names and facts
+
+Everything a place card says must be true. The catalogue (`src/data/pu_apple_maps_reference.json`) was checked on 10 October 2026 against the university's own pages and circulars and against OpenStreetMap tags; the sources are listed in its `metadata.facts_verified`.
+
+- **Hostels** are the 26 on the university's warden lists (4 September 2026), spelled exactly as there: 15 for men, 11 for women. Room counts and opening years come from the annual reports, and each hostel's mess from the Mess Committee circular (25 September 2026). A hostel with no published figure shows none. There is no "Mother Teresa Hostel" (only the mess).
+- **Old spellings** ("Cauveri", "Narmatha", "Kabir Das", "Bharathiar"…) live in `FORMER_PLACE_NAMES` in `campusData.js`: search still finds them, saved profiles and past rides still resolve, and the database keeps accepting them. Place ids never change, even where the spelling did (`gh-cauveri` is Cauvery Hostel).
+- **Floors** show only where OpenStreetMap or the university states them; `dimensions_m.floors` is `null` otherwise. Descriptions and fact chips carry no invented rooms, labs or seat counts: if no source says it, it isn't there.
+- **Buildings OpenStreetMap doesn't have yet** (Birsa Munda, Kannagi and Savithribai Phule hostels, the MSME hostel) carry an outline traced from satellite imagery and a `footprint_source` saying so; the build script keeps such outlines as they are. Two positions are best estimates and say so in `footprint_source`: Savithribai Phule Hostel (the new block between Narmadha and Kannagi; the university has not published which building it is) and the MSME Hostel for Girls (a block in the MSME Technology Centre compound south of campus).
+- A place that is part of another building is a badge on that building, not walls of its own: the Foreign Hostel (the foreign women's section of Madame Curie Hostel), the two school libraries in the Silver Jubilee Campus central blocks, and the staff credit society.
+- **Bus stops** are the 14 mapped on OpenStreetMap, which follow the university's in-campus route (circular of 22 February 2025), plus Gate 1 where the route starts and ends.
 - Any building on the map can be a pickup or drop: on the rides page the place card offers **Pickup here** and **Drop here**, and the search fields cover every map place (`src/data/campusPlaceIndex.json`, built by `scripts/build-place-index.mjs`).
 - Ride preview: `<CampusMap3D route={{ from, to }} />` draws the drive between two campus places along the real roads (shortest path over the drivable OSM network, `drivingRoute()` in the world module) as an Apple Maps blue line with a light halo, constant 6px on screen at every zoom, with a start ring, end dot and a distance chip, and frames the whole trip. Route blue (#0A84FF) is a map colour like the POI colours and stays inside the map.
 
 ## Voice
 
-Short, specific, sentence case. Name real places (Gate 1, SJC, Bharathiar Hostel). No "Exclusive", "Unbeatable", exclamation marks or emoji.
+Short, specific, sentence case. Name real places (Gate 1, SJC, Kamban Hostel), spelled the way the university spells them. No "Exclusive", "Unbeatable", exclamation marks or emoji.

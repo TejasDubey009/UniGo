@@ -1,4 +1,4 @@
-import { ALL_PU_LOCATIONS, OFF_CAMPUS_DESTINATIONS } from '../data/campusData';
+import { ALL_PU_LOCATIONS, OFF_CAMPUS_DESTINATIONS, FORMER_PLACE_NAMES } from '../data/campusData';
 import PLACE_INDEX from '../data/campusPlaceIndex.json';
 
 const APP_IDS = new Set(ALL_PU_LOCATIONS.map((place) => place.id));
@@ -12,7 +12,15 @@ const MAP_NAMES_BY_APP_ID = PLACE_INDEX.filter((place) => place.appId).reduce((n
 // hostels, as stored on rides), then every other building and stop on the 3D map
 // (src/data/campusPlaceIndex.json, built by scripts/build-place-index.mjs)
 export const CAMPUS_PLACES = [
-  ...ALL_PU_LOCATIONS.map(({ id, name, lat, lng }) => ({ id, name, lat, lng, popular: true, aliases: MAP_NAMES_BY_APP_ID[id] })),
+  // Aliases: what the map calls the place, plus other spellings people search by ("Cauveri", "Radhakrishnan")
+  ...ALL_PU_LOCATIONS.map(({ id, name, lat, lng, aliases }) => ({
+    id,
+    name,
+    lat,
+    lng,
+    popular: true,
+    aliases: [MAP_NAMES_BY_APP_ID[id], aliases].filter(Boolean).join(' '),
+  })),
   ...PLACE_INDEX.filter((place) => !place.appId && !APP_IDS.has(place.id)).map(({ id, name, label, lat, lng }) => ({
     id,
     name,
@@ -26,8 +34,9 @@ export const OFF_CAMPUS_PLACES = OFF_CAMPUS_DESTINATIONS.map(({ name, km }) => (
 
 const PLACE_BY_NAME = Object.fromEntries(CAMPUS_PLACES.map((place) => [place.name, place]));
 
-// Campus places by the name a ride stores; null for anywhere else
-export const placeByName = (name) => PLACE_BY_NAME[name] || null;
+// Campus places by the name a ride stores (a ride booked under an older spelling still finds its
+// place); null for anywhere else
+export const placeByName = (name) => PLACE_BY_NAME[name] || PLACE_BY_NAME[FORMER_PLACE_NAMES[name]] || null;
 
 // ---- Search ----
 const normalize = (text) =>

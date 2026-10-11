@@ -57,7 +57,7 @@ const Stop = ({ at, fill }) => (
 );
 
 // The real campus in hairlines (from OpenStreetMap). Wide screens also draw one real trip across
-// it: Narmatha Hostel to the Health Centre by road. Built by scripts/build-hero-plan.mjs.
+// it: Narmadha Hostel to the Health Centre by road. Built by scripts/build-hero-plan.mjs.
 function CampusPlanBackdrop() {
   const { plan, route } = HERO_PLAN;
   const viewBox = `${plan.x} ${plan.y} ${plan.width} ${plan.height}`;

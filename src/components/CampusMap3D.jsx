@@ -65,7 +65,7 @@ const CATEGORY_META = {
   admin: { label: 'University administration', icon: Landmark },
   boys_hostel: { label: 'Boys hostel', icon: BedDouble },
   girls_hostel: { label: 'Girls hostel', icon: BedDouble },
-  hostel_international: { label: 'Guest hostel', icon: Globe },
+  hostel_international: { label: 'Hostel', icon: Globe },
   dining: { label: 'Dining', icon: Utensils },
   sports: { label: 'Sports', icon: Trophy },
   health: { label: 'Health', icon: Cross },
@@ -1412,7 +1412,7 @@ export default function CampusMap3D({ onHostelSelect, highlightedId = null, rout
           </div>
 
           {card.data.description && (
-            <p className="mt-3 text-[13px] leading-relaxed text-[var(--map-muted)] line-clamp-2">{card.data.description}</p>
+            <p className="mt-3 text-[13px] leading-relaxed text-[var(--map-muted)] line-clamp-4">{card.data.description}</p>
           )}
 
           {amenities.length > 0 && (

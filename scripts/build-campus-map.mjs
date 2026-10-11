@@ -62,7 +62,8 @@ const buildings = elements
     const pts = pointsOf(e);
     return { id: e.id, name: e.tags.name || '', tags: e.tags, pts, c: centroid(pts), area: areaOf(pts) };
   })
-  .filter((b) => b.area > 12);
+  // Under 12 m² is a shed; over 40,000 m² is a mis-tagged compound, not a building
+  .filter((b) => b.area > 12 && b.area < 40000);
 
 // Spec places whose OSM names differ from the spec's wording
 const ALIASES = {
@@ -76,10 +77,22 @@ const ALIASES = {
   'transit-hostel': 'Transit Hostel',
   'kendriya-vidyalaya-2': 'kendra vidyalaya 2',
   'health-centre': 'University Health Center',
+  // Hostels: the catalogue uses the university's spellings, OSM has its mappers'
   'gh-kalpana-chawla': 'Kalapana Chawla Ladies Hostel',
   'gh-narmatha': 'narmatha  ladies hostel',
+  'gh-cauveri': 'Cauveri Ladies Hostel',
+  'gh-saraswati': 'Saraswati Ladies Hostel',
+  'gh-madame-curie': 'Madame Curie Ladies Hostel',
   'bh-subramania-bharathi': 'Subhramania Bharathiar Boys Hostel',
   'bh-sri-aurobindo': 'Sri Aurobindo Hostel - Boys',
+  'bh-kabir-das': 'Kabir Das Boys Hostel',
+  'bh-maka': 'Maulana Abul Kalam Azad Boys Hostel',
+  'bh-srk': 'Sarvepalli Radhakrishnan Boys hostel',
+  'new-mega-mess': 'NEW MEGA MESS',
+  'amudham-mess': 'Amudham Mess for Boys',
+  'mother-teresa-mess': 'Mother Teresa Mess',
+  'gents-gym': 'Gents Gym',
+  'ladies-gym': 'Ladies Gym',
   'campus-temple': 'Shree Valampuri Vidyalaya Vinayagar Temple',
   'canteen-1-central': 'Pondicherry University Canteen-1',
   'canteen-2-science': 'Canteen 2',
@@ -93,9 +106,39 @@ const ALIASES = {
   'unesco-south-asia': 'UNESCO Madanjeet Singh Institute Of South Asia Regional Co-operation, Pondicherry University, India',
   'umsget-green-energy': 'UNESCO Madanjeet Singh School of Green Energy Technology (UMSGET)',
   'ramanujan-math-school': 'Ramanujan School of Mathematical Sciences (Dept of Maths and Statistics)',
+  'dept-computer-science': 'Science Block 2',
+  'science-block-1': 'Science Block 1',
+  'school-of-management': 'School of Management',
+  'dept-mass-comm': 'Department Of Mass Communication, Pondicherry University, India',
+  'dept-food-science': 'Department Of Food Science And Technology, Pondicherry University, India',
+  'ugc-hrdc-centre': 'U.G.C.- Human Resource Development Centre, Pondicherry University, India',
+  // Silver Jubilee Campus: the two deans' offices are in the central blocks, each department in its own wing
+  'school-social-sciences': 'Southern Asia Studies Programme (Second Floor), Pondicherry University, India',
+  'school-humanities': 'Centre For European Studies (Second Floor), Pondicherry University, India',
+  'dept-applied-psychology': 'Department Of Applied Psychology (Ground Floor), Pondicherry University, India',
+  'dept-sanskrit-hindi': 'Department Of Sanskrit (Ground Floor) & Department Of Hindi (First Floor), Pondicherry University, India',
+  'dept-philosophy-education': 'Department of Philosophy (Ground Floor) & Department Of Education (First Floor), Pondicherry University, Kalapet, India',
+  'dept-french': 'Department Of French (Ground Floor) & Centre For Foreign Language (First Floor), Pondicherry University, India',
+  'dept-english': 'Department Of English (Both First And Second Floor), Pondicherry University, India',
+  'dept-politics': "Department Of Politics And International Studies (Ground Floor) & Centre For Women's Studies (First Floor), Pondicherry University, Kalapet, India",
+  'dept-anthropology': 'Department Of Anthropology (Ground Floor), Pondicherry University, Kalapet, India',
+  'centre-social-inclusion': 'Centre For Social Exclusion and Inclusion Policy (Ground Floor), Pondicherry University, Kalapet, India',
+  'dept-social-work-sociology': 'Department Of Social Work (Ground Floor) & Department Of Sociology (First Floor), Pondicherry University, Kalapet, India',
+  'dept-history': 'Department Of History (Both Ground & First Floor), Pondicherry University, Kalapet, India',
+  'studio-theatre-1': 'Department of Drama & Performing Arts / Sri Sankaradass Swamigal Lab Studio theatre-1',
+  'studio-theatre-2': 'Pammal Samandha Mudhaliar Lab (P.hd Scholars) Studio theatre-2',
+  'studio-theatre-3': 'TKS Brothers Lab Studio theatre-3',
+  'book-shop': 'Book shop',
+  'ponlait-booth': 'Ponlait Booth',
+  'bicycle-service-point': 'Service point for bi-cycle & Air-filling centre',
+  'horticulture-wing': 'Horticulture Wing',
+  'faculty-quarters': 'Faculty Quarters F1 -F40',
 };
 // Not buildings in OSM: drawn from OSM areas (stadium) or as arches across their road (gates)
-const NOT_BUILDINGS = new Set(['rajiv-gandhi-stadium', 'central-gymnasium-complex', 'gate-1-main', 'gate-2-kalapet', 'gender-gate']);
+const NOT_BUILDINGS = new Set(['rajiv-gandhi-stadium', 'thiruvalluvar-stadium', 'central-gymnasium-complex', 'gate-1-main', 'gate-2-kalapet', 'gender-gate']);
+// Part of another building: a badge, no walls of its own. The foreign women's hostel is a section of
+// Madame Curie; the two school libraries are rooms in the Silver Jubilee Campus central blocks.
+const BADGE_ONLY = new Set(['gh-foreign', 'library-social-sciences', 'library-humanities']);
 
 const STOP = new Set('of the and department dept pondicherry university india kalapet floor ground first second both boys ladies hostel centre center school complex building for'.split(' '));
 const tokens = (s) => new Set(s.toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(' ').filter((t) => t.length > 1 && !STOP.has(t)));
@@ -147,6 +190,16 @@ for (const sb of spec.buildings) {
 }
 for (const sb of spec.buildings) {
   if (NOT_BUILDINGS.has(sb.id) || places[sb.id]) continue;
+  if (BADGE_ONLY.has(sb.id)) {
+    places[sb.id] = { fp: null };
+    report.push([sb.id, 'marker only', 'part of another building', 0]);
+    continue;
+  }
+  // New buildings OSM doesn't have yet carry an outline traced from satellite imagery: keep it as is
+  if (sb.footprint_source) {
+    report.push([sb.id, 'traced outline', sb.footprint_source.slice(0, 60), 0]);
+    continue;
+  }
   const specArea = sb.dimensions_m.width * sb.dimensions_m.depth;
   const nearest = buildings
     .filter((b) => !claimed.has(b.id) && dist(b.c, specPos(sb)) < 75 && b.area > specArea * 0.15)
@@ -187,6 +240,12 @@ const contextBuildings = buildings
 for (const [osmId, specId] of claimed) {
   const lv = levelsHeight(buildings.find((b) => b.id === osmId).tags);
   if (lv) places[specId].levelsHeight = round(lv);
+}
+
+// Named OSM outlines that are really a whole compound of small houses: a badge on open ground,
+// not one giant building
+for (const id of ['faculty-quarters']) {
+  if (places[id]?.fp) places[id] = { fp: null, at: centroid(places[id].fp).map(round), osm: places[id].osm };
 }
 
 // ---- Roads ----

@@ -137,12 +137,12 @@ The database enforces the rules above on its own, but a few settings live outsid
 - `src/components/`: one component per page, plus the maps:
   - `CampusMap3D.jsx` + `campusMapWorld.js`: the Three.js campus (lazy-loaded through `LazyCampusMap3D.jsx`)
   - `GoogleCampusMap.jsx`: Google satellite and road map of the campus
-- `src/data/campusData.js`: campus places, hostels, ride destinations and the rental catalogue
+- `src/data/campusData.js`: campus landmarks, the 26 hostels (official names, rooms and messes), former spellings, ride destinations and the rental catalogue
 - `supabase/schema.sql`: database tables, rules and triggers
 
 ## Campus map data
 
-The 3D map's buildings, roads, sports grounds and coastline come from OpenStreetMap (© OpenStreetMap contributors, ODbL). The names, heights and colours come from the campus spec in `src/data/`. To refresh the geometry:
+The 3D map's buildings, roads, sports grounds and coastline come from OpenStreetMap (© OpenStreetMap contributors, ODbL). The names, facts, heights and colours come from the campus catalogue in `src/data/pu_apple_maps_reference.json`, checked against the university's own pages and circulars (hostel names follow its warden lists; see "Place names and facts" in DESIGN.md). Hostels too new for OpenStreetMap carry an outline traced from satellite imagery. To refresh the geometry:
 
 ```bash
 node scripts/build-campus-map.mjs                  # fetch from the Overpass API

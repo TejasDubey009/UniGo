@@ -166,8 +166,8 @@ const rangesFor = (kind, isLandmark) => {
 };
 
 const GATE_IDS = new Set(['gate-1-main', 'gate-2-kalapet', 'gender-gate']);
-// Places that are open ground (the stadium, the sports pavilion) rather than one building
-const GROUND_PLACES = new Set(['rajiv-gandhi-stadium', 'central-gymnasium-complex']);
+// Places that are open ground (the cricket ground, the athletics track, the courts) rather than one building
+const GROUND_PLACES = new Set(['rajiv-gandhi-stadium', 'thiruvalluvar-stadium', 'central-gymnasium-complex']);
 
 const buildingPlaces = BUILDINGS.map((b) => {
   const geometry = PLACE_GEOMETRY[b.id];
@@ -303,9 +303,9 @@ export const AREA_LABELS = (() => {
   };
   const sectors = [
     ['silver_jubilee_campus', 'Silver Jubilee Campus'],
-    ['central_academic_core', 'Academic Core'],
-    ['science_research_complex', 'Science Complex'],
-    ['north_boys_hostel_village', 'Boys Hostel Village'],
+    ['central_academic_core', 'Central Campus'],
+    ['science_research_complex', 'Science Blocks'],
+    ['north_boys_hostel_village', 'Boys Hostels'],
     ['girls_hostel_sanctuary', 'Girls Hostels'],
   ].map(([sector, text]) => {
     const [x, z] = sectorCentre(sector);

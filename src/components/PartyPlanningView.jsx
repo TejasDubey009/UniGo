@@ -136,7 +136,7 @@ export default function PartyPlanningView() {
                     required
                     value={venue}
                     onChange={(e) => setVenue(e.target.value)}
-                    placeholder="e.g. Mother Teresa Hostel, 3rd floor"
+                    placeholder="e.g. Ganga Hostel, 3rd floor"
                     className="field"
                   />
                 </div>
