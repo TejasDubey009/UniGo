@@ -617,7 +617,7 @@ function AdminConsole({ resyncTick }) {
     <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
       <PageHeader
         eyebrow="UniGo admin"
-        title="Operations"
+        title="Campus Operations"
         description="Every ride, laundry order, lease and captain application, live. Dispatch rides, move laundry and rentals along, and approve captains."
       />
 
@@ -667,7 +667,7 @@ export default function AdminView() {
 
   return (
     <div className="max-w-[1280px] mx-auto px-5 lg:px-8 pt-6 sm:pt-16 pb-16 sm:pb-24">
-      <PageHeader eyebrow="UniGo admin" title="Operations" />
+      <PageHeader eyebrow="UniGo admin" title="Campus Operations" />
       <div className="mt-12 surface p-6 sm:p-8 max-w-xl">
         {!authReady || (user && !rolesLoaded) ? (
           <p className="text-[15px] text-muted">Checking your account…</p>

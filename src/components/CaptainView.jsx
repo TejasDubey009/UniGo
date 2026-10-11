@@ -715,6 +715,34 @@ export default function CaptainView() {
           />
         )}
       </div>
+
+      {/* Requirements guide */}
+      <section className="mt-14 sm:mt-24 border-t border-hairline pt-12 sm:pt-20" aria-labelledby="captain-eligibility-heading">
+        <p className="eyebrow mb-2 sm:mb-4">Captain standards</p>
+        <h2 id="captain-eligibility-heading" className="heading text-[26px] sm:text-[34px]">
+          Requirements to drive with UniGo
+        </h2>
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Student enrolment</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Must be an active student with a valid @pondiuni.ac.in account, roll number, and department enrolment.
+            </p>
+          </div>
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Licence and vehicle</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Valid permanent two-wheeler driving licence and your own registered bike or scooter in good running condition.
+            </p>
+          </div>
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Safety gear and rules</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Always carry a spare helmet for your rider. Verify the 4-digit pickup code before starting every trip.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

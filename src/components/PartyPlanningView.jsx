@@ -218,6 +218,34 @@ export default function PartyPlanningView() {
           )}
         </div>
       </section>
+
+      {/* What we arrange */}
+      <section className="mt-14 sm:mt-28 border-t border-hairline pt-12 sm:pt-20" aria-labelledby="party-packages-heading">
+        <p className="eyebrow mb-2 sm:mb-4">Celebration essentials</p>
+        <h2 id="party-packages-heading" className="heading text-[26px] sm:text-[34px]">
+          What we arrange for campus events
+        </h2>
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Hostel birthdays</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Fresh 1 kg cakes (Belgian chocolate, red velvet, blueberry cheesecake) delivered directly to hostel rooms before midnight with party props.
+            </p>
+          </div>
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Department treats</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Custom snack boxes, tea/beverage flasks, and disposable setup for classroom and department gatherings.
+            </p>
+          </div>
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Kalapet beach evenings</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Seating mats, portable sound boxes, and takeaway dinner boxes for evening send-offs and group celebrations.
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

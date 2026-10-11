@@ -478,9 +478,9 @@ export default function RidesView() {
               </div>
 
               <div aria-live="polite">
-                <h3 key={activeRide.status} className="heading text-[24px] sm:text-[28px] mt-3 animate-pop-in">
+                <h2 id="active-ride-status-heading" key={activeRide.status} className="heading text-[24px] sm:text-[28px] mt-3 animate-pop-in">
                   {rideHeadline(activeRide, requestExpired)}
-                </h3>
+                </h2>
               </div>
 
               {/* Route */}
@@ -662,23 +662,30 @@ export default function RidesView() {
       </div>
 
       {/* Facts */}
-      <Reveal className="mt-10 sm:mt-20 grid grid-cols-1 sm:grid-cols-3 sm:divide-x divide-hairline border-t border-hairline">
-        {RIDE_FACTS.map((fact) => {
-          const Icon = fact.icon;
-          return (
-            <div
-              key={fact.title}
-              className="flex items-start gap-3 py-6 sm:py-8 sm:px-8 first:sm:pl-0 last:sm:pr-0 border-b border-hairline sm:border-b-0"
-            >
-              <Icon className="w-5 h-5 text-forest shrink-0 mt-0.5" aria-hidden="true" />
-              <div>
-                <p className="text-[16px] font-semibold text-ink">{fact.title}</p>
-                <p className="text-[14px] text-muted mt-0.5">{fact.text}</p>
-              </div>
-            </div>
-          );
-        })}
-      </Reveal>
+      <section aria-labelledby="ride-policies-heading" className="mt-10 sm:mt-20 border-t border-hairline">
+        <h2 id="ride-policies-heading" className="sr-only">
+          Campus ride features and policies
+        </h2>
+        <Reveal>
+          <dl className="grid grid-cols-1 sm:grid-cols-3 sm:divide-x divide-hairline">
+            {RIDE_FACTS.map((fact) => {
+              const Icon = fact.icon;
+              return (
+                <div
+                  key={fact.title}
+                  className="flex items-start gap-3 py-6 sm:py-8 sm:px-8 first:sm:pl-0 last:sm:pr-0 border-b border-hairline sm:border-b-0"
+                >
+                  <Icon className="w-5 h-5 text-forest shrink-0 mt-0.5" aria-hidden="true" />
+                  <div>
+                    <dt className="text-[16px] font-semibold text-ink">{fact.title}</dt>
+                    <dd className="text-[14px] text-muted mt-0.5">{fact.text}</dd>
+                  </div>
+                </div>
+              );
+            })}
+          </dl>
+        </Reveal>
+      </section>
     </div>
   );
 }

@@ -629,17 +629,17 @@ export default function LaundryView() {
             </div>
           </div>
 
-          <Reveal as="ul" className="grid grid-cols-1 sm:grid-cols-3 gap-5 border-t border-hairline pt-6 mt-1">
+          <Reveal as="dl" className="grid grid-cols-1 sm:grid-cols-3 gap-5 border-t border-hairline pt-6 mt-1">
             {GUARANTEES.map(({ icon: Icon, title, desc }) => (
-              <li key={title} className="flex items-start gap-3">
+              <div key={title} className="flex items-start gap-3">
                 <span className="w-9 h-9 rounded-full bg-ash text-forest flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4" aria-hidden="true" />
                 </span>
-                <span>
-                  <span className="block text-[15px] font-semibold text-ink">{title}</span>
-                  <span className="block text-[13px] text-muted">{desc}</span>
-                </span>
-              </li>
+                <div>
+                  <dt className="text-[15px] font-semibold text-ink">{title}</dt>
+                  <dd className="text-[13px] text-muted">{desc}</dd>
+                </div>
+              </div>
             ))}
           </Reveal>
         </div>
@@ -700,6 +700,34 @@ export default function LaundryView() {
             </p>
           </Reveal>
         )}
+      </section>
+
+      {/* Service details */}
+      <section className="mt-14 sm:mt-28 border-t border-hairline pt-12 sm:pt-20" aria-labelledby="laundry-service-details">
+        <p className="eyebrow mb-2 sm:mb-4">Hostel pickup details</p>
+        <h2 id="laundry-service-details" className="heading text-[26px] sm:text-[34px]">
+          How hostel laundry works
+        </h2>
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Doorstep collection</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              UniGo runners collect bags directly at your hostel entrance or room on Wednesdays and Sundays between 4:00 PM and 7:00 PM.
+            </p>
+          </div>
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Digital weighing</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Bags are weighed in front of you with an electronic scale. The final price matches the exact per-kg rate with zero hidden charges.
+            </p>
+          </div>
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">48-hour return</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Clean, dried and folded clothes return in 2 days: Wednesday pickups on Friday, Sunday pickups on Tuesday.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Booking confirmation */}

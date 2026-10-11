@@ -5,8 +5,90 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>UniGo 🦄 – Your Pondicherry University Campus Companion</title>
-    <meta name="description" content="Fast, affordable, and reliable services for students at Pondicherry University. Scooter rentals, campus bike rides, hostel laundry delivery, and student essentials." />
+    <title>UniGo · Campus services at Pondicherry University</title>
+    <meta name="description" content="Rides, scooter rentals, hostel laundry, and student essentials across Pondicherry University, Kalapet." />
+    <link rel="canonical" href="https://unigo.tech" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="UniGo" />
+    <meta property="og:title" content="UniGo · Campus services at Pondicherry University" />
+    <meta property="og:description" content="Rides, scooter rentals, hostel laundry, and student essentials across Pondicherry University, Kalapet." />
+    <meta property="og:url" content="https://unigo.tech" />
+    <meta property="og:image" content="https://unigo.tech/favicon.png" />
+    <meta property="og:locale" content="en_IN" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="UniGo · Campus services at Pondicherry University" />
+    <meta name="twitter:description" content="Rides, scooter rentals, hostel laundry, and student essentials across Pondicherry University, Kalapet." />
+    <meta name="twitter:image" content="https://unigo.tech/favicon.png" />
+
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://unigo.tech/#organization",
+          "name": "UniGo Technologies",
+          "url": "https://unigo.tech",
+          "logo": "https://unigo.tech/favicon.png",
+          "description": "Student transportation, scooter rental, and hostel laundry platform for Pondicherry University.",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Pondicherry University, East Coast Road",
+            "addressLocality": "Kalapet",
+            "addressRegion": "Puducherry",
+            "postalCode": "605014",
+            "addressCountry": "IN"
+          },
+          "areaServed": {
+            "@type": "CollegeOrUniversity",
+            "name": "Pondicherry University"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://unigo.tech/#website",
+          "url": "https://unigo.tech",
+          "name": "UniGo",
+          "publisher": {
+            "@id": "https://unigo.tech/#organization"
+          }
+        },
+        {
+          "@type": "Service",
+          "@id": "https://unigo.tech/#rides-service",
+          "name": "UniGo Campus Rides",
+          "serviceType": "Campus Transportation",
+          "provider": { "@id": "https://unigo.tech/#organization" },
+          "areaServed": "Pondicherry University Campus",
+          "description": "Flat-fare two-wheeler campus rides between gates, hostels, and academic departments driven by verified student captains."
+        },
+        {
+          "@type": "Service",
+          "@id": "https://unigo.tech/#rental-service",
+          "name": "UniGo Scooter & Bike Rental",
+          "serviceType": "Vehicle Rental",
+          "provider": { "@id": "https://unigo.tech/#organization" },
+          "areaServed": "Pondicherry University Campus and Kalapet",
+          "description": "Self-drive hourly and daily scooter rentals (Honda Activa, Ather 450X, Hunter 350) for university students."
+        },
+        {
+          "@type": "Service",
+          "@id": "https://unigo.tech/#laundry-service",
+          "name": "UniGo Hostel Laundry",
+          "serviceType": "Laundry Service",
+          "provider": { "@id": "https://unigo.tech/#organization" },
+          "areaServed": "Pondicherry University Hostels",
+          "description": "Doorstep hostel laundry collection on Wednesdays and Sundays with 48-hour return delivery."
+        }
+      ]
+    }
+    </script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">

@@ -100,23 +100,26 @@ function CampusPlanBackdrop() {
 // What things cost, as plain rows: three columns on wide screens, stacked on phones
 function PriceList() {
   return (
-    <dl className="mt-12 sm:mt-14 max-w-[880px] mx-auto grid grid-cols-1 sm:grid-cols-3 text-left border-t sm:border-b border-hairline bg-canvas/80">
-      {PRICE_LIST.map((item) => (
-        <div
-          key={item.label}
-          className="grid grid-cols-[88px_1fr] items-baseline gap-x-3 sm:block py-4 sm:py-5 px-0.5 sm:px-6 border-b sm:border-b-0 sm:border-l sm:first:border-l-0 border-hairline"
-        >
-          <dt className="eyebrow">{item.label}</dt>
-          <dd className="sm:mt-2">
-            <span className="font-display font-black text-[26px] sm:text-[32px] leading-none text-ink num [font-stretch:112%]">
-              {item.from && <span className="mr-1.5 font-sans font-semibold text-[13px] text-muted [font-stretch:100%]">from</span>}
-              {item.price}
-            </span>
-            <span className="block mt-1.5 text-[14px] leading-snug text-muted [text-wrap:pretty]">{item.detail}</span>
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <div className="mt-12 sm:mt-14 max-w-[880px] mx-auto">
+      <h2 className="sr-only">Standard campus rates</h2>
+      <dl aria-label="Standard campus rates" className="grid grid-cols-1 sm:grid-cols-3 text-left border-t sm:border-b border-hairline bg-canvas/80">
+        {PRICE_LIST.map((item) => (
+          <div
+            key={item.label}
+            className="grid grid-cols-[88px_1fr] items-baseline gap-x-3 sm:block py-4 sm:py-5 px-0.5 sm:px-6 border-b sm:border-b-0 sm:border-l sm:first:border-l-0 border-hairline"
+          >
+            <dt className="eyebrow">{item.label}</dt>
+            <dd className="sm:mt-2">
+              <span className="font-display font-black text-[26px] sm:text-[32px] leading-none text-ink num [font-stretch:112%]">
+                {item.from && <span className="mr-1.5 font-sans font-semibold text-[13px] text-muted [font-stretch:100%]">from</span>}
+                {item.price}
+              </span>
+              <span className="block mt-1.5 text-[14px] leading-snug text-muted [text-wrap:pretty]">{item.detail}</span>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 
@@ -267,9 +270,9 @@ export default function HomeHeroView() {
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span className="min-w-0">
-                  <span className="block heading text-[30px] sm:text-[40px] transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] group-hover:translate-x-1">
+                  <h3 className="heading text-[30px] sm:text-[40px] transition-transform duration-300 ease-[cubic-bezier(0.2,0,0,1)] group-hover:translate-x-1">
                     {srv.title}
-                  </span>
+                  </h3>
                   <span className="block text-[15px] font-semibold text-forest mt-1">{srv.tagline}</span>
                 </span>
                 <span className="hidden lg:block text-[15px] text-body leading-relaxed max-w-lg">{srv.desc}</span>
@@ -291,6 +294,37 @@ export default function HomeHeroView() {
             </Reveal>
           ))}
         </ul>
+      </section>
+
+      {/* How it works */}
+      <section className="max-w-[1280px] mx-auto px-5 lg:px-8 mt-16 sm:mt-32">
+        <Reveal className="border-t border-hairline pt-12 sm:pt-20">
+          <p className="eyebrow mb-2 sm:mb-4">Campus network</p>
+          <h2 className="heading text-[26px] sm:text-[40px]">How UniGo works on campus</h2>
+          <div className="mt-8 sm:mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+            <div>
+              <p className="font-display font-black text-[28px] sm:text-[32px] text-subtle num">01</p>
+              <h3 className="heading text-[20px] sm:text-[22px] mt-2">Sign in with university email</h3>
+              <p className="mt-2 text-[15px] text-body leading-relaxed">
+                Accounts are restricted to @pondiuni.ac.in. Your department, roll number and hostel sync directly with your profile.
+              </p>
+            </div>
+            <div>
+              <p className="font-display font-black text-[28px] sm:text-[32px] text-subtle num">02</p>
+              <h3 className="heading text-[20px] sm:text-[22px] mt-2">Choose your point on the map</h3>
+              <p className="mt-2 text-[15px] text-body leading-relaxed">
+                All 26 hostels, academic blocks, Gate 1, Gate 2 and SJC are mapped. Pick a place for rides, rental hubs or laundry doorstep pickup.
+              </p>
+            </div>
+            <div>
+              <p className="font-display font-black text-[28px] sm:text-[32px] text-subtle num">03</p>
+              <h3 className="heading text-[20px] sm:text-[22px] mt-2">Verified rates and student captains</h3>
+              <p className="mt-2 text-[15px] text-body leading-relaxed">
+                Flat ₹20 campus rides with student captains, transparent scooter rates, and weighed laundry with 48-hour return.
+              </p>
+            </div>
+          </div>
+        </Reveal>
       </section>
     </div>
   );

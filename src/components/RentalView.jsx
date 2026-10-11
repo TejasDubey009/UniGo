@@ -269,12 +269,15 @@ export default function RentalView() {
       )}
 
       {/* Fleet */}
-      <div className="mt-10 sm:mt-14 flex flex-wrap items-end justify-between gap-3">
-        <h2 className="heading text-[24px] sm:text-[34px]">Choose a vehicle</h2>
-        <p className="text-[14px] text-muted num">
-          {freeCount} of {fleet.length} free now
-        </p>
-      </div>
+      <section aria-labelledby="fleet-heading">
+        <div className="mt-10 sm:mt-14 flex flex-wrap items-end justify-between gap-3">
+          <h2 id="fleet-heading" className="heading text-[24px] sm:text-[34px]">
+            Choose a vehicle
+          </h2>
+          <p className="text-[14px] text-muted num">
+            {freeCount} of {fleet.length} free now
+          </p>
+        </div>
 
       <ul className="mt-6 space-y-4">
         {fleet.map((vehicle, i) => {
@@ -382,6 +385,7 @@ export default function RentalView() {
           );
         })}
       </ul>
+      </section>
 
       {/* The student's leases, with status kept live from Supabase */}
       {leases.length > 0 && (
@@ -411,6 +415,34 @@ export default function RentalView() {
           </ul>
         </section>
       )}
+
+      {/* Rental rules and hubs */}
+      <section className="mt-14 sm:mt-24 border-t border-hairline pt-12 sm:pt-20" aria-labelledby="rental-rules-title">
+        <p className="eyebrow mb-2 sm:mb-4">Rental terms</p>
+        <h2 id="rental-rules-title" className="heading text-[26px] sm:text-[34px]">
+          Pickup hubs and rental rules
+        </h2>
+        <div className="mt-8 sm:mt-12 grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Documents required</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Show your original driving licence and your Pondicherry University student ID card when picking up keys at the hub.
+            </p>
+          </div>
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Hub locations</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Vehicles are stationed at the Gate 1 UniGo Hub on East Coast Road and the Central Library parking dock.
+            </p>
+          </div>
+          <div>
+            <h3 className="heading text-[18px] sm:text-[20px]">Helmets and fuel</h3>
+            <p className="mt-2 text-[15px] text-body leading-relaxed">
+              Every scooter includes ISI helmets. Petrol vehicles are handed over with sufficient fuel to reach ECR stations; EVs carry 80%+ charge.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Lease agreement and signature */}
       {isAgreementModalOpen && selectedVehicle && (

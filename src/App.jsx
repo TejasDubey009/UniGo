@@ -14,6 +14,8 @@ import Footer from './components/Footer';
 import TabBar from './components/TabBar';
 import ErrorBoundary from './components/ErrorBoundary';
 
+import { usePageMeta } from './hooks/usePageMeta';
+
 // Only admins open this page, so students never download it
 const AdminView = lazy(() => import('./components/AdminView'));
 
@@ -31,6 +33,9 @@ const PAGES = {
 function MainAppContent() {
   const { activeTab, accountEpoch } = useApp();
   const Page = PAGES[activeTab];
+
+  // Keep page title and meta description in sync with the active view
+  usePageMeta(activeTab);
 
   // Each tab is a new "page": start it at the top instead of wherever the previous one was scrolled
   useEffect(() => {

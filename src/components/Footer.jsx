@@ -29,15 +29,15 @@ export default function Footer() {
               Rides, rentals, laundry and late-night food for Pondicherry University students, all on
               one campus map.
             </p>
-            <p className="flex items-start gap-2 text-[14px] text-body">
+            <address className="not-italic flex items-start gap-2 text-[14px] text-body">
               <MapPin className="w-4 h-4 mt-0.5 text-forest shrink-0" aria-hidden="true" />
-              Pondicherry University, East Coast Road, Kalapet, Puducherry 605014
-            </p>
+              <span>Pondicherry University, East Coast Road, Kalapet, Puducherry 605014</span>
+            </address>
           </div>
 
           {/* Phones reach every service from the tab bar */}
-          <div className="hidden sm:block">
-            <h4 className="eyebrow mb-5">Services</h4>
+          <nav aria-label="Footer services" className="hidden sm:block">
+            <h2 className="eyebrow mb-5">Services</h2>
             <ul className="space-y-3 text-[15px]">
               {SERVICE_LINKS.map((l) => (
                 <li key={l.id}>
@@ -47,7 +47,7 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         </div>
 
         {/* Oversized logotype sign-off, cropped by the footer edge */}
